@@ -1,0 +1,165 @@
+plugins {
+    id 'java-library'
+    id 'maven-publish'
+    id 'net.neoforged.moddev' version '2.0.115'
+    id 'idea'
+}
+
+tasks.named('wrapper', Wrapper).configure {
+    distributionType = Wrapper.DistributionType.BIN
+}
+
+version = mod_version
+group = mod_group_id
+
+base {
+    archivesName = mod_id
+}
+
+java.toolchain.languageVersion = JavaLanguageVersion.of(21)
+
+neoForge {
+    version = project.neo_version
+
+    parchment {
+        mappingsVersion = project.parchment_mappings_version
+        minecraftVersion = project.parchment_minecraft_version
+    }
+
+
+    runs {
+        client {
+            client()
+            jvmArgument '-XX:+AllowEnhancedClassRedefinition' // allow hotswapping more than method contents
+            jvmArgument '-XX:+IgnoreUnrecognizedVMOptions' // but dont crash if the jvm doesnt support it
+            systemProperty 'neoforge.enabledGameTestNamespaces', project.mod_id
+        }
+
+        renderClient { // A client run for debuggig that doesn't have enhanced class redefinition cause that destroys the JIT quickly.
+            client()
+
+            systemProperty 'neoforge.enabledGameTestNamespaces', project.mod_id
+        }
+
+        server {
+            server()
+            jvmArgument '-XX:+AllowEnhancedClassRedefinition' // allow hotswapping more than method contents
+            jvmArgument '-XX:+IgnoreUnrecognizedVMOptions' // but dont crash if the jvm doesnt support it
+            programArgument '--nogui'
+            systemProperty 'neoforge.enabledGameTestNamespaces', project.mod_id
+        }
+
+        gameTestServer {
+            type = "gameTestServer"
+            systemProperty 'neoforge.enabledGameTestNamespaces', project.mod_id
+        }
+
+        data {
+            data()
+
+
+            programArguments.addAll '--mod', project.mod_id, '--all', '--output', file('src/generated/resources/').getAbsolutePath(), '--existing', file('src/main/resources/').getAbsolutePath()
+        }
+
+        configureEach {
+            systemProperty 'forge.logging.markers', 'REGISTRIES'
+
+            logLevel = org.slf4j.event.Level.DEBUG
+        }
+    }
+
+    mods {
+        "${mod_id}" {
+            sourceSet(sourceSets.main)
+        }
+    }
+}
+
+sourceSets.main.resources { srcDir 'src/generated/resources' }
+
+configurations {
+    runtimeClasspath.extendsFrom localRuntime
+    extractJarJar
+}
+
+// Define a task for extracting JarJar dependencies
+def output = layout.buildDirectory.dir('jarjar-extracted')
+tasks.register('extractCompactApiJar', Copy) {
+    from zipTree(configurations.extractJarJar.singleFile)
+    include { it.path.contains('META-INF/jarjar/') && it.path.endsWith('.jar') }
+    eachFile { it.path = name } // flatten them
+    into output
+}
+tasks.named('neoForgeIdeSync') { // run the task whenever ide sync happens
+    dependsOn tasks.extractCompactApiJar
+}
+
+repositories {
+    maven {
+        url 'https://cursemaven.com'
+        content {
+            includeGroup 'curse.maven'
+        }
+    }
+    maven {
+        name 'ModMaven' // All JEI versions
+        url 'https://modmaven.dev'
+    }
+}
+
+dependencies {
+    // Compact Crafting
+    implementation extractJarJar("curse.maven:compact-crafting-updated-1355698:7077089")
+    // Can download sources from https://github.com/Leclowndu93150/CompactCrafting/archive/31176768767a28b677f3aa45e79690db3619582c.zip and attach to IntelliJ
+
+    compileOnly fileTree(tasks.extractCompactApiJar.destinationDir) { include '*.jar'}
+
+    // compile against the JEI API but do not include it at runtime
+    compileOnly "mezz.jei:jei-${minecraft_version}-neoforge-api:${jei_version}"
+    // at runtime, use the full JEI jar
+    runtimeOnly "mezz.jei:jei-${minecraft_version}-neoforge:${jei_version}"
+}
+
+var generateModMetadata = tasks.register("generateModMetadata", ProcessResources) {
+    var replaceProperties = [
+            minecraft_version      : minecraft_version,
+            minecraft_version_range: minecraft_version_range,
+            neo_version            : neo_version,
+            loader_version_range   : loader_version_range,
+            mod_id                 : mod_id,
+            mod_name               : mod_name,
+            mod_license            : mod_license,
+            mod_version            : mod_version,
+            mod_authors            : mod_authors,
+            mod_description        : mod_description
+    ]
+    inputs.properties replaceProperties
+    expand replaceProperties
+    from "src/main/templates"
+    into "build/generated/sources/modMetadata"
+}
+sourceSets.main.resources.srcDir generateModMetadata
+neoForge.ideSyncTask generateModMetadata
+
+publishing {
+    publications {
+        register('mavenJava', MavenPublication) {
+            from components.java
+        }
+    }
+    repositories {
+        maven {
+            url "file://${project.projectDir}/repo"
+        }
+    }
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'}
+
+idea {
+    module {
+        downloadSources = true
+        downloadJavadoc = true
+    }
+}
