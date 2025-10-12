@@ -1,7 +1,8 @@
 package chiefarug.mods.hfmrwnv;
 
 import net.neoforged.neoforge.common.ModConfigSpec;
-import net.neoforged.neoforge.common.ModConfigSpec.*;
+import net.neoforged.neoforge.common.ModConfigSpec.Builder;
+import net.neoforged.neoforge.common.ModConfigSpec.IntValue;
 
 
 // TODO Translations
@@ -17,17 +18,17 @@ public class HfmrnvConfig {
             "The slow down factor for chunk swarms",
             "Swarms on chunks will tick once every this ticks",
             "No you can not make it faster than once per tick"
-    ).defineInRange("chunk_slow_down", 40, 1, 72000);
+    ).defineInRange("chunk_slow_down", 20, 1, 72000);
     public static final IntValue ENTITY_SLOW_DOWN_FACTOR = BUILDER.comment(
             "The slow down factor for entity (excluding player) swarms",
             "Swarms on entities will tick once every this ticks",
             "No you can not make it faster than once per tick"
-    ).defineInRange("chunk_slow_down", 1, 1, 72000);
+    ).defineInRange("entity_slow_down", 1, 1, 72000);
     public static final IntValue PLAYER_SLOW_DOWN_FACTOR = BUILDER.comment(
             "The slow down factor for player swarms",
             "Swarms on players will tick once every this ticks",
             "No you can not make it faster than once per tick"
-    ).defineInRange("chunk_slow_down", 1, 1, 72000); // max is one hour. if you need longer let me know
+    ).defineInRange("player_slow_down", 1, 1, 72000); // max is one hour. if you need longer let me know
     static final ModConfigSpec SPEC = BUILDER.build();
 
 }

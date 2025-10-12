@@ -1,13 +1,16 @@
 package chiefarug.mods.hfmrwnv;
 
 import chiefarug.mods.hfmrwnv.block.NanobotTableBlockEntity;
-import chiefarug.mods.hfmrwnv.core.NanobotEffect;
 import chiefarug.mods.hfmrwnv.core.NanobotSwarm;
+import chiefarug.mods.hfmrwnv.core.effect.AttributeEffect;
+import chiefarug.mods.hfmrwnv.core.effect.NanobotEffect;
 import chiefarug.mods.hfmrwnv.item.NanobotItem;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
+import net.minecraft.world.entity.ai.attributes.AttributeModifier;
+import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
@@ -43,7 +46,7 @@ public class HfmrnvRegistries {
             .create();
 
     private static final DeferredRegister<NanobotEffect> NANOBOT_EFFECTS = DeferredRegister.create(EFFECTS, MODID);
-    public static final DeferredHolder<NanobotEffect, NanobotEffect> EFFECT = NANOBOT_EFFECTS.register("effect", () -> () -> null);
+    public static final DeferredHolder<NanobotEffect, AttributeEffect> MAX_HEALTH = NANOBOT_EFFECTS.register("attribute", () -> new AttributeEffect(Attributes.MAX_HEALTH, MODRL.withPath("max_health"), 1, AttributeModifier.Operation.ADD_VALUE));
 
     public static final DeferredBlock<Block> NANOBOT_TABLE = BLOCKS.registerSimpleBlock("nanobot_assembly_table", BlockBehaviour.Properties.of().mapColor(MapColor.STONE));
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<NanobotTableBlockEntity>> NANOBOT_TABLE_BE = BLOCK_ENTITY_TYPES.register("nanobot_table", () -> new BlockEntityType<>(NanobotTableBlockEntity::new, Set.of(NANOBOT_TABLE.get()), null));
@@ -63,8 +66,8 @@ public class HfmrnvRegistries {
             .build());
 
     
-    
-    
+
+
     
     
     
