@@ -25,6 +25,7 @@ import java.util.Map;
 
 import static chiefarug.mods.hfmrwnv.HfmrnvRegistries.SWARM;
 
+
 public final class NanobotSwarm {
     public static final Codec<NanobotSwarm> CODEC = RecordCodecBuilder.create(inst -> inst.group(
             // "id": ResourceLocation
@@ -72,12 +73,12 @@ public final class NanobotSwarm {
             }
         }
 
-        NanobotSwarm swarm = host.getExistingDataOrNull(SWARM);
+        NanobotSwarm swarm = host.getExistingDataOrNull(SWARM.attachment());
         // If there was already a swarm on the host then call its remove hooks as it shall be replaced imminently
         if (swarm != null) swarm.beforeRemove(host);
 
         swarm = new NanobotSwarm(id, effects);
-        host.setData(SWARM, swarm);
+        host.setData(SWARM.attachment(), swarm);
         swarm.afterAdd(host);
         return swarm;
     }
@@ -147,7 +148,7 @@ public final class NanobotSwarm {
 
     ///  Mark this as dirty when modified so it can be marked as needing to save and resynced to clients
     void markDirty(IAttachmentHolder host) {
-        host.setData(SWARM, this);
+        host.setData(SWARM.attachment(), this);
     }
 
     private static @NotNull Object2IntOpenCustomHashMap<NanobotEffect> newMap(int i) {
@@ -161,5 +162,19 @@ public final class NanobotSwarm {
 
     private List<Entry<NanobotEffect>> apply(NanobotSwarm this) {
         return new ArrayList<>(this.effects.object2IntEntrySet());
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (!(o instanceof NanobotSwarm that)) return false;
+
+        return id.equals(that.id) && effects.equals(that.effects);
+    }
+
+    @Override
+    public int hashCode() {
+        int result = id.hashCode();
+        result = 31 * result + effects.hashCode();
+        return result;
     }
 }

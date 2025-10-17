@@ -64,7 +64,7 @@ public class HyperFungusMicroRobotWorkersFromTheNanoVerse {
                             CommandSourceStack source = c.getSource();
                             Vec3 pos = source.getPosition();
                             ChunkAccess chunk = source.getLevel().getChunk(new BlockPos((int) pos.x, (int) pos.y, (int) pos.z));
-                            source.sendSuccess(() -> Component.literal(chunk.hasData(SWARM) ? "has data: " + chunk.getData(SWARM) : "no data"), true);
+                            source.sendSuccess(() -> Component.literal(chunk.hasData(SWARM.attachment()) ? "has data: " + chunk.getData(SWARM.attachment()) : "no data"), true);
                             return 1;
                         })
                         .then(literal("clear")
@@ -72,8 +72,8 @@ public class HyperFungusMicroRobotWorkersFromTheNanoVerse {
                                     CommandSourceStack source = c.getSource();
                                     Vec3 pos = source.getPosition();
                                     ChunkAccess chunk = source.getLevel().getChunk(new BlockPos((int) pos.x, (int) pos.y, (int) pos.z));
-                                    if (chunk.hasData(SWARM)) {
-                                        chunk.removeData(SWARM);
+                                    if (chunk.hasData(SWARM.attachment())) {
+                                        chunk.removeData(SWARM.attachment());
                                         source.sendSuccess(() -> Component.literal("cleared"), true);
                                         return 1;
                                     } else {
@@ -106,22 +106,22 @@ public class HyperFungusMicroRobotWorkersFromTheNanoVerse {
     @SubscribeEvent
     private static void tickEntitySwarms(EntityTickEvent.Pre event) {
         Entity e = event.getEntity();
-        if (!(e.level() instanceof ServerLevel sl) || !e.hasData(SWARM)) return;
+        if (!(e.level() instanceof ServerLevel sl) || !e.hasData(SWARM.attachment())) return;
         int slowDown = ENTITY_SLOW_DOWN_FACTOR.getAsInt();
         int tick = (int) (sl.getGameTime() % slowDown);
         // evenly distribute ticks based on uuid
         if (tick == e.getUUID().getLeastSignificantBits() % slowDown)
-            e.getData(SWARM).tick(e);
+            e.getData(SWARM.attachment()).tick(e);
     }
 
     @SubscribeEvent // entity tick event does not do players
     private static void tickPlayerSwarms(PlayerTickEvent.Pre event) {
-        if (!(event.getEntity() instanceof ServerPlayer sp) || !event.getEntity().hasData(SWARM)) return;
+        if (!(event.getEntity() instanceof ServerPlayer sp) || !event.getEntity().hasData(SWARM.attachment())) return;
         int slowDown = PLAYER_SLOW_DOWN_FACTOR.getAsInt();
         int tick = (int) (sp.serverLevel().getGameTime() % slowDown);
         // evenly distribute ticks based on uuid
         if (tick == sp.getUUID().getLeastSignificantBits() % slowDown)
-            sp.getData(SWARM).tick(sp);
+            sp.getData(SWARM.attachment()).tick(sp);
     }
 
     @SubscribeEvent
@@ -137,9 +137,9 @@ public class HyperFungusMicroRobotWorkersFromTheNanoVerse {
                 // evenly distribute ticks based on position
                 if (tick == next.getLongKey() % slowDown) {
                     LevelChunk tickingChunk = next.getValue().getTickingChunk();
-                    if (tickingChunk != null && tickingChunk.hasData(SWARM)) {
+                    if (tickingChunk != null && tickingChunk.hasData(SWARM.attachment())) {
                         System.out.println("ticking " + next.getValue().getPos());
-                        tickingChunk.getData(SWARM).tick(tickingChunk);
+                        tickingChunk.getData(SWARM.attachment()).tick(tickingChunk);
                     }
                 }
             }

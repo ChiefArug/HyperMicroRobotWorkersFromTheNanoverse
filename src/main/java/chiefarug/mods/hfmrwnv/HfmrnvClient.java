@@ -49,7 +49,7 @@ public class HfmrnvClient {
             for (int i = 0; i < iter.length(); i++) {
                 LevelChunk next = iter.get(i);
                 if (next == null) continue;
-                if (next.hasData(SWARM)) {
+                if (next.hasData(SWARM.attachment())) {
                     float baseX = next.getPos().getMiddleBlockX() + 0.5f;
                     float baseZ = next.getPos().getMiddleBlockZ() + 0.5f;
                     pose.pushPose();
