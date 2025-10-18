@@ -32,6 +32,7 @@ neoForge {
             client()
             jvmArgument '-XX:+AllowEnhancedClassRedefinition' // allow hotswapping more than method contents
             jvmArgument '-XX:+IgnoreUnrecognizedVMOptions' // but dont crash if the jvm doesnt support it
+            jvmArgument '-XX:ReservedCodeCacheSize=500M' // increase jit code cache size as spark + htswap causes a lot more to be used
             systemProperty 'neoforge.enabledGameTestNamespaces', project.mod_id
         }
 
@@ -118,6 +119,9 @@ dependencies {
     compileOnly "mezz.jei:jei-${minecraft_version}-neoforge-api:${jei_version}"
     // at runtime, use the full JEI jar
     runtimeOnly "mezz.jei:jei-${minecraft_version}-neoforge:${jei_version}"
+
+    // spark for perf profiling
+    runtimeOnly "curse.maven:spark-361579:6225208"
 }
 
 var generateModMetadata = tasks.register("generateModMetadata", ProcessResources) {

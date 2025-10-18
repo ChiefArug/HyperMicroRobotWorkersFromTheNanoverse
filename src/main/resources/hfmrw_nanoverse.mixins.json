@@ -3,6 +3,7 @@
   "package": "chiefarug.mods.hfmrwnv.mixin",
   "compatibilityLevel": "JAVA_21",
   "mixins": [
+    "ServerLevelMixin"
   ],
   "injectors": {
     "defaultRequire": 1
@@ -11,5 +12,6 @@
     "requireAnnotations": true
   },
   "client": [
-  ]
+  ],
+  "mixinextras": {"minVersion": "0.5.0"}
 }

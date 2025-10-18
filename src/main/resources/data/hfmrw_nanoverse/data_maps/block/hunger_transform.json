@@ -1,0 +1,147 @@
+{
+  "values": {
+    // for mod compat, these come first then we override some entries later on.
+    "#bee_growables": "air",
+    "#crops": "air",
+    "#flowers": "air",
+    "#small_flowers": "dead_bush",
+
+    // we remove the empty flower pot itself later on
+    "#flower_pots": "flower_pot",
+
+    "grass_block": "dirt",
+    "podzol": "dirt",
+    "mycelium": "dirt",
+    "#leaves": "air",
+    "sweet_berry_bush": "dead_bush",
+    "grass": "air",
+    "fern": "dead_bush",
+    "large_fern": "air",
+    "short_grass": "dead_bush",
+    "vine": "air",
+    "lily_pad": "air",
+    "cocoa": "air",
+    "spore_blossom": "air",
+    "#saplings": "dead_bush",
+    "moss_carpet": "air",
+    "moss_block": "dirt",
+    "pink_petals": "air",
+    // don't include stem to avoid entire thing breaking
+    "big_dripleaf": "air",
+    "small_dripleaf": "air",
+    "cave_vines": "air",
+    "hanging_roots": "air",
+    "rooted_dirt": "dirt",
+    "frogspawn": "air",
+    // unfortunately we cant stop cactus or sugar cane from triggering on the bottom block. oh well
+    "cactus": "air",
+    "sugar_cane": "air",
+    "bamboo_sapling": "dead_bush",
+    "bamboo": "air",
+
+    "pumpkin": "carved_pumpkin",
+
+    //TODO: empty spawner cage, which can be broken/used for nanobot parts?
+    //TODO: turn ores into parts, and blocks of ore (and raw ore) into parts too
+    "spawner": "iron_block",
+
+    // only the head block gets replaced to avoid the entire thing breaking
+    "weeping_vines": "air",
+    "twisting_vines": "air",
+    "crimson_roots": "air",
+    "warped_roots": "air",
+    "nether_sprouts": "air",
+    "shroomlight": "air",
+    "crimson_nylium": "netherrack",
+    "warped_nylium": "netherrack",
+    "crimson_fungus": "air",
+    "warped_fungus": "air",
+    "nether_wart_block": "air",
+    "warped_wart_block": "air",
+    "nether_wart": "air",
+
+    "brown_mushroom": "air",
+    "brown_mushroom_block": "air",
+    "red_mushroom": "air",
+    "red_mushroom_block": "air",
+    "mushroom_stem": "air",
+
+    "infested_stone": "stone",
+    "infested_cobblestone": "cobblestone",
+    "infested_stone_bricks": "stone_bricks",
+    "infested_mossy_stone_bricks": "stone_bricks",
+    "infested_cracked_stone_bricks": "cracked_stone_bricks",
+    "infested_chiseled_stone_bricks": "chiseled_stone_bricks",
+
+    "mossy_cobblestone": "cobblestone",
+    "mossy_stone_bricks": "stone_bricks",
+    "mossy_cobblestone_wall": "cobblestone_wall",
+    "mossy_stone_brick_stairs": "stone_brick_stairs",
+    "mossy_cobblestone_stairs": "cobblestone_stairs",
+    "mossy_stone_brick_slab": "stone_brick_slab",
+    "mossy_cobblestone_slab":"cobblestone_slab",
+    "mossy_stone_brick_wall": "stone_brick_wall",
+
+    "cake": "air",
+    "#candle_cakes": "air",
+
+    "bee_nest": "honeycomb_block",
+    "beehive": "honeycomb_block",
+
+    "tube_coral_block": "dead_tube_coral_block",
+    "brain_coral_block": "dead_brain_coral_block",
+    "bubble_coral_block":  "dead_bubble_coral_block",
+    "fire_coral_block": "dead_fire_coral_block",
+    "horn_coral_block":  "dead_horn_coral_block",
+    "tube_coral": "dead_tube_coral",
+    "brain_coral":"dead_brain_coral",
+    "bubble_coral": "dead_bubble_coral",
+    "fire_coral":"dead_fire_coral",
+    "horn_coral": "dead_horn_coral",
+    "tube_coral_fan": "dead_tube_coral_fan",
+    "brain_coral_fan":"dead_brain_coral_fan",
+    "bubble_coral_fan": "dead_bubble_coral_fan",
+    "fire_coral_fan":"dead_fire_coral_fan",
+    "horn_coral_fan": "dead_horn_coral_fan",
+    "tube_coral_wall_fan": "dead_tube_coral_wall_fan",
+    "brain_coral_wall_fan":"dead_brain_coral_wall_fan",
+    "bubble_coral_wall_fan": "dead_bubble_coral_wall_fan",
+    "fire_coral_wall_fan":"dead_fire_coral_wall_fan",
+    "horn_coral_wall_fan": "dead_horn_coral_wall_fan",
+
+    // There is custom handling for things that hold fluids, they will turn to the fluidstate they hold if set to air
+    "kelp": "air",
+    // note we only remove kelp's head, and will work downwards like that, otherwise we will end up with lots of kelp items
+    //"kelp_plant": "air",
+    "seagrass": "air",
+    "tall_seagrass": "air",
+    "sea_pickle": "air",
+
+    "oak_log":  "stripped_oak_log",
+    "spruce_log": "stripped_spruce_log",
+    "birch_log":  "stripped_birch_log",
+    "jungle_log": "stripped_jungle_log",
+    "acacia_log":  "stripped_acacia_log",
+    "cherry_log": "stripped_cherry_log",
+    "dark_oak_log":  "stripped_dark_oak_log",
+    "mangrove_log": "stripped_mangrove_log",
+    "oak_wood": "stripped_oak_wood",
+    "spruce_wood":"stripped_spruce_wood",
+    "birch_wood": "stripped_birch_wood",
+    "jungle_wood":"stripped_jungle_wood",
+    "acacia_wood": "stripped_acacia_wood",
+    "cherry_wood":"stripped_cherry_wood",
+    "dark_oak_wood": "stripped_dark_oak_wood",
+    "mangrove_wood":"stripped_mangrove_wood",
+    "warped_hyphae": "stripped_warped_hyphae",
+    "crimson_hyphae": "stripped_crimson_hyphae",
+    "warped_stem": "stripped_warped_stem",
+    "crimson_stem": "stripped_crimson_stem"
+
+  },
+  "remove": [
+    "flower_pot",
+    // added by bee_growables, we don't want to have the entire vine collapse at once
+    "cave_vines_plant"
+  ]
+}

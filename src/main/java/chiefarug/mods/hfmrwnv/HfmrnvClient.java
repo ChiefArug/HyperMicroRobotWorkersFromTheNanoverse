@@ -19,7 +19,7 @@ import java.util.Objects;
 import java.util.concurrent.atomic.AtomicReferenceArray;
 
 import static chiefarug.mods.hfmrwnv.HfmrnvRegistries.SWARM;
-import static chiefarug.mods.hfmrwnv.HyperFungusMicroRobotWorkersFromTheNanoVerse.MODID;
+import static chiefarug.mods.hfmrwnv.HyperFungusMicroRobotWorkersFromTheNanoverse.MODID;
 import static net.minecraft.client.renderer.blockentity.BeaconRenderer.BEAM_LOCATION;
 import static net.neoforged.neoforge.client.event.RenderLevelStageEvent.Stage.AFTER_BLOCK_ENTITIES;
 
@@ -33,6 +33,7 @@ public class HfmrnvClient {
     @SubscribeEvent
     private static void onRender(RenderLevelStageEvent event) {
         if (event.getStage() != AFTER_BLOCK_ENTITIES) return;
+        if (Minecraft.getInstance().options.hideGui) return;
         PoseStack pose = event.getPoseStack();
         pose.pushPose();
         {
@@ -49,12 +50,12 @@ public class HfmrnvClient {
             for (int i = 0; i < iter.length(); i++) {
                 LevelChunk next = iter.get(i);
                 if (next == null) continue;
-                if (next.hasData(SWARM.attachment())) {
+                if (next.hasData(SWARM)) {
                     float baseX = next.getPos().getMiddleBlockX() + 0.5f;
                     float baseZ = next.getPos().getMiddleBlockZ() + 0.5f;
                     pose.pushPose();
-                    pose.translate(baseX, 0, baseZ);
-                    BeaconRenderer.renderBeaconBeam(pose, bufferSource, BEAM_LOCATION, partialTick, 1, level.getGameTime(), 0, 500, color, 0.2F, 0.25F);;
+                    pose.translate(baseX, level.getMinBuildHeight(), baseZ);
+                    BeaconRenderer.renderBeaconBeam(pose, bufferSource, BEAM_LOCATION, partialTick, 1, level.getGameTime(), 0, level.getHeight(), color, 0.2F, 0.25F);
                     pose.popPose();
                 }
             }

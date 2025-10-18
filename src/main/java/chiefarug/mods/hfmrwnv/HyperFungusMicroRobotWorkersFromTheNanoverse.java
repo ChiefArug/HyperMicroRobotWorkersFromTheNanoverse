@@ -1,6 +1,8 @@
 package chiefarug.mods.hfmrwnv;
 
 import chiefarug.mods.hfmrwnv.core.NanobotSwarm;
+import chiefarug.mods.hfmrwnv.core.effect.HungerEffect;
+import chiefarug.mods.hfmrwnv.core.effect.NanobotEffect;
 import com.mojang.logging.LogUtils;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.objects.ObjectBidirectionalIterator;
@@ -11,6 +13,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ChunkHolder;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.chunk.ChunkAccess;
@@ -37,13 +40,13 @@ import static chiefarug.mods.hfmrwnv.HfmrnvConfig.CHUNK_SLOW_DOWN_FACTOR;
 import static chiefarug.mods.hfmrwnv.HfmrnvConfig.ENTITY_SLOW_DOWN_FACTOR;
 import static chiefarug.mods.hfmrwnv.HfmrnvConfig.PLAYER_SLOW_DOWN_FACTOR;
 import static chiefarug.mods.hfmrwnv.HfmrnvRegistries.SWARM;
-import static chiefarug.mods.hfmrwnv.HyperFungusMicroRobotWorkersFromTheNanoVerse.MODID;
+import static chiefarug.mods.hfmrwnv.HyperFungusMicroRobotWorkersFromTheNanoverse.MODID;
 import static net.minecraft.commands.Commands.literal;
 
 // This class is basically unused cause who can be bothered typing such a long name.
 @Mod(MODID)
 @EventBusSubscriber(modid = MODID)
-public class HyperFungusMicroRobotWorkersFromTheNanoVerse {
+public class HyperFungusMicroRobotWorkersFromTheNanoverse {
     public static final String MODID = "hfmrw_nanoverse";
     public static final ResourceLocation MODRL = ResourceLocation.fromNamespaceAndPath(MODID, MODID);
     public static final Logger LGGR = LogUtils.getLogger();
@@ -51,8 +54,9 @@ public class HyperFungusMicroRobotWorkersFromTheNanoVerse {
     @SuppressWarnings({"NullableProblems", "DataFlowIssue"})
     private static Integer seedHash = null;
 
-    public HyperFungusMicroRobotWorkersFromTheNanoVerse(IEventBus modEventBus, ModContainer modContainer) {
-        HfmrnvRegistries.init(modEventBus);
+    public HyperFungusMicroRobotWorkersFromTheNanoverse(IEventBus modBus, ModContainer modContainer) {
+        HfmrnvRegistries.init(modBus);
+        HungerEffect.init(modBus);
         modContainer.registerConfig(ModConfig.Type.COMMON, HfmrnvConfig.SPEC);
     }
 
@@ -64,7 +68,7 @@ public class HyperFungusMicroRobotWorkersFromTheNanoVerse {
                             CommandSourceStack source = c.getSource();
                             Vec3 pos = source.getPosition();
                             ChunkAccess chunk = source.getLevel().getChunk(new BlockPos((int) pos.x, (int) pos.y, (int) pos.z));
-                            source.sendSuccess(() -> Component.literal(chunk.hasData(SWARM.attachment()) ? "has data: " + chunk.getData(SWARM.attachment()) : "no data"), true);
+                            source.sendSuccess(() -> Component.literal(chunk.hasData(SWARM) ? "has data: " + chunk.getData(SWARM) : "no data"), true);
                             return 1;
                         })
                         .then(literal("clear")
@@ -72,8 +76,8 @@ public class HyperFungusMicroRobotWorkersFromTheNanoVerse {
                                     CommandSourceStack source = c.getSource();
                                     Vec3 pos = source.getPosition();
                                     ChunkAccess chunk = source.getLevel().getChunk(new BlockPos((int) pos.x, (int) pos.y, (int) pos.z));
-                                    if (chunk.hasData(SWARM.attachment())) {
-                                        chunk.removeData(SWARM.attachment());
+                                    if (chunk.hasData(SWARM)) {
+                                        chunk.removeData(SWARM);
                                         source.sendSuccess(() -> Component.literal("cleared"), true);
                                         return 1;
                                     } else {
@@ -94,10 +98,10 @@ public class HyperFungusMicroRobotWorkersFromTheNanoVerse {
         if (event.isNewChunk()) {
             ChunkPos pos = event.getChunk().getPos();
             int chance = HfmrnvConfig.SWARM_GENERATION_CHANCE.getAsInt();
-            int hash = hash(seedHash, pos.hashCode());
+            int hash = 31 * seedHash + pos.hashCode();
             // chance to become swarmed is based on hash of world seed and hash of the position
             if (hash % chance == 0) {
-                NanobotSwarm.attachSwarm(event.getChunk(), ResourceLocation.fromNamespaceAndPath(MODID, String.valueOf(pos.z) + pos.x), Map.of());
+                NanobotSwarm.attachSwarm(event.getChunk(), generateSpawnSwarmEffects(RandomSource.create(pos.toLong())));
                 LGGR.debug("Swarmed chunk {}, {}", pos.x, pos.z);
             }
         }
@@ -106,22 +110,22 @@ public class HyperFungusMicroRobotWorkersFromTheNanoVerse {
     @SubscribeEvent
     private static void tickEntitySwarms(EntityTickEvent.Pre event) {
         Entity e = event.getEntity();
-        if (!(e.level() instanceof ServerLevel sl) || !e.hasData(SWARM.attachment())) return;
+        if (!(e.level() instanceof ServerLevel sl) || !e.hasData(SWARM)) return;
         int slowDown = ENTITY_SLOW_DOWN_FACTOR.getAsInt();
         int tick = (int) (sl.getGameTime() % slowDown);
         // evenly distribute ticks based on uuid
-        if (tick == e.getUUID().getLeastSignificantBits() % slowDown)
-            e.getData(SWARM.attachment()).tick(e);
+        if (tick == Math.abs(e.getUUID().getLeastSignificantBits()) % slowDown)
+            e.getData(SWARM).tick(e);
     }
 
     @SubscribeEvent // entity tick event does not do players
     private static void tickPlayerSwarms(PlayerTickEvent.Pre event) {
-        if (!(event.getEntity() instanceof ServerPlayer sp) || !event.getEntity().hasData(SWARM.attachment())) return;
+        if (!(event.getEntity() instanceof ServerPlayer sp) || !event.getEntity().hasData(SWARM)) return;
         int slowDown = PLAYER_SLOW_DOWN_FACTOR.getAsInt();
         int tick = (int) (sp.serverLevel().getGameTime() % slowDown);
         // evenly distribute ticks based on uuid
-        if (tick == sp.getUUID().getLeastSignificantBits() % slowDown)
-            sp.getData(SWARM.attachment()).tick(sp);
+        if (tick ==  Math.abs(sp.getUUID().getLeastSignificantBits()) % slowDown)
+            sp.getData(SWARM).tick(sp);
     }
 
     @SubscribeEvent
@@ -135,18 +139,27 @@ public class HyperFungusMicroRobotWorkersFromTheNanoVerse {
                 Long2ObjectMap.Entry<ChunkHolder> next = iter.next();
 
                 // evenly distribute ticks based on position
-                if (tick == next.getLongKey() % slowDown) {
+                if (tick == Math.abs(next.getLongKey() % slowDown)) {
                     LevelChunk tickingChunk = next.getValue().getTickingChunk();
-                    if (tickingChunk != null && tickingChunk.hasData(SWARM.attachment())) {
-                        System.out.println("ticking " + next.getValue().getPos());
-                        tickingChunk.getData(SWARM.attachment()).tick(tickingChunk);
+                    if (tickingChunk != null) {
+                        NanobotSwarm swarm = tickingChunk.getExistingDataOrNull(SWARM);
+                        if (swarm != null) {
+                            swarm.tick(tickingChunk);
+                        }
                     }
                 }
             }
         }
     }
 
-    private static int hash(int a, int b) {
-        return 31 * a + b;
+
+    private static Map<NanobotEffect, Integer> generateSpawnSwarmEffects(RandomSource random) {
+        return Map.of(
+                random.nextDouble() > 0.8 ?
+                        HfmrnvRegistries.RAVENOUS.get() :
+                        HfmrnvRegistries.HUNGER.get(),
+                4,
+                HfmrnvRegistries.SPREAD.get(), 8);
     }
+
 }

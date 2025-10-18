@@ -11,7 +11,6 @@ import net.minecraft.SharedConstants;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.chunk.ChunkAccess;
@@ -22,63 +21,51 @@ import org.jetbrains.annotations.NotNull;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Supplier;
 
 import static chiefarug.mods.hfmrwnv.HfmrnvRegistries.SWARM;
 
 
 public final class NanobotSwarm {
     public static final Codec<NanobotSwarm> CODEC = RecordCodecBuilder.create(inst -> inst.group(
-            // "id": ResourceLocation
-            ResourceLocation.CODEC.fieldOf("id").forGetter(NanobotSwarm::id),
             // "effects": [{
             RecordCodecBuilder.<Entry<NanobotEffect>>create(inst1 -> inst1.group(
-                    //         "effect" NanobotEffect
+                    //     "effect" NanobotEffect
                     NanobotEffect.CODEC.fieldOf("effect").forGetter(Entry::getKey),
-                    //         "level" int
+                    //     "level" int
                     Codec.INT.fieldOf("level").forGetter(Entry::getIntValue)
             ).apply(inst1, BasicEntry::new)).listOf().fieldOf("effects").forGetter(NanobotSwarm::apply)
             // }]
     ).apply(inst, NanobotSwarm::new));
 
     public static final StreamCodec<RegistryFriendlyByteBuf, NanobotSwarm> STREAM_CODEC = StreamCodec.composite(
-            ResourceLocation.STREAM_CODEC, NanobotSwarm::id,
-            ByteBufCodecs.map(NanobotSwarm::newMap, NanobotEffect.STREAM_CODEC, ByteBufCodecs.INT), NanobotSwarm::effects,
+            ByteBufCodecs.map(NanobotSwarm::newMap, NanobotEffect.STREAM_CODEC, ByteBufCodecs.INT), n -> n.effects,
             NanobotSwarm::new
     );
 
-    private final ResourceLocation id;
     private final Object2IntMap<NanobotEffect> effects;
 
-    public ResourceLocation id() {
-        return id;
-    }
-
-    private static Object2IntMap<NanobotEffect> effects(NanobotSwarm n) {
-        return n.effects;
-    }
-
-    private NanobotSwarm(ResourceLocation id, Map<NanobotEffect, Integer> effects) {
-        this.id = id;
+    private NanobotSwarm(Map<NanobotEffect, Integer> effects) {
         this.effects = new Object2IntOpenCustomHashMap<>(effects, IdentityStrategy.IDENTITY);
     }
 
     /// Attach a new swarm to this host. Replaces an existing swarm on that host, if present.
-    public static NanobotSwarm attachSwarm(IAttachmentHolder host, ResourceLocation id, Map<NanobotEffect, Integer> effects) {
+    public static NanobotSwarm attachSwarm(IAttachmentHolder host, Map<NanobotEffect, Integer> effects) {
         if (SharedConstants.IS_RUNNING_IN_IDE) {
             switch (host) {
-                case Player safe_ignored -> {}
-                case Entity safe_ignored -> {}
-                case ChunkAccess safe_ignored -> {}
+                case Player ignored -> {}
+                case Entity ignored -> {}
+                case ChunkAccess ignored -> {}
                 default -> throw new IllegalArgumentException("Attaching swarm to unknown host type: " + host.getClass());
             }
         }
 
-        NanobotSwarm swarm = host.getExistingDataOrNull(SWARM.attachment());
+        NanobotSwarm swarm = host.getExistingDataOrNull(SWARM);
         // If there was already a swarm on the host then call its remove hooks as it shall be replaced imminently
         if (swarm != null) swarm.beforeRemove(host);
 
-        swarm = new NanobotSwarm(id, effects);
-        host.setData(SWARM.attachment(), swarm);
+        swarm = new NanobotSwarm(effects);
+        host.setData(SWARM, swarm);
         swarm.afterAdd(host);
         return swarm;
     }
@@ -131,9 +118,27 @@ public final class NanobotSwarm {
     }
 
     /// Called frequently while this effect is part of a swarm is on something.
-    /// The exact rate is configurable, but by default is every tick for players and entities, and evey second for chunks.
+    /// The exact rate is configurable, but by default is every tick for players and entities, and twice a second for chunks.
     public void tick(IAttachmentHolder host) {
         forEachEffect(effects, host, NanobotEffect::onTick);
+    }
+
+    public boolean hasEffect(Supplier<? extends NanobotEffect> effect) {
+        return hasEffect(effect.get());
+    }
+
+    public boolean hasEffect(NanobotEffect effect) {
+        return effects.containsKey(effect);
+    }
+
+    public boolean isActive() {
+        return getPowerTotal() >= 0;
+    }
+
+    private int getPowerTotal() {
+        return effects.object2IntEntrySet().stream()
+                .mapToInt(e -> e.getKey().getRequiredPower(e.getIntValue()))
+                .sum();
     }
 
     private interface EffectConsumer {
@@ -148,15 +153,15 @@ public final class NanobotSwarm {
 
     ///  Mark this as dirty when modified so it can be marked as needing to save and resynced to clients
     void markDirty(IAttachmentHolder host) {
-        host.setData(SWARM.attachment(), this);
+        host.setData(SWARM, this);
     }
 
     private static @NotNull Object2IntOpenCustomHashMap<NanobotEffect> newMap(int i) {
         return new Object2IntOpenCustomHashMap<>(i, IdentityStrategy.IDENTITY);
     }
 
-    private NanobotSwarm(ResourceLocation id, List<Entry<NanobotEffect>> effects) {
-        this(id, newMap(effects.size()));
+    private NanobotSwarm(List<Entry<NanobotEffect>> effects) {
+        this(newMap(effects.size()));
         for (var effect : effects) this.effects.put(effect.getKey(), effect.getIntValue());
     }
 
@@ -165,16 +170,19 @@ public final class NanobotSwarm {
     }
 
     @Override
+    public String toString() {
+        return effects.toString();
+    }
+
+    @Override
     public boolean equals(Object o) {
         if (!(o instanceof NanobotSwarm that)) return false;
 
-        return id.equals(that.id) && effects.equals(that.effects);
+        return effects.equals(that.effects);
     }
 
     @Override
     public int hashCode() {
-        int result = id.hashCode();
-        result = 31 * result + effects.hashCode();
-        return result;
+        return effects.hashCode();
     }
 }

@@ -1,6 +1,7 @@
 package chiefarug.mods.hfmrwnv.core.effect;
 
 import com.google.common.collect.ImmutableMultimap;
+import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.Holder;
@@ -11,14 +12,15 @@ import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.neoforged.neoforge.attachment.IAttachmentHolder;
 
-public record AttributeEffect(Holder<Attribute> attribute, ResourceLocation id, double baseAmount, AttributeModifier.Operation operation) implements NanobotEffect.Constant {
+public record AttributeEffect(Holder<Attribute> attribute, ResourceLocation id, double baseAmount, AttributeModifier.Operation operation, int powerPerLevel) implements NanobotEffect.NonTicking {
     public static final MapCodec<AttributeEffect> CODEC = RecordCodecBuilder.mapCodec(inst -> inst.group(
             BuiltInRegistries.ATTRIBUTE.holderByNameCodec().fieldOf("attribute").forGetter(AttributeEffect::attribute),
-            AttributeModifier.MAP_CODEC.forGetter(AttributeEffect::asModifier)
+            AttributeModifier.MAP_CODEC.forGetter(AttributeEffect::asModifier),
+            Codec.INT.fieldOf("powerFactor").forGetter(AttributeEffect::powerPerLevel)
     ).apply(inst, AttributeEffect::new));
 
-    private AttributeEffect(Holder<Attribute> attribute, AttributeModifier modifier) {
-        this(attribute, modifier.id(), modifier.amount(), modifier.operation());
+    private AttributeEffect(Holder<Attribute> attribute, AttributeModifier modifier, int powerPerLevel) {
+        this(attribute, modifier.id(), modifier.amount(), modifier.operation(), powerPerLevel);
     }
 
     private AttributeModifier asModifier() {
@@ -46,5 +48,10 @@ public record AttributeEffect(Holder<Attribute> attribute, ResourceLocation id, 
         if (holder instanceof LivingEntity entity) {
             entity.getAttributes().removeAttributeModifiers(ImmutableMultimap.of(attribute, asModifier(level)));
         }
+    }
+
+    @Override
+    public int getRequiredPower(int level) {
+        return powerPerLevel * level;
     }
 }

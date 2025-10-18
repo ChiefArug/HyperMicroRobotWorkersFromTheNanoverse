@@ -3,7 +3,11 @@ package chiefarug.mods.hfmrwnv;
 import chiefarug.mods.hfmrwnv.block.NanobotTableBlockEntity;
 import chiefarug.mods.hfmrwnv.core.NanobotSwarm;
 import chiefarug.mods.hfmrwnv.core.effect.AttributeEffect;
+import chiefarug.mods.hfmrwnv.core.effect.HungerEffect;
 import chiefarug.mods.hfmrwnv.core.effect.NanobotEffect;
+import chiefarug.mods.hfmrwnv.core.effect.RavenousEffect;
+import chiefarug.mods.hfmrwnv.core.effect.SafeRavenousEffect;
+import chiefarug.mods.hfmrwnv.core.effect.SpreadEffect;
 import chiefarug.mods.hfmrwnv.item.NanobotItem;
 import com.mojang.serialization.Codec;
 import net.minecraft.core.Registry;
@@ -14,6 +18,7 @@ import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.ResourceKey;
+import net.minecraft.tags.TagKey;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.item.CreativeModeTab;
@@ -33,10 +38,12 @@ import net.neoforged.neoforge.registries.NewRegistryEvent;
 import net.neoforged.neoforge.registries.RegistryBuilder;
 
 import java.util.Set;
+import java.util.function.Supplier;
 
-import static chiefarug.mods.hfmrwnv.HyperFungusMicroRobotWorkersFromTheNanoVerse.MODID;
-import static chiefarug.mods.hfmrwnv.HyperFungusMicroRobotWorkersFromTheNanoVerse.MODRL;
+import static chiefarug.mods.hfmrwnv.HyperFungusMicroRobotWorkersFromTheNanoverse.MODID;
+import static chiefarug.mods.hfmrwnv.HyperFungusMicroRobotWorkersFromTheNanoverse.MODRL;
 
+@SuppressWarnings("unused")
 public class HfmrnvRegistries {
     @SuppressWarnings("unchecked")
     private static final DeferredRegister<Registry<?>> REGISTRIES = DeferredRegister.create((Registry<Registry<?>>) BuiltInRegistries.REGISTRY, MODID);
@@ -52,9 +59,13 @@ public class HfmrnvRegistries {
             .create();
 
     private static final DeferredRegister<NanobotEffect> NANOBOT_EFFECTS = DeferredRegister.create(EFFECTS, MODID);
-    public static final DeferredHolder<NanobotEffect, AttributeEffect> MAX_HEALTH = NANOBOT_EFFECTS.register("attribute", () -> new AttributeEffect(Attributes.MAX_HEALTH, MODRL.withPath("max_health"), 1, AttributeModifier.Operation.ADD_VALUE));
-
+    public static final DeferredHolder<NanobotEffect, AttributeEffect> MAX_HEALTH = NANOBOT_EFFECTS.register("attribute", () -> new AttributeEffect(Attributes.MAX_HEALTH, MODRL.withPath("max_health"), 1, AttributeModifier.Operation.ADD_VALUE, 1));
+    public static final DeferredHolder<NanobotEffect, HungerEffect> HUNGER = NANOBOT_EFFECTS.register("hunger", HungerEffect::new);
+    public static final DeferredHolder<NanobotEffect, RavenousEffect> RAVENOUS = NANOBOT_EFFECTS.register("ravenous", RavenousEffect::new);
+    public static final DeferredHolder<NanobotEffect, SafeRavenousEffect> SAFE_RAVENOUS = NANOBOT_EFFECTS.register("safe_ravenous", SafeRavenousEffect::new);
+    public static final DeferredHolder<NanobotEffect, SpreadEffect> SPREAD = NANOBOT_EFFECTS.register("spread", SpreadEffect::new);
     public static final DeferredBlock<Block> NANOBOT_TABLE = BLOCKS.registerSimpleBlock("nanobot_assembly_table", BlockBehaviour.Properties.of().mapColor(MapColor.STONE));
+    public static final TagKey<Block> RAVENOUS_BLACKLIST = BLOCKS.createTagKey("ravenous_blacklist");
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<NanobotTableBlockEntity>> NANOBOT_TABLE_BE = BLOCK_ENTITY_TYPES.register("nanobot_table", () -> new BlockEntityType<>(NanobotTableBlockEntity::new, Set.of(NANOBOT_TABLE.get()), null));
            static {ITEMS.registerSimpleBlockItem(NANOBOT_TABLE);}
     public static final DeferredItem<NanobotItem> NANOBOT = ITEMS.register("nanobot", () -> new NanobotItem(new Item.Properties()));
@@ -66,19 +77,28 @@ public class HfmrnvRegistries {
 
     public static final DataEverything<NanobotSwarm> SWARM = new DataEverything<>("swarm", NanobotSwarm.CODEC, NanobotSwarm.STREAM_CODEC);
 
-
-    public record DataEverything<T>(DeferredHolder<DataComponentType<?>, DataComponentType<T>> dc, DeferredHolder<AttachmentType<?>, AttachmentType<T>> at) {
-        public DataEverything(String name, Codec<T> codec, StreamCodec<RegistryFriendlyByteBuf, T> streamCodec) {
-            this(
-                    DATA_COMPONENTS.registerComponentType(name, b -> b.persistent(codec).networkSynchronized(streamCodec)),
-                    DATA_ATTACHMENTS.register(name, AttachmentType.builder(HfmrnvRegistries::<T>justThrow).serialize(codec).sync(streamCodec)::build)
+    // This is my new favourite class. It is usable in both DataComponent and DataAttachment get/set methods.
+    public record DataEverything<T>(
+            Codec<T> codec,
+            StreamCodec<RegistryFriendlyByteBuf, T> streamCodec,
+            DeferredHolder<AttachmentType<?>, AttachmentType<T>> attachment
+    ) implements DataComponentType<T>, Supplier<AttachmentType<T>> {
+        private DataEverything(String name, Codec<T> codec, StreamCodec<RegistryFriendlyByteBuf, T> streamCodec) {
+            this(codec, streamCodec,DATA_ATTACHMENTS.register(name, AttachmentType
+                    .builder(HfmrnvRegistries::<T>justThrow)
+                    .serialize(codec)
+                    .sync(streamCodec)
+                    ::build)
             );
+            DATA_COMPONENTS.register(name, () -> this);
         }
-        public DataComponentType<T> component() {
-            return dc.get();
-        }
-        public AttachmentType<T> attachment() {
-            return at.get();
+
+        @Override
+        public AttachmentType<T> get() { return attachment.get(); }
+
+        @Override
+        public String toString() {
+            return attachment.getRegisteredName();
         }
     }
 
