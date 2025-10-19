@@ -9,6 +9,7 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.Property;
 import net.minecraft.world.level.chunk.LevelChunk;
@@ -29,6 +30,7 @@ import java.util.function.UnaryOperator;
 import static chiefarug.mods.hfmrwnv.HyperFungusMicroRobotWorkersFromTheNanoverse.LGGR;
 import static chiefarug.mods.hfmrwnv.HyperFungusMicroRobotWorkersFromTheNanoverse.MODRL;
 import static java.lang.StackWalker.Option.RETAIN_CLASS_REFERENCE;
+import static net.minecraft.world.level.block.ComposterBlock.LEVEL;
 import static net.minecraft.world.level.block.state.properties.BlockStateProperties.WATERLOGGED;
 
 /// An effect that consumes something from the target to provide energy.
@@ -80,6 +82,9 @@ public class HungerEffect implements NanobotEffect.NonStateful, NanobotEffect.Un
             LGGR.warn("Class {} overrode a state aware transform for block {}", StackWalker.getInstance(RETAIN_CLASS_REFERENCE).getCallerClass(), BuiltInRegistries.BLOCK.getKey(block));
         }
         STATE_AWARE_TRANSFORM.put(block, stateMapper);
+    }
+    static {
+        registerTransformation(Blocks.COMPOSTER, state -> state.setValue(LEVEL, Math.max(state.getValue(LEVEL) - 1, 0)));
     }
 
     @Override
