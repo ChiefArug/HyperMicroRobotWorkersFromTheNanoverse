@@ -1,5 +1,6 @@
 package chiefarug.mods.hfmrwnv.core.effect;
 
+import chiefarug.mods.hfmrwnv.HfmrnvConfig;
 import chiefarug.mods.hfmrwnv.HfmrnvRegistries;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -8,11 +9,7 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.NotNull;
 
-import static net.minecraft.core.Direction.*;
-
 public class RavenousEffect extends HungerEffect {
-
-    private static final Direction[] DIRS = new Direction[]{DOWN, UP, NORTH, SOUTH, WEST, EAST};
 
     @Override
     protected boolean canTransform(BlockState state, BlockPos inPos, Level level) {
@@ -20,11 +17,12 @@ public class RavenousEffect extends HungerEffect {
 
         int airCount = 0;
         BlockPos.MutableBlockPos pos = inPos.mutable();
-        Direction[] dirs = new Direction[6];
-        for (Direction dir : DIRS) {
+        Direction[] allDirs = Direction.values();
+        Direction[] airDirs = new Direction[6];
+        for (Direction dir : allDirs) {
             pos.move(dir, 1);
             if (level.getBlockState(pos).canBeReplaced()) {
-                dirs[airCount++] = dir;
+                airDirs[airCount++] = dir;
             }
             pos.move(dir, -1);
         }
@@ -34,12 +32,12 @@ public class RavenousEffect extends HungerEffect {
         // look in 3 manhattan distance
         final int directFound = airCount;
         for (int i = 0; i < directFound; i++) {
-            Direction dir1 = dirs[i];
+            Direction dir1 = airDirs[i];
             pos.move(dir1, 1);
-            for (Direction dir2 : DIRS) {
+            for (Direction dir2 : allDirs) {
                 if (dir2 == dir1.getOpposite()) continue;
                 pos.move(dir2, 1);
-                for (Direction dir3 : DIRS) {
+                for (Direction dir3 : allDirs) {
                     if (dir3.getOpposite() == dir1 || dir3.getOpposite() == dir2) continue;
                     pos.move(dir3, 1);
                     if (level.getBlockState(pos).canBeReplaced())
@@ -60,5 +58,10 @@ public class RavenousEffect extends HungerEffect {
         if (newState == state)
            return Blocks.AIR.defaultBlockState();
         return newState;
+    }
+
+    @Override
+    protected float getExhaustion(int effectLevel) {
+        return (float) (super.getExhaustion(effectLevel) * HfmrnvConfig.RAVENOUS_HUNGER_MULTIPLIER.get());
     }
 }

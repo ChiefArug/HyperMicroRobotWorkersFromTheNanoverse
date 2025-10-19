@@ -39,6 +39,7 @@ import java.util.Map;
 import static chiefarug.mods.hfmrwnv.HfmrnvConfig.CHUNK_SLOW_DOWN_FACTOR;
 import static chiefarug.mods.hfmrwnv.HfmrnvConfig.ENTITY_SLOW_DOWN_FACTOR;
 import static chiefarug.mods.hfmrwnv.HfmrnvConfig.PLAYER_SLOW_DOWN_FACTOR;
+import static chiefarug.mods.hfmrwnv.HfmrnvRegistries.INFECTION;
 import static chiefarug.mods.hfmrwnv.HfmrnvRegistries.SWARM;
 import static chiefarug.mods.hfmrwnv.HyperFungusMicroRobotWorkersFromTheNanoverse.MODID;
 import static net.minecraft.commands.Commands.literal;
@@ -64,26 +65,35 @@ public class HyperFungusMicroRobotWorkersFromTheNanoverse {
     private static void registerCommands(RegisterCommandsEvent event) {
         event.getDispatcher().register(
                 literal("hfmrwnv")
+                        .then(literal("swarm")
                         .executes(c -> {
                             CommandSourceStack source = c.getSource();
                             Vec3 pos = source.getPosition();
                             ChunkAccess chunk = source.getLevel().getChunk(new BlockPos((int) pos.x, (int) pos.y, (int) pos.z));
-                            source.sendSuccess(() -> Component.literal(chunk.hasData(SWARM) ? "has data: " + chunk.getData(SWARM) : "no data"), true);
+                            source.sendSuccess(() -> Component.literal(chunk.getExistingData(SWARM).map(d -> "has data: " + d).orElse("no data")), true);
                             return 1;
                         })
-                        .then(literal("clear")
+                                .then(literal("clear")
+                                        .executes(c -> {
+                                            CommandSourceStack source = c.getSource();
+                                            Vec3 pos = source.getPosition();
+                                            ChunkAccess chunk = source.getLevel().getChunk(new BlockPos((int) pos.x, (int) pos.y, (int) pos.z));
+                                            if (chunk.hasData(SWARM)) {
+                                                chunk.removeData(SWARM);
+                                                source.sendSuccess(() -> Component.literal("cleared"), true);
+                                                return 1;
+                                            } else {
+                                                source.sendFailure(Component.literal("no data"));
+                                                return 0;
+                                            }
+                                        })))
+                        .then(literal("infection")
                                 .executes(c -> {
                                     CommandSourceStack source = c.getSource();
                                     Vec3 pos = source.getPosition();
                                     ChunkAccess chunk = source.getLevel().getChunk(new BlockPos((int) pos.x, (int) pos.y, (int) pos.z));
-                                    if (chunk.hasData(SWARM)) {
-                                        chunk.removeData(SWARM);
-                                        source.sendSuccess(() -> Component.literal("cleared"), true);
-                                        return 1;
-                                    } else {
-                                        source.sendFailure(Component.literal("no data"));
-                                        return 0;
-                                    }
+                                    source.sendSuccess(() -> Component.literal(chunk.getExistingData(INFECTION).map(d -> "has data: " + d).orElse("no data")), true);
+                                    return 1;
                                 })
         ));
     }

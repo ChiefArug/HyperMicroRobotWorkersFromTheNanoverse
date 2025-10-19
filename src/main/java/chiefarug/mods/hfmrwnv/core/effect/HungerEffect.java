@@ -90,7 +90,7 @@ public class HungerEffect implements NanobotEffect.NonStateful, NanobotEffect.Un
     @Override
     public void onTick(IAttachmentHolder host, int effectLevel) {
         switch(host) {
-            case Player player -> player.causeFoodExhaustion((float) (HfmrnvConfig.HUNGER_EXHAUSTION.getAsDouble() * effectLevel));
+            case Player player -> player.causeFoodExhaustion(getExhaustion(effectLevel));
             case LevelChunk chunk -> {
                 LevelChunkSection[] alevelchunksection = chunk.getSections();
 
@@ -116,6 +116,10 @@ public class HungerEffect implements NanobotEffect.NonStateful, NanobotEffect.Un
             }
             default -> {}
         }
+    }
+
+    protected float getExhaustion(int effectLevel) {
+        return (float) (HfmrnvConfig.HUNGER_EXHAUSTION.getAsDouble() * effectLevel);
     }
 
     @Override

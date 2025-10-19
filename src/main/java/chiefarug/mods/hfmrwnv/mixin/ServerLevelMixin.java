@@ -19,6 +19,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import java.util.function.Supplier;
 
 import static chiefarug.mods.hfmrwnv.HfmrnvRegistries.HUNGER;
+import static chiefarug.mods.hfmrwnv.HfmrnvRegistries.RAVENOUS;
 import static chiefarug.mods.hfmrwnv.HfmrnvRegistries.SWARM;
 
 @Mixin(ServerLevel.class)
@@ -31,7 +32,7 @@ public abstract class ServerLevelMixin extends Level {
     @Expression("randomTickSpeed > 0")
     @ModifyExpressionValue(method = "tickChunk", at = @At("MIXINEXTRAS:EXPRESSION"))
     private boolean hfmrw_nanoverse$consumedChunksDoNotRandomTick(boolean original, LevelChunk chunk) {
-        if (chunk.getExistingData(SWARM).map(s -> s.hasEffect(HUNGER)).orElse(false)) return false;
+        if (chunk.getExistingData(SWARM).map(s -> s.hasEffect(HUNGER) || s.hasEffect(RAVENOUS)).orElse(false)) return false;
         return original;
     }
 
