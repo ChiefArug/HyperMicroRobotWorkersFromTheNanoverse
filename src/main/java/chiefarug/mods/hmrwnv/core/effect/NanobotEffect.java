@@ -1,7 +1,7 @@
-package chiefarug.mods.hfmrwnv.core.effect;
+package chiefarug.mods.hmrwnv.core.effect;
 
-import chiefarug.mods.hfmrwnv.HfmrnvConfig;
-import chiefarug.mods.hfmrwnv.HfmrnvRegistries;
+import chiefarug.mods.hmrwnv.HfmrnvConfig;
+import chiefarug.mods.hmrwnv.HfmrnvRegistries;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import net.minecraft.network.RegistryFriendlyByteBuf;

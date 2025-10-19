@@ -1,4 +1,4 @@
-package chiefarug.mods.hfmrwnv;
+package chiefarug.mods.hmrwnv;
 
 import net.neoforged.neoforge.common.ModConfigSpec;
 import net.neoforged.neoforge.common.ModConfigSpec.Builder;

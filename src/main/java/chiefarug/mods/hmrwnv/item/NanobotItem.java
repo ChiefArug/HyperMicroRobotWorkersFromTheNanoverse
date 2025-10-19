@@ -1,13 +1,13 @@
-package chiefarug.mods.hfmrwnv.item;
+package chiefarug.mods.hmrwnv.item;
 
-import chiefarug.mods.hfmrwnv.core.NanobotSwarm;
+import chiefarug.mods.hmrwnv.core.NanobotSwarm;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.Nullable;
 
-import static chiefarug.mods.hfmrwnv.HfmrnvRegistries.SWARM;
+import static chiefarug.mods.hmrwnv.HfmrnvRegistries.SWARM;
 import static net.minecraft.SharedConstants.TICKS_PER_SECOND;
 
 public class NanobotItem extends Item {

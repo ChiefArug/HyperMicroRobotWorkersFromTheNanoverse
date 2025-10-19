@@ -1,7 +1,7 @@
-@FieldsAreNonnullByDefault
 @MethodsReturnNonnullByDefault
 @ParametersAreNonnullByDefault
-package chiefarug.mods.hfmrwnv.block;
+@FieldsAreNonnullByDefault
+package chiefarug.mods.hmrwnv.item;
 
 import net.minecraft.FieldsAreNonnullByDefault;
 import net.minecraft.MethodsReturnNonnullByDefault;

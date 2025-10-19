@@ -1,8 +1,8 @@
-package chiefarug.mods.hfmrwnv;
+package chiefarug.mods.hmrwnv;
 
-import chiefarug.mods.hfmrwnv.core.NanobotSwarm;
-import chiefarug.mods.hfmrwnv.core.effect.HungerEffect;
-import chiefarug.mods.hfmrwnv.core.effect.NanobotEffect;
+import chiefarug.mods.hmrwnv.core.NanobotSwarm;
+import chiefarug.mods.hmrwnv.core.effect.HungerEffect;
+import chiefarug.mods.hmrwnv.core.effect.NanobotEffect;
 import com.mojang.logging.LogUtils;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.objects.ObjectBidirectionalIterator;
@@ -36,26 +36,26 @@ import org.slf4j.Logger;
 
 import java.util.Map;
 
-import static chiefarug.mods.hfmrwnv.HfmrnvConfig.CHUNK_SLOW_DOWN_FACTOR;
-import static chiefarug.mods.hfmrwnv.HfmrnvConfig.ENTITY_SLOW_DOWN_FACTOR;
-import static chiefarug.mods.hfmrwnv.HfmrnvConfig.PLAYER_SLOW_DOWN_FACTOR;
-import static chiefarug.mods.hfmrwnv.HfmrnvRegistries.INFECTION;
-import static chiefarug.mods.hfmrwnv.HfmrnvRegistries.SWARM;
-import static chiefarug.mods.hfmrwnv.HyperFungusMicroRobotWorkersFromTheNanoverse.MODID;
+import static chiefarug.mods.hmrwnv.HfmrnvConfig.CHUNK_SLOW_DOWN_FACTOR;
+import static chiefarug.mods.hmrwnv.HfmrnvConfig.ENTITY_SLOW_DOWN_FACTOR;
+import static chiefarug.mods.hmrwnv.HfmrnvConfig.PLAYER_SLOW_DOWN_FACTOR;
+import static chiefarug.mods.hmrwnv.HfmrnvRegistries.INFECTION;
+import static chiefarug.mods.hmrwnv.HfmrnvRegistries.SWARM;
+import static chiefarug.mods.hmrwnv.HyperMicroRobotWorkersFromTheNanoverse.MODID;
 import static net.minecraft.commands.Commands.literal;
 
 // This class is basically unused cause who can be bothered typing such a long name.
 @Mod(MODID)
 @EventBusSubscriber(modid = MODID)
-public class HyperFungusMicroRobotWorkersFromTheNanoverse {
-    public static final String MODID = "hfmrw_nanoverse";
+public class HyperMicroRobotWorkersFromTheNanoverse {
+    public static final String MODID = "hmrw_nanoverse";
     public static final ResourceLocation MODRL = ResourceLocation.fromNamespaceAndPath(MODID, MODID);
     public static final Logger LGGR = LogUtils.getLogger();
     @NotNull // Not null when it matters, ie after the server starts.
     @SuppressWarnings({"NullableProblems", "DataFlowIssue"})
     private static Integer seedHash = null;
 
-    public HyperFungusMicroRobotWorkersFromTheNanoverse(IEventBus modBus, ModContainer modContainer) {
+    public HyperMicroRobotWorkersFromTheNanoverse(IEventBus modBus, ModContainer modContainer) {
         HfmrnvRegistries.init(modBus);
         HungerEffect.init(modBus);
         modContainer.registerConfig(ModConfig.Type.COMMON, HfmrnvConfig.SPEC);
@@ -64,7 +64,7 @@ public class HyperFungusMicroRobotWorkersFromTheNanoverse {
     @SubscribeEvent
     private static void registerCommands(RegisterCommandsEvent event) {
         event.getDispatcher().register(
-                literal("hfmrwnv")
+                literal("hmrwnv")
                         .then(literal("swarm")
                         .executes(c -> {
                             CommandSourceStack source = c.getSource();

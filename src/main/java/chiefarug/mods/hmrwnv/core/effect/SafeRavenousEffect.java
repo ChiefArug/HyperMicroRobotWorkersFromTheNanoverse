@@ -1,4 +1,4 @@
-package chiefarug.mods.hfmrwnv.core.effect;
+package chiefarug.mods.hmrwnv.core.effect;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.Level;

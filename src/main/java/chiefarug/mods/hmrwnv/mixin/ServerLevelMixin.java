@@ -1,4 +1,4 @@
-package chiefarug.mods.hfmrwnv.mixin;
+package chiefarug.mods.hmrwnv.mixin;
 
 import com.llamalad7.mixinextras.expression.Definition;
 import com.llamalad7.mixinextras.expression.Expression;
@@ -18,9 +18,9 @@ import org.spongepowered.asm.mixin.injection.At;
 
 import java.util.function.Supplier;
 
-import static chiefarug.mods.hfmrwnv.HfmrnvRegistries.HUNGER;
-import static chiefarug.mods.hfmrwnv.HfmrnvRegistries.RAVENOUS;
-import static chiefarug.mods.hfmrwnv.HfmrnvRegistries.SWARM;
+import static chiefarug.mods.hmrwnv.HfmrnvRegistries.HUNGER;
+import static chiefarug.mods.hmrwnv.HfmrnvRegistries.RAVENOUS;
+import static chiefarug.mods.hmrwnv.HfmrnvRegistries.SWARM;
 
 @Mixin(ServerLevel.class)
 public abstract class ServerLevelMixin extends Level {
@@ -31,7 +31,7 @@ public abstract class ServerLevelMixin extends Level {
     @Definition(id = "randomTickSpeed", local = @Local(type = int.class, argsOnly = true))
     @Expression("randomTickSpeed > 0")
     @ModifyExpressionValue(method = "tickChunk", at = @At("MIXINEXTRAS:EXPRESSION"))
-    private boolean hfmrw_nanoverse$consumedChunksDoNotRandomTick(boolean original, LevelChunk chunk) {
+    private boolean hmrw_nanoverse$consumedChunksDoNotRandomTick(boolean original, LevelChunk chunk) {
         if (chunk.getExistingData(SWARM).map(s -> s.hasEffect(HUNGER) || s.hasEffect(RAVENOUS)).orElse(false)) return false;
         return original;
     }

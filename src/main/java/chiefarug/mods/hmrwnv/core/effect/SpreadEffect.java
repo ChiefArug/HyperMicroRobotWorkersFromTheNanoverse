@@ -1,8 +1,8 @@
-package chiefarug.mods.hfmrwnv.core.effect;
+package chiefarug.mods.hmrwnv.core.effect;
 
-import chiefarug.mods.hfmrwnv.HfmrnvConfig;
-import chiefarug.mods.hfmrwnv.HfmrnvRegistries;
-import chiefarug.mods.hfmrwnv.core.NanobotSwarm;
+import chiefarug.mods.hmrwnv.HfmrnvConfig;
+import chiefarug.mods.hmrwnv.HfmrnvRegistries;
+import chiefarug.mods.hmrwnv.core.NanobotSwarm;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntMaps;
 import net.minecraft.core.Direction;
@@ -20,8 +20,8 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.function.IntSupplier;
 
-import static chiefarug.mods.hfmrwnv.HfmrnvRegistries.INFECTION;
-import static chiefarug.mods.hfmrwnv.HfmrnvRegistries.SWARM;
+import static chiefarug.mods.hmrwnv.HfmrnvRegistries.INFECTION;
+import static chiefarug.mods.hmrwnv.HfmrnvRegistries.SWARM;
 
 public class SpreadEffect implements NanobotEffect.NonStateful, NanobotEffect.Unit {
 

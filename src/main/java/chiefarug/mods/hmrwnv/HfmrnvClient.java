@@ -1,4 +1,4 @@
-package chiefarug.mods.hfmrwnv;
+package chiefarug.mods.hmrwnv;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Minecraft;
@@ -19,9 +19,9 @@ import net.neoforged.neoforge.client.gui.IConfigScreenFactory;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicReferenceArray;
 
-import static chiefarug.mods.hfmrwnv.HfmrnvRegistries.INFECTION;
-import static chiefarug.mods.hfmrwnv.HfmrnvRegistries.SWARM;
-import static chiefarug.mods.hfmrwnv.HyperFungusMicroRobotWorkersFromTheNanoverse.MODID;
+import static chiefarug.mods.hmrwnv.HfmrnvRegistries.INFECTION;
+import static chiefarug.mods.hmrwnv.HfmrnvRegistries.SWARM;
+import static chiefarug.mods.hmrwnv.HyperMicroRobotWorkersFromTheNanoverse.MODID;
 import static net.minecraft.client.renderer.blockentity.BeaconRenderer.BEAM_LOCATION;
 import static net.neoforged.neoforge.client.event.RenderLevelStageEvent.Stage.AFTER_BLOCK_ENTITIES;
 

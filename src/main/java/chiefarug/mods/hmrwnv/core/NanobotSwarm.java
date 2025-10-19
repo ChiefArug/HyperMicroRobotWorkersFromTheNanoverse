@@ -1,6 +1,6 @@
-package chiefarug.mods.hfmrwnv.core;
+package chiefarug.mods.hmrwnv.core;
 
-import chiefarug.mods.hfmrwnv.core.effect.NanobotEffect;
+import chiefarug.mods.hmrwnv.core.effect.NanobotEffect;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import it.unimi.dsi.fastutil.objects.AbstractObject2IntMap.BasicEntry;
@@ -33,7 +33,7 @@ import java.util.Optional;
 import java.util.OptionalInt;
 import java.util.function.Supplier;
 
-import static chiefarug.mods.hfmrwnv.HfmrnvRegistries.SWARM;
+import static chiefarug.mods.hmrwnv.HfmrnvRegistries.SWARM;
 
 
 public final class NanobotSwarm {

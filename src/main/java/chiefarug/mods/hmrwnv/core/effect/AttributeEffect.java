@@ -1,4 +1,4 @@
-package chiefarug.mods.hfmrwnv.core.effect;
+package chiefarug.mods.hmrwnv.core.effect;
 
 import com.google.common.collect.ImmutableMultimap;
 import com.mojang.serialization.Codec;

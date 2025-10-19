@@ -1,14 +1,14 @@
-package chiefarug.mods.hfmrwnv;
+package chiefarug.mods.hmrwnv;
 
-import chiefarug.mods.hfmrwnv.block.NanobotTableBlockEntity;
-import chiefarug.mods.hfmrwnv.core.NanobotSwarm;
-import chiefarug.mods.hfmrwnv.core.effect.AttributeEffect;
-import chiefarug.mods.hfmrwnv.core.effect.HungerEffect;
-import chiefarug.mods.hfmrwnv.core.effect.NanobotEffect;
-import chiefarug.mods.hfmrwnv.core.effect.RavenousEffect;
-import chiefarug.mods.hfmrwnv.core.effect.SafeRavenousEffect;
-import chiefarug.mods.hfmrwnv.core.effect.SpreadEffect;
-import chiefarug.mods.hfmrwnv.item.NanobotItem;
+import chiefarug.mods.hmrwnv.block.NanobotTableBlockEntity;
+import chiefarug.mods.hmrwnv.core.NanobotSwarm;
+import chiefarug.mods.hmrwnv.core.effect.AttributeEffect;
+import chiefarug.mods.hmrwnv.core.effect.HungerEffect;
+import chiefarug.mods.hmrwnv.core.effect.NanobotEffect;
+import chiefarug.mods.hmrwnv.core.effect.RavenousEffect;
+import chiefarug.mods.hmrwnv.core.effect.SafeRavenousEffect;
+import chiefarug.mods.hmrwnv.core.effect.SpreadEffect;
+import chiefarug.mods.hmrwnv.item.NanobotItem;
 import com.mojang.serialization.Codec;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
@@ -45,8 +45,8 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-import static chiefarug.mods.hfmrwnv.HyperFungusMicroRobotWorkersFromTheNanoverse.MODID;
-import static chiefarug.mods.hfmrwnv.HyperFungusMicroRobotWorkersFromTheNanoverse.MODRL;
+import static chiefarug.mods.hmrwnv.HyperMicroRobotWorkersFromTheNanoverse.MODID;
+import static chiefarug.mods.hmrwnv.HyperMicroRobotWorkersFromTheNanoverse.MODRL;
 
 @SuppressWarnings("unused")
 public class HfmrnvRegistries {
@@ -76,7 +76,7 @@ public class HfmrnvRegistries {
            static {ITEMS.registerSimpleBlockItem(NANOBOT_TABLE);}
     public static final DeferredItem<NanobotItem> NANOBOT = ITEMS.register("nanobot", () -> new NanobotItem(new Item.Properties()));
     public static final DeferredHolder<CreativeModeTab, CreativeModeTab> TAB = TABS.register("tab", () -> CreativeModeTab.builder()
-            .title(Component.translatable("itemGroup.hfmrw_nanoverse"))
+            .title(Component.translatable("itemGroup.hmrw_nanoverse"))
             .icon(() -> NANOBOT.asItem().getDefaultInstance())
             .displayItems(ITEMS.getEntries())
             .build());

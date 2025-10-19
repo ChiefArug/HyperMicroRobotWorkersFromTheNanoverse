@@ -1,6 +1,6 @@
-package chiefarug.mods.hfmrwnv.core.effect;
+package chiefarug.mods.hmrwnv.core.effect;
 
-import chiefarug.mods.hfmrwnv.HfmrnvConfig;
+import chiefarug.mods.hmrwnv.HfmrnvConfig;
 import com.mojang.serialization.Codec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.SectionPos;
@@ -27,8 +27,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.UnaryOperator;
 
-import static chiefarug.mods.hfmrwnv.HyperFungusMicroRobotWorkersFromTheNanoverse.LGGR;
-import static chiefarug.mods.hfmrwnv.HyperFungusMicroRobotWorkersFromTheNanoverse.MODRL;
+import static chiefarug.mods.hmrwnv.HyperMicroRobotWorkersFromTheNanoverse.LGGR;
+import static chiefarug.mods.hmrwnv.HyperMicroRobotWorkersFromTheNanoverse.MODRL;
 import static java.lang.StackWalker.Option.RETAIN_CLASS_REFERENCE;
 import static net.minecraft.world.level.block.ComposterBlock.LEVEL;
 import static net.minecraft.world.level.block.state.properties.BlockStateProperties.WATERLOGGED;
