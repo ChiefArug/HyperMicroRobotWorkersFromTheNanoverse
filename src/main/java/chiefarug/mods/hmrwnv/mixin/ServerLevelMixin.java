@@ -32,6 +32,7 @@ public abstract class ServerLevelMixin extends Level {
     @Expression("randomTickSpeed > 0")
     @ModifyExpressionValue(method = "tickChunk", at = @At("MIXINEXTRAS:EXPRESSION"))
     private boolean hmrw_nanoverse$consumedChunksDoNotRandomTick(boolean original, LevelChunk chunk) {
+        //TODO: make this check a tag
         if (chunk.getExistingData(SWARM).map(s -> s.hasEffect(HUNGER) || s.hasEffect(RAVENOUS)).orElse(false)) return false;
         return original;
     }

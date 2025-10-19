@@ -62,7 +62,10 @@ public class HfmrnvRegistries {
     public static final Registry<NanobotEffect> EFFECTS = new RegistryBuilder<NanobotEffect>(ResourceKey.createRegistryKey(MODRL.withPath("effects")))
             .sync(true)
             .create();
-
+//TODO: SLOP SLOP SLOP Sophisticated Light Operated Protobots
+//    https://discord.com/channels/303440391124942858/303440391124942858/1429469143127560334
+//      make recording snippets of the end poem that play in nanobot clouds
+//      microcrafting?: Light Led Machine, Advanced Interactor
     private static final DeferredRegister<NanobotEffect> NANOBOT_EFFECTS = DeferredRegister.create(EFFECTS, MODID);
     public static final DeferredHolder<NanobotEffect, AttributeEffect> MAX_HEALTH = NANOBOT_EFFECTS.register("attribute", () -> new AttributeEffect(Attributes.MAX_HEALTH, MODRL.withPath("max_health"), 1, AttributeModifier.Operation.ADD_VALUE, 1));
     public static final DeferredHolder<NanobotEffect, HungerEffect> HUNGER = NANOBOT_EFFECTS.register("hunger", HungerEffect::new);
