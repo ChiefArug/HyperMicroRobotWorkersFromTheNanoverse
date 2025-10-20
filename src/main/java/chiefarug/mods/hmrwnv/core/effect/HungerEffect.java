@@ -25,6 +25,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Function;
 import java.util.function.UnaryOperator;
 
 import static chiefarug.mods.hmrwnv.HyperMicroRobotWorkersFromTheNanoverse.LGGR;
@@ -38,7 +39,7 @@ import static net.minecraft.world.level.block.state.properties.BlockStatePropert
 public class HungerEffect implements NanobotEffect.NonStateful, NanobotEffect.Unit {
     private static final Codec<BlockState> TRANSFORM_RESULT_CODEC = Codec.withAlternative(BlockState.CODEC, BuiltInRegistries.BLOCK.byNameCodec().xmap(Block::defaultBlockState, BlockState::getBlock));
     private static final DataMapType<Block, BlockState> HUNGER_TRANSFORM = DataMapType.builder(MODRL.withPath("hunger_transform"), Registries.BLOCK, TRANSFORM_RESULT_CODEC).build();
-    private static final Map<Block, UnaryOperator<@Nullable BlockState>> STATE_AWARE_TRANSFORM = Collections.synchronizedMap(new HashMap<>());
+    private static final Map<Block, Function<BlockState, @Nullable BlockState>> STATE_AWARE_TRANSFORM = Collections.synchronizedMap(new HashMap<>());
 
     /// Get the transformed version of this block.
     /// Prioritises the datamap to allow datamaps to override mod's in-code decisions.

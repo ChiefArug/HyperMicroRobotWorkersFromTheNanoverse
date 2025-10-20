@@ -28,6 +28,7 @@ import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.material.MapColor;
@@ -56,28 +57,39 @@ public class HmrnvRegistries {
     private static final DeferredRegister<CreativeModeTab> TABS = DeferredRegister.create(BuiltInRegistries.CREATIVE_MODE_TAB, MODID);
     private static final DeferredRegister<AttachmentType<?>> DATA_ATTACHMENTS = DeferredRegister.create(NeoForgeRegistries.ATTACHMENT_TYPES, MODID);
     private static final DeferredRegister.DataComponents DATA_COMPONENTS = DeferredRegister.createDataComponents(Registries.DATA_COMPONENT_TYPE, MODID);
-
-    public static final Registry<NanobotEffect> EFFECT = new RegistryBuilder<NanobotEffect>(ResourceKey.createRegistryKey(MODRL.withPath("effect")))
+    public  static final Registry<NanobotEffect> EFFECT = new RegistryBuilder<NanobotEffect>(ResourceKey.createRegistryKey(MODRL.withPath("effect")))
             .sync(true)
             .create();
+    private static final DeferredRegister<NanobotEffect> NANOBOT_EFFECTS = DeferredRegister.create(EFFECT, MODID);
 //TODO: SLOP SLOP SLOP Sophisticated Light Operated Protobots
 //    https://discord.com/channels/303440391124942858/303440391124942858/1429469143127560334
 //      make recording snippets of the end poem that play in nanobot clouds
 //      microcrafting?: Light Led Machine, Advanced Interactor, Meticulous
-    private static final DeferredRegister<NanobotEffect> NANOBOT_EFFECTS = DeferredRegister.create(EFFECT, MODID);
+
     public static final DeferredHolder<NanobotEffect, AttributeEffect> MAX_HEALTH = NANOBOT_EFFECTS.register("attribute", () -> new AttributeEffect(Attributes.MAX_HEALTH, MODRL.withPath("max_health"), 1, AttributeModifier.Operation.ADD_VALUE, 1));
     public static final DeferredHolder<NanobotEffect, HungerEffect> HUNGER = NANOBOT_EFFECTS.register("hunger", HungerEffect::new);
     public static final DeferredHolder<NanobotEffect, RavenousEffect> RAVENOUS = NANOBOT_EFFECTS.register("ravenous", RavenousEffect::new);
     public static final DeferredHolder<NanobotEffect, SafeRavenousEffect> SAFE_RAVENOUS = NANOBOT_EFFECTS.register("safe_ravenous", SafeRavenousEffect::new);
     public static final DeferredHolder<NanobotEffect, SpreadEffect> SPREAD = NANOBOT_EFFECTS.register("spread", SpreadEffect::new);
     public static final DeferredHolder<NanobotEffect, NanobotEffect.None> SWARM_DEFENCE = NANOBOT_EFFECTS.register("swarm_defence", () -> new NanobotEffect.None(1));
-    public static final DeferredBlock<Block> NANOBOT_TABLE = BLOCKS.registerSimpleBlock("nanobot_assembly_table", BlockBehaviour.Properties.of().mapColor(MapColor.STONE));
+
     public static final TagKey<Block> RAVENOUS_BLACKLIST = BLOCKS.createTagKey("ravenous_blacklist");
     public static final TagKey<NanobotEffect> PREVENTS_RANDOM_TICKS = NANOBOT_EFFECTS.createTagKey("prevents_random_ticks");
     public static final TagKey<NanobotEffect> PROTECTS_AGAINST_SPREAD = NANOBOT_EFFECTS.createTagKey("protects_against_spread");
-    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<NanobotTableBlockEntity>> NANOBOT_TABLE_BE = BLOCK_ENTITY_TYPES.register("nanobot_table", () -> new BlockEntityType<>(NanobotTableBlockEntity::new, Set.of(NANOBOT_TABLE.get()), null));
+
+    public static final DeferredBlock<Block> NANOBOT_TABLE = BLOCKS.registerSimpleBlock("nanobot_assembly_table", BlockBehaviour.Properties.of().mapColor(MapColor.STONE));
            static {ITEMS.registerSimpleBlockItem(NANOBOT_TABLE);}
+    public static final DeferredBlock<Block> SLAG = BLOCKS.registerSimpleBlock("slag", BlockBehaviour.Properties.ofFullCopy(Blocks.RAW_IRON_BLOCK));
+           static {ITEMS.registerSimpleBlockItem(SLAG);}
+    public static final DeferredBlock<Block> RICH_SLAG = BLOCKS.registerSimpleBlock("rich_slag", BlockBehaviour.Properties.ofFullCopy(Blocks.IRON_BLOCK));
+           static {ITEMS.registerSimpleBlockItem(RICH_SLAG);}
+
     public static final DeferredItem<NanobotItem> NANOBOT = ITEMS.register("nanobot", () -> new NanobotItem(new Item.Properties()));
+    public static final DeferredItem<Item> SLOP = ITEMS.registerSimpleItem("slop");
+    public static final DeferredItem<Item> LLM = ITEMS.registerSimpleItem("llm");
+    public static final DeferredItem<Item> AI = ITEMS.registerSimpleItem("ai");
+
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<NanobotTableBlockEntity>> NANOBOT_TABLE_BE = BLOCK_ENTITY_TYPES.register("nanobot_table", () -> new BlockEntityType<>(NanobotTableBlockEntity::new, Set.of(NANOBOT_TABLE.get()), null));
     public static final DeferredHolder<CreativeModeTab, CreativeModeTab> TAB = TABS.register("tab", CreativeModeTab.builder()
             .title(Component.translatable("itemGroup.hmrw_nanoverse"))
             .icon(() -> NANOBOT.asItem().getDefaultInstance())
@@ -93,32 +105,36 @@ public class HmrnvRegistries {
     public static final DataEverything<NanobotSwarm> SWARM = new DataEverything<>("swarm", NanobotSwarm.CODEC, NanobotSwarm.STREAM_CODEC);
 
     // This is my new favourite class. It is usable in both DataComponent and DataAttachment get/set methods.
-    public record DataEverything<T>(
-            Codec<T> codec,
-            StreamCodec<RegistryFriendlyByteBuf, T> streamCodec,
-            DeferredHolder<AttachmentType<?>, AttachmentType<T>> attachment
-    ) implements DataComponentType<T>, Supplier<AttachmentType<T>> {
+    public static final class DataEverything<T> implements DataComponentType<T>, Supplier<AttachmentType<T>> {
+        private final Codec<T> codec;
+        private final StreamCodec<RegistryFriendlyByteBuf, T> streamCodec;
+        private final DeferredHolder<AttachmentType<?>, AttachmentType<T>> attachment;
+
         private DataEverything(String name, Codec<T> codec, StreamCodec<RegistryFriendlyByteBuf, T> streamCodec) {
-            this(codec, streamCodec, DATA_ATTACHMENTS.register(name, AttachmentType
+            this.codec = codec;
+            this.streamCodec = streamCodec;
+            this.attachment = DATA_ATTACHMENTS.register(name, AttachmentType
                     .builder(HmrnvRegistries::<T>justThrow)
                     .serialize(codec)
                     .sync(streamCodec)
-                    ::build)
-            );
+                    ::build);
             DATA_COMPONENTS.register(name, () -> this);
-        }
+            }
+
+            @Override
+            public AttachmentType<T> get() {return attachment.get();}
+
+            @Override
+            public String toString() {
+                return attachment.getRegisteredName();
+            }
 
         @Override
-        public AttachmentType<T> get() { return attachment.get(); }
+        public Codec<T> codec() {return codec;}
 
         @Override
-        public String toString() {
-            return attachment.getRegisteredName();
-        }
+        public StreamCodec<RegistryFriendlyByteBuf, T> streamCodec() {return streamCodec;}
     }
-
-
-
 
 
 
