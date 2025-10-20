@@ -1,7 +1,7 @@
 package chiefarug.mods.hmrwnv.core.effect;
 
 import chiefarug.mods.hmrwnv.HfmrnvConfig;
-import chiefarug.mods.hmrwnv.HfmrnvRegistries;
+import chiefarug.mods.hmrwnv.HmrnvRegistries;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.level.Level;
@@ -13,7 +13,7 @@ public class RavenousEffect extends HungerEffect {
 
     @Override
     protected boolean canTransform(BlockState state, BlockPos inPos, Level level) {
-        if (!super.canTransform(state, inPos, level) || state.is(HfmrnvRegistries.RAVENOUS_BLACKLIST) || !state.getFluidState().isEmpty()) return false;
+        if (!super.canTransform(state, inPos, level) || state.is(HmrnvRegistries.RAVENOUS_BLACKLIST) || !state.getFluidState().isEmpty()) return false;
 
         int airCount = 0;
         BlockPos.MutableBlockPos pos = inPos.mutable();

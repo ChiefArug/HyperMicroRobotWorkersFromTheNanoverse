@@ -1,12 +1,13 @@
 package chiefarug.mods.hmrwnv.core.effect;
 
 import chiefarug.mods.hmrwnv.HfmrnvConfig;
-import chiefarug.mods.hmrwnv.HfmrnvRegistries;
+import chiefarug.mods.hmrwnv.HmrnvRegistries;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.tags.TagKey;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.chunk.ChunkAccess;
@@ -18,9 +19,9 @@ import java.util.function.IntUnaryOperator;
 /// An interface representing an effect from nanobots.
 /// Has some sub-interfaces for composing common default methods
 public interface NanobotEffect {
-    Codec<NanobotEffect> CODEC = HfmrnvRegistries.EFFECTS.byNameCodec().dispatch(Function.identity(), NanobotEffect::codec);
+    Codec<NanobotEffect> CODEC = HmrnvRegistries.EFFECT.byNameCodec().dispatch(Function.identity(), NanobotEffect::codec);
     // Only sync the id over the network, not the full object.
-    StreamCodec<RegistryFriendlyByteBuf, NanobotEffect> STREAM_CODEC = ByteBufCodecs.registry(HfmrnvRegistries.EFFECTS.key());
+    StreamCodec<RegistryFriendlyByteBuf, NanobotEffect> STREAM_CODEC = ByteBufCodecs.registry(HmrnvRegistries.EFFECT.key());
 
     /// The codec used for serializing this to disk
     MapCodec<? extends NanobotEffect> codec();
@@ -47,6 +48,10 @@ public interface NanobotEffect {
             case ChunkAccess ignored -> HfmrnvConfig.CHUNK_SLOW_DOWN_FACTOR.getAsInt();
             default -> throw new IllegalArgumentException("Unknown host class " + host.getClass());
         };
+    }
+
+    default boolean is(TagKey<NanobotEffect> tag) {
+        return HmrnvRegistries.EFFECT.wrapAsHolder(this).is(tag);
     }
 
     /// Helper for making a nanobot effect that only ticks/doesnt use onAdd/onRemove

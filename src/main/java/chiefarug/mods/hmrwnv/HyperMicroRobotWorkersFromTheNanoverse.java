@@ -39,8 +39,8 @@ import java.util.Map;
 import static chiefarug.mods.hmrwnv.HfmrnvConfig.CHUNK_SLOW_DOWN_FACTOR;
 import static chiefarug.mods.hmrwnv.HfmrnvConfig.ENTITY_SLOW_DOWN_FACTOR;
 import static chiefarug.mods.hmrwnv.HfmrnvConfig.PLAYER_SLOW_DOWN_FACTOR;
-import static chiefarug.mods.hmrwnv.HfmrnvRegistries.INFECTION;
-import static chiefarug.mods.hmrwnv.HfmrnvRegistries.SWARM;
+import static chiefarug.mods.hmrwnv.HmrnvRegistries.INFECTION;
+import static chiefarug.mods.hmrwnv.HmrnvRegistries.SWARM;
 import static chiefarug.mods.hmrwnv.HyperMicroRobotWorkersFromTheNanoverse.MODID;
 import static net.minecraft.commands.Commands.literal;
 
@@ -56,7 +56,7 @@ public class HyperMicroRobotWorkersFromTheNanoverse {
     private static Integer seedHash = null;
 
     public HyperMicroRobotWorkersFromTheNanoverse(IEventBus modBus, ModContainer modContainer) {
-        HfmrnvRegistries.init(modBus);
+        HmrnvRegistries.init(modBus);
         HungerEffect.init(modBus);
         modContainer.registerConfig(ModConfig.Type.COMMON, HfmrnvConfig.SPEC);
     }
@@ -166,10 +166,10 @@ public class HyperMicroRobotWorkersFromTheNanoverse {
     private static Map<NanobotEffect, Integer> generateSpawnSwarmEffects(RandomSource random) {
         return Map.of(
                 random.nextDouble() > 0.8 ?
-                        HfmrnvRegistries.RAVENOUS.get() :
-                        HfmrnvRegistries.HUNGER.get(),
+                        HmrnvRegistries.RAVENOUS.get() :
+                        HmrnvRegistries.HUNGER.get(),
                 4,
-                HfmrnvRegistries.SPREAD.get(), 8);
+                HmrnvRegistries.SPREAD.get(), 8);
     }
 
 }

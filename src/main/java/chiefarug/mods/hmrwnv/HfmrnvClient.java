@@ -19,8 +19,8 @@ import net.neoforged.neoforge.client.gui.IConfigScreenFactory;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicReferenceArray;
 
-import static chiefarug.mods.hmrwnv.HfmrnvRegistries.INFECTION;
-import static chiefarug.mods.hmrwnv.HfmrnvRegistries.SWARM;
+import static chiefarug.mods.hmrwnv.HmrnvRegistries.INFECTION;
+import static chiefarug.mods.hmrwnv.HmrnvRegistries.SWARM;
 import static chiefarug.mods.hmrwnv.HyperMicroRobotWorkersFromTheNanoverse.MODID;
 import static net.minecraft.client.renderer.blockentity.BeaconRenderer.BEAM_LOCATION;
 import static net.neoforged.neoforge.client.event.RenderLevelStageEvent.Stage.AFTER_BLOCK_ENTITIES;

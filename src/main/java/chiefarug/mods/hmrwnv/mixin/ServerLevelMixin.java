@@ -1,5 +1,6 @@
 package chiefarug.mods.hmrwnv.mixin;
 
+import chiefarug.mods.hmrwnv.core.NanobotSwarm;
 import com.llamalad7.mixinextras.expression.Definition;
 import com.llamalad7.mixinextras.expression.Expression;
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
@@ -16,11 +17,11 @@ import net.minecraft.world.level.storage.WritableLevelData;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 
+import java.util.Optional;
 import java.util.function.Supplier;
 
-import static chiefarug.mods.hmrwnv.HfmrnvRegistries.HUNGER;
-import static chiefarug.mods.hmrwnv.HfmrnvRegistries.RAVENOUS;
-import static chiefarug.mods.hmrwnv.HfmrnvRegistries.SWARM;
+import static chiefarug.mods.hmrwnv.HmrnvRegistries.PREVENTS_RANDOM_TICKS;
+import static chiefarug.mods.hmrwnv.HmrnvRegistries.SWARM;
 
 @Mixin(ServerLevel.class)
 public abstract class ServerLevelMixin extends Level {
@@ -32,8 +33,8 @@ public abstract class ServerLevelMixin extends Level {
     @Expression("randomTickSpeed > 0")
     @ModifyExpressionValue(method = "tickChunk", at = @At("MIXINEXTRAS:EXPRESSION"))
     private boolean hmrw_nanoverse$consumedChunksDoNotRandomTick(boolean original, LevelChunk chunk) {
-        //TODO: make this check a tag
-        if (chunk.getExistingData(SWARM).map(s -> s.hasEffect(HUNGER) || s.hasEffect(RAVENOUS)).orElse(false)) return false;
+        Optional<NanobotSwarm> swarm = chunk.getExistingData(SWARM);
+        if (swarm.isPresent() && swarm.get().hasEffect(PREVENTS_RANDOM_TICKS)) return false;
         return original;
     }
 

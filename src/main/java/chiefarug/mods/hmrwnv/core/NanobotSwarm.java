@@ -15,6 +15,7 @@ import net.minecraft.SharedConstants;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.tags.TagKey;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
@@ -33,7 +34,7 @@ import java.util.Optional;
 import java.util.OptionalInt;
 import java.util.function.Supplier;
 
-import static chiefarug.mods.hmrwnv.HfmrnvRegistries.SWARM;
+import static chiefarug.mods.hmrwnv.HmrnvRegistries.SWARM;
 
 
 public final class NanobotSwarm {
@@ -236,6 +237,14 @@ public final class NanobotSwarm {
         while (weightedIndex >= 0 && entries.hasNext());
 
         return t.getKey();
+    }
+
+    public boolean hasEffect(TagKey<NanobotEffect> tag) {
+        for (NanobotEffect value : effects.keySet()) {
+            if (value.is(tag))
+                return true;
+        }
+        return false;
     }
 
     private interface EffectConsumer {

@@ -1,7 +1,7 @@
 package chiefarug.mods.hmrwnv.core.effect;
 
 import chiefarug.mods.hmrwnv.HfmrnvConfig;
-import chiefarug.mods.hmrwnv.HfmrnvRegistries;
+import chiefarug.mods.hmrwnv.HmrnvRegistries;
 import chiefarug.mods.hmrwnv.core.NanobotSwarm;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntMaps;
@@ -20,8 +20,9 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.function.IntSupplier;
 
-import static chiefarug.mods.hmrwnv.HfmrnvRegistries.INFECTION;
-import static chiefarug.mods.hmrwnv.HfmrnvRegistries.SWARM;
+import static chiefarug.mods.hmrwnv.HmrnvRegistries.INFECTION;
+import static chiefarug.mods.hmrwnv.HmrnvRegistries.PROTECTS_AGAINST_SPREAD;
+import static chiefarug.mods.hmrwnv.HmrnvRegistries.SWARM;
 
 public class SpreadEffect implements NanobotEffect.NonStateful, NanobotEffect.Unit {
 
@@ -57,15 +58,17 @@ public class SpreadEffect implements NanobotEffect.NonStateful, NanobotEffect.Un
 
     private static void infect(IAttachmentHolder host, Level level, IAttachmentHolder target, IntSupplier maxExposures) {
         Optional<NanobotSwarm> targetSwarm = target.getExistingData(SWARM);
+        if (targetSwarm.isPresent() && targetSwarm.get().hasEffect(PROTECTS_AGAINST_SPREAD)) return;
+
         final NanobotEffect effect;
         if (targetSwarm.isPresent())
-            effect = host.getData(HfmrnvRegistries.SWARM).randomEffectExcept(level.getRandom(), targetSwarm.get());
+            effect = host.getData(HmrnvRegistries.SWARM).randomEffectExcept(level.getRandom(), targetSwarm.get());
         else
             effect = host.getData(SWARM).randomEffect(level.getRandom());
 
         if (effect == null) return;
 
-        ResourceLocation key = level.registryAccess().registryOrThrow(HfmrnvRegistries.EFFECTS.key()).getKey(effect);
+        ResourceLocation key = level.registryAccess().registryOrThrow(HmrnvRegistries.EFFECT.key()).getKey(effect);
         Object2IntMap<ResourceLocation> infections = target.getData(INFECTION);
         int exposures = infections.mergeInt(key, 1, Integer::sum);
         if (exposures >= maxExposures.getAsInt()) {

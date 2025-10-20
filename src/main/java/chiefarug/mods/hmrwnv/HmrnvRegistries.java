@@ -49,9 +49,7 @@ import static chiefarug.mods.hmrwnv.HyperMicroRobotWorkersFromTheNanoverse.MODID
 import static chiefarug.mods.hmrwnv.HyperMicroRobotWorkersFromTheNanoverse.MODRL;
 
 @SuppressWarnings("unused")
-public class HfmrnvRegistries {
-    @SuppressWarnings("unchecked")
-    private static final DeferredRegister<Registry<?>> REGISTRIES = DeferredRegister.create((Registry<Registry<?>>) BuiltInRegistries.REGISTRY, MODID);
+public class HmrnvRegistries {
     private static final DeferredRegister.Blocks BLOCKS = DeferredRegister.createBlocks(MODID);
     private static final DeferredRegister.Items ITEMS = DeferredRegister.createItems(MODID);
     private static final DeferredRegister<BlockEntityType<?>> BLOCK_ENTITY_TYPES = DeferredRegister.create(BuiltInRegistries.BLOCK_ENTITY_TYPE, MODID);
@@ -59,14 +57,14 @@ public class HfmrnvRegistries {
     private static final DeferredRegister<AttachmentType<?>> DATA_ATTACHMENTS = DeferredRegister.create(NeoForgeRegistries.ATTACHMENT_TYPES, MODID);
     private static final DeferredRegister.DataComponents DATA_COMPONENTS = DeferredRegister.createDataComponents(Registries.DATA_COMPONENT_TYPE, MODID);
 
-    public static final Registry<NanobotEffect> EFFECTS = new RegistryBuilder<NanobotEffect>(ResourceKey.createRegistryKey(MODRL.withPath("effects")))
+    public static final Registry<NanobotEffect> EFFECT = new RegistryBuilder<NanobotEffect>(ResourceKey.createRegistryKey(MODRL.withPath("effect")))
             .sync(true)
             .create();
 //TODO: SLOP SLOP SLOP Sophisticated Light Operated Protobots
 //    https://discord.com/channels/303440391124942858/303440391124942858/1429469143127560334
 //      make recording snippets of the end poem that play in nanobot clouds
-//      microcrafting?: Light Led Machine, Advanced Interactor
-    private static final DeferredRegister<NanobotEffect> NANOBOT_EFFECTS = DeferredRegister.create(EFFECTS, MODID);
+//      microcrafting?: Light Led Machine, Advanced Interactor, Meticulous
+    private static final DeferredRegister<NanobotEffect> NANOBOT_EFFECTS = DeferredRegister.create(EFFECT, MODID);
     public static final DeferredHolder<NanobotEffect, AttributeEffect> MAX_HEALTH = NANOBOT_EFFECTS.register("attribute", () -> new AttributeEffect(Attributes.MAX_HEALTH, MODRL.withPath("max_health"), 1, AttributeModifier.Operation.ADD_VALUE, 1));
     public static final DeferredHolder<NanobotEffect, HungerEffect> HUNGER = NANOBOT_EFFECTS.register("hunger", HungerEffect::new);
     public static final DeferredHolder<NanobotEffect, RavenousEffect> RAVENOUS = NANOBOT_EFFECTS.register("ravenous", RavenousEffect::new);
@@ -75,14 +73,16 @@ public class HfmrnvRegistries {
     public static final DeferredHolder<NanobotEffect, NanobotEffect.None> SWARM_DEFENCE = NANOBOT_EFFECTS.register("swarm_defence", () -> new NanobotEffect.None(1));
     public static final DeferredBlock<Block> NANOBOT_TABLE = BLOCKS.registerSimpleBlock("nanobot_assembly_table", BlockBehaviour.Properties.of().mapColor(MapColor.STONE));
     public static final TagKey<Block> RAVENOUS_BLACKLIST = BLOCKS.createTagKey("ravenous_blacklist");
+    public static final TagKey<NanobotEffect> PREVENTS_RANDOM_TICKS = NANOBOT_EFFECTS.createTagKey("prevents_random_ticks");
+    public static final TagKey<NanobotEffect> PROTECTS_AGAINST_SPREAD = NANOBOT_EFFECTS.createTagKey("protects_against_spread");
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<NanobotTableBlockEntity>> NANOBOT_TABLE_BE = BLOCK_ENTITY_TYPES.register("nanobot_table", () -> new BlockEntityType<>(NanobotTableBlockEntity::new, Set.of(NANOBOT_TABLE.get()), null));
            static {ITEMS.registerSimpleBlockItem(NANOBOT_TABLE);}
     public static final DeferredItem<NanobotItem> NANOBOT = ITEMS.register("nanobot", () -> new NanobotItem(new Item.Properties()));
-    public static final DeferredHolder<CreativeModeTab, CreativeModeTab> TAB = TABS.register("tab", () -> CreativeModeTab.builder()
+    public static final DeferredHolder<CreativeModeTab, CreativeModeTab> TAB = TABS.register("tab", CreativeModeTab.builder()
             .title(Component.translatable("itemGroup.hmrw_nanoverse"))
             .icon(() -> NANOBOT.asItem().getDefaultInstance())
             .displayItems(ITEMS.getEntries())
-            .build());
+            ::build);
 
     public static final DeferredHolder<AttachmentType<?>, AttachmentType<Object2IntMap<ResourceLocation>>> INFECTION = DATA_ATTACHMENTS.register("infection",
             AttachmentType.<Object2IntMap<ResourceLocation>>builder(() -> new Object2IntOpenHashMap<>())
@@ -99,8 +99,8 @@ public class HfmrnvRegistries {
             DeferredHolder<AttachmentType<?>, AttachmentType<T>> attachment
     ) implements DataComponentType<T>, Supplier<AttachmentType<T>> {
         private DataEverything(String name, Codec<T> codec, StreamCodec<RegistryFriendlyByteBuf, T> streamCodec) {
-            this(codec, streamCodec,DATA_ATTACHMENTS.register(name, AttachmentType
-                    .builder(HfmrnvRegistries::<T>justThrow)
+            this(codec, streamCodec, DATA_ATTACHMENTS.register(name, AttachmentType
+                    .builder(HmrnvRegistries::<T>justThrow)
                     .serialize(codec)
                     .sync(streamCodec)
                     ::build)
@@ -126,11 +126,10 @@ public class HfmrnvRegistries {
         BLOCKS.register(modBus);
         ITEMS.register(modBus);
         TABS.register(modBus);
-        REGISTRIES.register(modBus);
         DATA_ATTACHMENTS.register(modBus);
         NANOBOT_EFFECTS.register(modBus);
 
-        modBus.addListener((NewRegistryEvent event) -> event.register(EFFECTS));
+        modBus.addListener((NewRegistryEvent event) -> event.register(EFFECT));
     }
 
     private static <T> T justThrow(Object _t) {
