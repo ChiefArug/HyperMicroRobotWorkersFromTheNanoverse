@@ -84,8 +84,14 @@ public class HungerEffect implements NanobotEffect.NonStateful, NanobotEffect.Un
         }
         STATE_AWARE_TRANSFORM.put(block, stateMapper);
     }
+    private static final int COMPOSTER_MAX_LEVEL = 8;
     static {
-        registerTransformation(Blocks.COMPOSTER, state -> state.setValue(LEVEL, Math.max(state.getValue(LEVEL) - 1, 0)));
+        registerTransformation(Blocks.COMPOSTER, state -> {
+            if (state.getValue(LEVEL) == COMPOSTER_MAX_LEVEL)
+                // subtract two if its the max level, otherwise nothing changes
+                return state.setValue(LEVEL, COMPOSTER_MAX_LEVEL - 2);
+            return state.setValue(LEVEL, Math.max(state.getValue(LEVEL) - 1, 0));
+        });
     }
 
     @Override
