@@ -1,0 +1,23 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "GG",
+    "RR",
+    "CC"
+  ],
+  "key": {
+    "C": {
+      "item": "copper_ingot"
+    },
+    "G": {
+      "item": "glass"
+    },
+    "R": {
+      "item": "redstone"
+    }
+  },
+  "result": {
+    "id": "hmrw_nanoverse:ml",
+    "count": 2
+  }
+}

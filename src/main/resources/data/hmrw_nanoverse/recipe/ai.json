@@ -1,0 +1,23 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "III",
+    "ADA",
+    "III"
+  ],
+  "key": {
+    "D": {
+      "item": "diamond"
+    },
+    "A": {
+      "item": "quartz"
+    },
+    "I": {
+      "item": "iron_ingot"
+    }
+  },
+  "result": {
+    "id": "hmrw_nanoverse:ai",
+    "count": 2
+  }
+}

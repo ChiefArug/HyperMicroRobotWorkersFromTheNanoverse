@@ -88,6 +88,7 @@ public class HmrnvRegistries {
     public static final DeferredItem<Item> SLOP = ITEMS.registerSimpleItem("slop");
     public static final DeferredItem<Item> LLM = ITEMS.registerSimpleItem("llm");
     public static final DeferredItem<Item> AI = ITEMS.registerSimpleItem("ai");
+    public static final DeferredItem<Item> ML = ITEMS.registerSimpleItem("ml");
 
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<NanobotTableBlockEntity>> NANOBOT_TABLE_BE = BLOCK_ENTITY_TYPES.register("nanobot_table", () -> new BlockEntityType<>(NanobotTableBlockEntity::new, Set.of(NANOBOT_TABLE.get()), null));
     public static final DeferredHolder<CreativeModeTab, CreativeModeTab> TAB = TABS.register("tab", CreativeModeTab.builder()

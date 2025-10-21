@@ -1,6 +1,14 @@
 {
   "itemGroup.hmrw_nanoverse": "Hyper Micro Robot Workers From The Nanoverse",
   "item.hmrw_nanoverse.nanobot": "Nanobot",
+
+  // Note to translators: These are intended to be acronyms for common AI (Artificial Intelligence, specifically programs like ChatGPT)
+  // When translating try to keep this property, and it does not matter much what the actual translation is as long as the first letters of each word
+  // mean something related to AI.
   "block.hmrw_nanoverse.slag": "Simple Light Augmented Grains",
-  "block.hmrw_nanoverse.rich_slag": "Sophisticated Light Augmented Granules"
+  "block.hmrw_nanoverse.rich_slag": "Sophisticated Light Augmented Granules",
+  "item.hmrw_nanoverse.slop": "Sophisticated Light Operated Protobot",
+  "item.hmrw_nanoverse.llm": "Light Led Module",
+  "item.hmrw_nanoverse.ai": "Advanced Interactor",
+  "item.hmrw_nanoverse.ml": "Manipulatable Light"
 }

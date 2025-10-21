@@ -1,0 +1,26 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "PPP",
+    "AML",
+    "PPP"
+  ],
+  "key": {
+    "P": {
+      "item": "hmrw_nanoverse:slop"
+    },
+    "A": {
+      "item": "hmrw_nanoverse:ai"
+    },
+    "M": {
+      "item": "hmrw_nanoverse:ml"
+    },
+    "L": {
+      "item": "hmrw_nanoverse:llm"
+    }
+  },
+  "result": {
+    "id": "hmrw_nanoverse:nanobot",
+    "count": 2
+  }
+}
