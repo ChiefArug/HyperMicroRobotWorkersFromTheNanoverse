@@ -102,8 +102,8 @@ public final class NanobotSwarm {
                 if (existingLevel < level) {
                     if (existingLevel != 0)
                         effect.onRemove(host, level);
-                    newKeys[i++] = effect;
-                    newValues[i] = level;
+                    newKeys[i] = effect;
+                    newValues[i++] = level;
                 }
             }
 
