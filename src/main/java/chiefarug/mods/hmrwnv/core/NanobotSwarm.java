@@ -220,7 +220,7 @@ public final class NanobotSwarm {
         // reduce entries by those in exclusion
         for (Entry<NanobotEffect> entry : Object2IntMaps.fastIterable(exclusion.effects)) {
             effects.computeIntIfPresent(entry.getKey(), (e, i) -> {
-                int newValue = i + entry.getIntValue();
+                int newValue = i - entry.getIntValue();
                 if (newValue > 0) return newValue;
                 return null;
             });
