@@ -10,7 +10,6 @@ import it.unimi.dsi.fastutil.objects.Object2IntMap.Entry;
 import it.unimi.dsi.fastutil.objects.Object2IntMaps;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenCustomHashMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
-import it.unimi.dsi.fastutil.objects.ObjectIterator;
 import net.minecraft.SharedConstants;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
@@ -81,31 +80,38 @@ public final class NanobotSwarm {
         return swarm;
     }
 
-    /// Merge these effects into the host, swarming them if they are not already swarmed otherwise adding any effects that are a lower level
+    /// Merge these effects into the host, swarming them if they are not already swarmed otherwise adding any effects that are a higher level
     public static void mergeSwarm(IAttachmentHolder host, Object2IntMap<NanobotEffect> inEffects) {
-        Optional<NanobotSwarm> mayExist = host.getExistingData(SWARM);
-        if (mayExist.isPresent()) {
-            // copy map to ensure modifiability and make iteration faster
-            Object2IntArrayMap<NanobotEffect> effects = new Object2IntArrayMap<>(inEffects);
-            NanobotSwarm existing = mayExist.get();
+        Optional<NanobotSwarm> existing = host.getExistingData(SWARM);
+        if (existing.isPresent()) {
+            NanobotSwarm existingSwarm = existing.get();
 
-            // use iterator form as we need remove()
-            for (ObjectIterator<NanobotEffect> iterator = effects.keySet().iterator(); iterator.hasNext(); ) {
-                NanobotEffect effect = iterator.next();
-                existing.getEffectLevel(effect);
+            // these are used to build an array map
+            Object[] newKeys = new Object[inEffects.size()];
+            int[] newValues = new int[inEffects.size()];
+            int i = 0;
 
-                if (existing.hasEffect(effect)) {
-                    int level = existing.effects.getInt(effect);
-                    // filter out effects that are already the same or greater level
-                    if (level >= effects.getInt(effect))
-                        iterator.remove();
-                    else
+            // copy over the entries that are higher level
+            for (Entry<NanobotEffect> entry : Object2IntMaps.fastIterable(inEffects)) {
+                NanobotEffect effect = entry.getKey();
+                int level = entry.getIntValue();
+                int existingLevel = existingSwarm.getEffectLevel(effect).orElse(0);
+
+                // if the existing level is less the new level, add it to the arrays to merge in
+                // and if its not 0, run its remove trigger
+                if (existingLevel < level) {
+                    if (existingLevel != 0)
                         effect.onRemove(host, level);
+                    newKeys[i++] = effect;
+                    newValues[i] = level;
                 }
             }
-            existing.effects.putAll(effects);
 
-            forEachEffect(effects, host, NanobotEffect::onAdd);
+            Object2IntArrayMap<NanobotEffect> newEffects = new Object2IntArrayMap<>(newKeys, newValues, i);
+            existingSwarm.effects.putAll(newEffects);
+
+            forEachEffect(newEffects, host, NanobotEffect::onAdd);
+            existingSwarm.markDirty(host);
         } else {
             attachSwarm(host, inEffects);
         }
