@@ -35,12 +35,12 @@ import java.util.function.Supplier;
 
 import static chiefarug.mods.hmrwnv.HmrnvRegistries.SWARM;
 
-
+/// Represents a swarm of nanobots that is hosted on some object
 public final class NanobotSwarm {
     public static final Codec<NanobotSwarm> CODEC = RecordCodecBuilder.create(inst -> inst.group(
             // "effects": [{
             RecordCodecBuilder.<Entry<NanobotEffect>>create(inst1 -> inst1.group(
-                    //     "effect" NanobotEffect
+                    //     "effect" ResourceLocation[NanobotEffect]
                     NanobotEffect.CODEC.fieldOf("effect").forGetter(Entry::getKey),
                     //     "level" int
                     Codec.INT.fieldOf("level").forGetter(Entry::getIntValue)
