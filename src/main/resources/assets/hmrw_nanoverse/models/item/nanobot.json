@@ -1,6 +1,6 @@
 {
   "parent": "minecraft:item/generated",
   "textures": {
-    "layer0": "hfmrw_nanoverse:item/nanobot"
+    "layer0": "hmrw_nanoverse:item/nanobot"
   }
 }

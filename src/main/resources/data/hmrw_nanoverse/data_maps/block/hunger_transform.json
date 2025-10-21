@@ -42,8 +42,11 @@
     "pumpkin": "carved_pumpkin",
 
     //TODO: empty spawner cage, which can be broken/used for nanobot parts?
-    //TODO: turn ores into parts, and blocks of ore (and raw ore) into parts too
     "spawner": "iron_block",
+
+    // ores turn into slag
+    "#c:ores_in_ground/stone": "hmrw_nanoverse:slag",
+    "#c:ores_in_ground/deepslate": "hmrw_nanoverse:rich_slag",
 
     // only the head block gets replaced to avoid the entire thing breaking
     "weeping_vines": "air",

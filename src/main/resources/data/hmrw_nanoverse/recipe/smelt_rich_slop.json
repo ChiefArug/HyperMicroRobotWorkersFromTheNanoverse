@@ -1,0 +1,12 @@
+{
+  "type": "minecraft:smelting",
+  "ingredient": {
+    "item": "hmrw_nanoverse:rich_slag"
+  },
+  "result": {
+    "id": "hmrw_nanoverse:slop",
+    "count": 2
+  },
+  "experience": 0.8,
+  "cookingtime": 200
+}

@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:blasting",
+  "ingredient": {
+    "item": "hmrw_nanoverse:slag"
+  },
+  "result": {
+    "id": "hmrw_nanoverse:slop"
+  },
+  "experience": 0.25,
+  "cookingtime": 100
+}
