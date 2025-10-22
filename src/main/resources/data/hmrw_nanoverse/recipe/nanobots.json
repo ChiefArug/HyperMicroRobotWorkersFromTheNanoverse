@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "NNN",
+    "NNN",
+    "NNN"
+  ],
+  "key": {
+    "N": {
+      "item": "hmrw_nanoverse:nanobot"
+    }
+  },
+  "result": {
+    "id": "hmrw_nanoverse:nanobot",
+    "count": 6
+  }
+}

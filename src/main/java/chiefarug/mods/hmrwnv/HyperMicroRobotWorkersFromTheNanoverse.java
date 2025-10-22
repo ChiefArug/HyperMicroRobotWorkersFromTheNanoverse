@@ -3,7 +3,9 @@ package chiefarug.mods.hmrwnv;
 import chiefarug.mods.hmrwnv.core.NanobotSwarm;
 import chiefarug.mods.hmrwnv.core.effect.HungerEffect;
 import chiefarug.mods.hmrwnv.core.effect.NanobotEffect;
+import chiefarug.mods.hmrwnv.recipe.NanobotAddEffectRecipe;
 import com.mojang.logging.LogUtils;
+import com.mojang.serialization.Codec;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.objects.ObjectBidirectionalIterator;
 import net.minecraft.commands.CommandSourceStack;
@@ -50,6 +52,13 @@ import static net.minecraft.commands.Commands.literal;
 public class HyperMicroRobotWorkersFromTheNanoverse {
     public static final String MODID = "hmrw_nanoverse";
     public static final ResourceLocation MODRL = ResourceLocation.fromNamespaceAndPath(MODID, MODID);
+    public static final Codec<ResourceLocation> MODRL_CODEC = Codec.STRING
+            .xmap(location -> {
+                int index = location.indexOf(':');
+                if (index == -1) return MODRL.withPath(location);
+                return ResourceLocation.fromNamespaceAndPath(location.substring(0, index), location.substring(index));
+            }, ResourceLocation::toString)
+            .stable();
     public static final Logger LGGR = LogUtils.getLogger();
     @NotNull // Not null when it matters, ie after the server starts.
     @SuppressWarnings({"NullableProblems", "DataFlowIssue"})
@@ -58,6 +67,7 @@ public class HyperMicroRobotWorkersFromTheNanoverse {
     public HyperMicroRobotWorkersFromTheNanoverse(IEventBus modBus, ModContainer modContainer) {
         HmrnvRegistries.init(modBus);
         HungerEffect.init(modBus);
+        NanobotAddEffectRecipe.init(modBus);
         modContainer.registerConfig(ModConfig.Type.COMMON, HfmrnvConfig.SPEC);
     }
 

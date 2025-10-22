@@ -9,6 +9,7 @@ import chiefarug.mods.hmrwnv.core.effect.RavenousEffect;
 import chiefarug.mods.hmrwnv.core.effect.SafeRavenousEffect;
 import chiefarug.mods.hmrwnv.core.effect.SpreadEffect;
 import chiefarug.mods.hmrwnv.item.NanobotItem;
+import chiefarug.mods.hmrwnv.recipe.NanobotAddEffectRecipe;
 import com.mojang.serialization.Codec;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
@@ -27,6 +28,7 @@ import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BlockEntityType;
@@ -61,10 +63,8 @@ public class HmrnvRegistries {
             .sync(true)
             .create();
     private static final DeferredRegister<NanobotEffect> NANOBOT_EFFECTS = DeferredRegister.create(EFFECT, MODID);
-//TODO: SLOP SLOP SLOP Sophisticated Light Operated Protobots
-//    https://discord.com/channels/303440391124942858/303440391124942858/1429469143127560334
-//      make recording snippets of the end poem that play in nanobot clouds
-//      microcrafting?: Light Led Machine, Advanced Interactor, Meticulous
+    private static final DeferredRegister<RecipeSerializer<?>> RECIPE_SERIALIZERS = DeferredRegister.create(Registries.RECIPE_SERIALIZER, MODID);
+// TODO:?make recording snippets of the end poem that play in nanobot clouds
 
     public static final DeferredHolder<NanobotEffect, AttributeEffect> MAX_HEALTH = NANOBOT_EFFECTS.register("attribute", () -> new AttributeEffect(Attributes.MAX_HEALTH, MODRL.withPath("max_health"), 1, AttributeModifier.Operation.ADD_VALUE, 1));
     public static final DeferredHolder<NanobotEffect, HungerEffect> HUNGER = NANOBOT_EFFECTS.register("hunger", HungerEffect::new);
@@ -84,11 +84,14 @@ public class HmrnvRegistries {
     public static final DeferredBlock<Block> RICH_SLAG = BLOCKS.registerSimpleBlock("rich_slag", BlockBehaviour.Properties.ofFullCopy(Blocks.IRON_BLOCK));
            static {ITEMS.registerSimpleBlockItem(RICH_SLAG);}
 
-    public static final DeferredItem<NanobotItem> NANOBOT = ITEMS.register("nanobot", () -> new NanobotItem(new Item.Properties()));
+    public static final DeferredItem<Item> NANOBOT = ITEMS.registerSimpleItem("nanobot");
     public static final DeferredItem<Item> SLOP = ITEMS.registerSimpleItem("slop");
     public static final DeferredItem<Item> LLM = ITEMS.registerSimpleItem("llm");
     public static final DeferredItem<Item> AI = ITEMS.registerSimpleItem("ai");
     public static final DeferredItem<Item> ML = ITEMS.registerSimpleItem("ml");
+    public static final DeferredItem<NanobotItem> NANOBOTS = ITEMS.registerItem("nanobots", NanobotItem::new);
+
+    public static final DeferredHolder<RecipeSerializer<?>, RecipeSerializer<NanobotAddEffectRecipe>> ADD_EFFECT_RECIPE = RECIPE_SERIALIZERS.register("add_effect_recipe", () -> NanobotAddEffectRecipe.SERIALIZER);
 
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<NanobotTableBlockEntity>> NANOBOT_TABLE_BE = BLOCK_ENTITY_TYPES.register("nanobot_table", () -> new BlockEntityType<>(NanobotTableBlockEntity::new, Set.of(NANOBOT_TABLE.get()), null));
     public static final DeferredHolder<CreativeModeTab, CreativeModeTab> TAB = TABS.register("tab", CreativeModeTab.builder()

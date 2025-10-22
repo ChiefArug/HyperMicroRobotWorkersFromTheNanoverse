@@ -127,6 +127,10 @@ public final class NanobotSwarm {
         host.removeData(SWARM);
     }
 
+    public static NanobotSwarm createLooseSwarm(Object2IntMap<NanobotEffect> effects) {
+        return new NanobotSwarm(effects);
+    }
+
     /// Add or updates a single effect to this swarm with the specified level.
     public void addEffect(IAttachmentHolder host, NanobotEffect effect, int level) {
         effects.put(effect, level);

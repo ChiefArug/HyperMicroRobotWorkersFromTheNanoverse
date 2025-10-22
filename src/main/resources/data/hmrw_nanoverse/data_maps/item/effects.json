@@ -1,0 +1,7 @@
+{
+  "values": {
+    "hmrw_nanoverse:slag": "hunger",
+    "hmrw_nanoverse:rich_slag": "hunger",
+    "hmrw_nanoverse:slop": "safe_ravenous"
+  }
+}
