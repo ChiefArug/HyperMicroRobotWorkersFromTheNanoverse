@@ -30,7 +30,7 @@ public class SpreadEffect implements NanobotEffect.NonStateful, NanobotEffect.Un
     public void onTick(IAttachmentHolder host, int effectLevel) {
         if (host instanceof Entity entity) {
             Level level = entity.level();
-            if (level.getRandom().nextDouble() > HfmrnvConfig.ENTITY_SPREAD_CHANCE.get()) {
+            if (level.getRandom().nextDouble() > Math.pow(HfmrnvConfig.ENTITY_SPREAD_CHANCE.get(), effectLevel)) {
 
                 List<Entity> targets = level.getEntities(entity, entity.getBoundingBox().inflate(HfmrnvConfig.ENTITY_SPREAD_DISTANCE.get()));
                 for (var target : targets) {
@@ -39,14 +39,14 @@ public class SpreadEffect implements NanobotEffect.NonStateful, NanobotEffect.Un
 
             }
         } else if (host instanceof LevelChunk chunk && chunk.getLevel() instanceof ServerLevel level) {
-            if (level.getRandom().nextDouble() >= HfmrnvConfig.ENTITY_SPREAD_CHANCE.get()) {
+            if (level.getRandom().nextDouble() >= Math.pow(HfmrnvConfig.ENTITY_SPREAD_CHANCE.get(), effectLevel)) {
                 level.entityManager.sectionStorage.getExistingSectionPositionsInChunk(chunk.getPos().toLong())
                         .mapToObj(level.entityManager.sectionStorage::getSection)
                         .filter(Objects::nonNull)
                         .flatMap(EntitySection::getEntities)
                         .forEach(target -> infect(host, level, target, HfmrnvConfig.ENTITY_SPREAD_EXPOSURES));
             }
-            if (level.getRandom().nextDouble() > HfmrnvConfig.CHUNK_SPREAD_CHANCE.get()) {
+            if (level.getRandom().nextDouble() > Math.pow(HfmrnvConfig.CHUNK_SPREAD_CHANCE.get(), effectLevel)) {
                 Direction direction = Direction.values()[level.getRandom().nextInt(2, 6)];
                 ChunkPos pos = chunk.getPos();
                 LevelChunk target = level.getChunk(pos.x + direction.getStepX(), pos.z + direction.getStepZ());
