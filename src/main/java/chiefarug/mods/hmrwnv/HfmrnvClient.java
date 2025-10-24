@@ -1,10 +1,16 @@
 package chiefarug.mods.hmrwnv;
 
+import chiefarug.mods.hmrwnv.core.NanobotSwarm;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.blockentity.BeaconRenderer;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.DyeColor;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.api.distmarker.Dist;
@@ -17,8 +23,12 @@ import net.neoforged.neoforge.client.gui.ConfigurationScreen;
 import net.neoforged.neoforge.client.gui.IConfigScreenFactory;
 
 import java.util.Objects;
+import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReferenceArray;
 
+import static chiefarug.mods.hmrwnv.HmrnvRegistries.BOT_VISION;
+import static chiefarug.mods.hmrwnv.HmrnvRegistries.BOT_VISION_EFFECT;
+import static chiefarug.mods.hmrwnv.HmrnvRegistries.BOT_VISION_ITEM;
 import static chiefarug.mods.hmrwnv.HmrnvRegistries.INFECTION;
 import static chiefarug.mods.hmrwnv.HmrnvRegistries.SWARM;
 import static chiefarug.mods.hmrwnv.HyperMicroRobotWorkersFromTheNanoverse.MODID;
@@ -35,17 +45,25 @@ public class HfmrnvClient {
     @SubscribeEvent
     private static void onRender(RenderLevelStageEvent event) {
         if (event.getStage() != AFTER_BLOCK_ENTITIES) return;
-        if (Minecraft.getInstance().options.hideGui) return;
+        Minecraft mc = Minecraft.getInstance();
+        if (mc.player == null) return;
+        ItemStack helmet = mc.player.getItemBySlot(EquipmentSlot.HEAD);
+        Optional<NanobotSwarm> swarm = mc.player.getExistingData(SWARM);
+        if (!( // three ways to get bot vision
+                helmet.is(BOT_VISION_ITEM) ||
+                helmet.canPerformAction(BOT_VISION) ||
+                swarm.isPresent() && swarm.get().hasEffect(BOT_VISION_EFFECT)
+        )) return;
+
         PoseStack pose = event.getPoseStack();
         pose.pushPose();
         {
-            Vec3 projectedView  = event.getCamera().getPosition();
+            Vec3 projectedView = event.getCamera().getPosition();
             pose.translate(-projectedView.x, -projectedView.y, -projectedView.z);
 
-            var bufferSource    = Minecraft.getInstance().renderBuffers().bufferSource();
-            var partialTick     = event.getPartialTick().getGameTimeDeltaPartialTick(true);
-            var color           = DyeColor.CYAN.getTextureDiffuseColor();
-            var level           = Objects.requireNonNull(Minecraft.getInstance().level);
+            var bufferSource = mc.renderBuffers().bufferSource();
+            var partialTick  = event.getPartialTick().getGameTimeDeltaPartialTick(true);
+            var level        = Objects.requireNonNull(mc.level);
 
 
             AtomicReferenceArray<LevelChunk> iter = level.getChunkSource().storage.chunks;
@@ -55,34 +73,34 @@ public class HfmrnvClient {
                 if (next.hasData(SWARM)) {
                     float baseX = next.getPos().getMiddleBlockX() + 0.5f;
                     float baseZ = next.getPos().getMiddleBlockZ() + 0.5f;
-                    pose.pushPose();
-                    pose.translate(baseX, level.getMinBuildHeight(), baseZ);
-                    BeaconRenderer.renderBeaconBeam(pose, bufferSource, BEAM_LOCATION, partialTick, 1, level.getGameTime(), 0, level.getHeight(), color, 0.2F, 0.25F);
-                    pose.popPose();
+                    renderBeam(pose, baseX, level.getMinBuildHeight(), baseZ, level.getHeight(), bufferSource, partialTick, level, DyeColor.CYAN.getTextureDiffuseColor());
                 }
             }
 
-            for (Entity entity : Minecraft.getInstance().level.entitiesForRendering()) {
+            for (Entity entity : mc.level.entitiesForRendering()) {
+                if (!(entity instanceof LivingEntity)) continue;
                 if (entity.hasData(SWARM)) {
-                    color = DyeColor.RED.getTextureDiffuseColor();
-                    pose.pushPose();
                     Vec3 pos = entity.getPosition(partialTick);
-                    pose.translate(pos.x, pos.y, pos.z);
-                    BeaconRenderer.renderBeaconBeam(pose, bufferSource, BEAM_LOCATION, partialTick, 1, level.getGameTime(), 0, 3, color, 0.2F, 0.25F);
-                    pose.popPose();
+                    renderBeam(pose, pos.x, pos.y, pos.z, 3, bufferSource, partialTick, level, DyeColor.RED.getTextureDiffuseColor());
+
                 } else if (entity.hasData(INFECTION)) {
-                    color = DyeColor.BROWN.getTextureDiffuseColor();
-                    pose.pushPose();
                     Vec3 pos = entity.getPosition(partialTick);
-                    pose.translate(pos.x, pos.y, pos.z);
-                    BeaconRenderer.renderBeaconBeam(pose, bufferSource, BEAM_LOCATION, partialTick, 1, level.getGameTime(), 0, 3, color, 0.2F, 0.25F);
-                    pose.popPose();
+                    renderBeam(pose, pos.x, pos.y, pos.z, 3, bufferSource, partialTick, level, DyeColor.BROWN.getTextureDiffuseColor());
                 }
             }
 
         }
         pose.popPose();
 
+    }
 
+    // TODO: we probably want something slightly more interesting that a beacon beam
+    private static void renderBeam(PoseStack pose, double x, double y, double z, int height, MultiBufferSource.BufferSource bufferSource, float partialTick, ClientLevel level, int color) {
+        pose.pushPose();
+        {
+            pose.translate(x, y, z);
+            BeaconRenderer.renderBeaconBeam(pose, bufferSource, BEAM_LOCATION, partialTick, 1, level.getGameTime(), 0, height, color, 0.2F, 0.25F);
+        }
+        pose.popPose();
     }
 }

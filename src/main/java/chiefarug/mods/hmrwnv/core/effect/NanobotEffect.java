@@ -8,7 +8,7 @@ import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.tags.TagKey;
-import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.chunk.ChunkAccess;
 import net.neoforged.neoforge.attachment.IAttachmentHolder;
@@ -44,7 +44,7 @@ public interface NanobotEffect {
     static int getTickRate(IAttachmentHolder host) {
         return switch (host) {
             case Player ignored -> HfmrnvConfig.PLAYER_SLOW_DOWN_FACTOR.getAsInt();
-            case Entity ignored -> HfmrnvConfig.ENTITY_SLOW_DOWN_FACTOR.getAsInt();
+            case LivingEntity ignored -> HfmrnvConfig.ENTITY_SLOW_DOWN_FACTOR.getAsInt();
             case ChunkAccess ignored -> HfmrnvConfig.CHUNK_SLOW_DOWN_FACTOR.getAsInt();
             default -> throw new IllegalArgumentException("Unknown host class " + host.getClass());
         };

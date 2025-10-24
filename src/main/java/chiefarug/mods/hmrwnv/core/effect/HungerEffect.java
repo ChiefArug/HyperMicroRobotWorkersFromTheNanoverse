@@ -116,7 +116,7 @@ public class HungerEffect implements NanobotEffect.NonStateful, NanobotEffect.Un
                         if (canTransform(state, pos, level)) {
                             BlockState newState = transform(state);
                             if (state != newState)
-                                level.setBlock(pos, newState, Block.UPDATE_ALL);
+                                level.setBlock(pos, newState, Block.UPDATE_CLIENTS);
                         }
                     }
                 }

@@ -8,6 +8,7 @@ import chiefarug.mods.hmrwnv.core.effect.NanobotEffect;
 import chiefarug.mods.hmrwnv.core.effect.RavenousEffect;
 import chiefarug.mods.hmrwnv.core.effect.SafeRavenousEffect;
 import chiefarug.mods.hmrwnv.core.effect.SpreadEffect;
+import chiefarug.mods.hmrwnv.item.GogglesItem;
 import chiefarug.mods.hmrwnv.item.NanobotItem;
 import chiefarug.mods.hmrwnv.recipe.NanobotAddEffectRecipe;
 import com.mojang.serialization.Codec;
@@ -36,6 +37,7 @@ import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.material.MapColor;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.attachment.AttachmentType;
+import net.neoforged.neoforge.common.ItemAbility;
 import net.neoforged.neoforge.registries.DeferredBlock;
 import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredItem;
@@ -74,6 +76,9 @@ public class HmrnvRegistries {
     public static final DeferredHolder<NanobotEffect, NanobotEffect.Static> SWARM_DEFENCE = NANOBOT_EFFECTS.register("swarm_defence", () -> new NanobotEffect.Static(1));
     public static final DeferredHolder<NanobotEffect, NanobotEffect.Static> WILD = NANOBOT_EFFECTS.register("wild", () -> new NanobotEffect.Static(i -> -(i * i)));
 
+    public static final TagKey<Item> BOT_VISION_ITEM = ITEMS.createTagKey("nanobot_vision");
+    public static final TagKey<NanobotEffect> BOT_VISION_EFFECT = NANOBOT_EFFECTS.createTagKey("nanobot_vision");
+    public static final ItemAbility BOT_VISION = ItemAbility.get("hmrw_nanoverse:bot_vision");
     public static final TagKey<Block> RAVENOUS_BLACKLIST = BLOCKS.createTagKey("ravenous_blacklist");
     public static final TagKey<NanobotEffect> PREVENTS_RANDOM_TICKS = NANOBOT_EFFECTS.createTagKey("prevents_random_ticks");
     public static final TagKey<NanobotEffect> PROTECTS_AGAINST_SPREAD = NANOBOT_EFFECTS.createTagKey("protects_against_spread");
@@ -91,6 +96,7 @@ public class HmrnvRegistries {
     public static final DeferredItem<Item> AI = ITEMS.registerSimpleItem("ai");
     public static final DeferredItem<Item> ML = ITEMS.registerSimpleItem("ml");
     public static final DeferredItem<NanobotItem> NANOBOTS = ITEMS.registerItem("nanobots", NanobotItem::new);
+    public static final DeferredItem<GogglesItem> NANOBOT_GOGGLES = ITEMS.registerItem("nanobot_goggles", GogglesItem::new, new Item.Properties().stacksTo(1));
 
     public static final DeferredHolder<RecipeSerializer<?>, RecipeSerializer<NanobotAddEffectRecipe>> ADD_EFFECT_RECIPE = RECIPE_SERIALIZERS.register("add_effect_recipe", () -> NanobotAddEffectRecipe.SERIALIZER);
 
