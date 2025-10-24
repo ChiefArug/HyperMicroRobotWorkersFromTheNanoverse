@@ -18,6 +18,7 @@
     "fern": "dead_bush",
     "large_fern": "air",
     "short_grass": "dead_bush",
+    "tall_grass": "air",
     "vine": "air",
     "lily_pad": "air",
     "cocoa": "air",
@@ -40,6 +41,8 @@
     "bamboo": "air",
 
     "pumpkin": "carved_pumpkin",
+    "carved_pumpkin": "air",
+    "melon": "air",
 
     //TODO: empty spawner cage, which can be broken/used for nanobot parts?
     "spawner": "iron_block",

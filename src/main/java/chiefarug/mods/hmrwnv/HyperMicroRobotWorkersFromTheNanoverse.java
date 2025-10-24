@@ -173,6 +173,8 @@ public class HyperMicroRobotWorkersFromTheNanoverse {
         }
     }
 
+    //TODO: infect on spawn entities in an entity tag
+
 
     private static Map<NanobotEffect, Integer> generateSpawnSwarmEffects(RandomSource random) {
         return Map.of(
