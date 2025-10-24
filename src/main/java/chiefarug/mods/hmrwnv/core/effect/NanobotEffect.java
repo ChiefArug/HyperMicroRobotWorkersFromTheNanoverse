@@ -73,8 +73,8 @@ public interface NanobotEffect {
     }
 
     /// Helper record for effects that are implemented elsewhere (ie a mixin) so don't need overrides of any methods.
-    record None(IntUnaryOperator levelToPower) implements Unit, NonStateful, NonTicking {
-        public None(int powerPerLevel) { this(i -> i * powerPerLevel); }
+    record Static(IntUnaryOperator levelToPower) implements Unit, NonStateful, NonTicking {
+        public Static(int powerPerLevel) { this(i -> i * powerPerLevel); }
 
         @Override
         public int getRequiredPower(int level) {

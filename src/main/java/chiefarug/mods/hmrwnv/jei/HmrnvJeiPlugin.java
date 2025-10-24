@@ -8,19 +8,21 @@ import mezz.jei.api.JeiPlugin;
 import mezz.jei.api.constants.RecipeTypes;
 import mezz.jei.api.constants.VanillaTypes;
 import mezz.jei.api.ingredients.ITypedIngredient;
-import mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe;
 import mezz.jei.api.registration.IModInfoRegistration;
 import mezz.jei.api.registration.IRecipeCategoryRegistration;
 import mezz.jei.api.registration.IRecipeRegistration;
 import mezz.jei.api.runtime.IIngredientManager;
+import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.FormattedText;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
-import org.jetbrains.annotations.Unmodifiable;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 
 import static chiefarug.mods.hmrwnv.HyperMicroRobotWorkersFromTheNanoverse.MODID;
 import static chiefarug.mods.hmrwnv.HyperMicroRobotWorkersFromTheNanoverse.MODRL;
@@ -46,25 +48,25 @@ public class HmrnvJeiPlugin implements IModPlugin {
     @Override
     public void registerRecipes(IRecipeRegistration registration) {
         IIngredientManager ingredients = registration.getIngredientManager();
-        List<IJeiIngredientInfoRecipe> list = new ArrayList<>();
-        for (ItemStack stack : registration.getJeiHelpers().getIngredientManager().getAllIngredients(VanillaTypes.ITEM_STACK)) {
-            NanobotEffect effect = NanobotAddEffectRecipe.getEffect(stack.getItem());
+        Map<NanobotEffect, List<ITypedIngredient<ItemStack>>> effectsToIngredients = new HashMap<>();
+        for (ItemStack itemStack : registration.getJeiHelpers().getIngredientManager().getAllIngredients(VanillaTypes.ITEM_STACK)) {
+            NanobotEffect effect = NanobotAddEffectRecipe.getEffect(itemStack.getItem());
             if (effect != null) {
-                list.add(new IJeiIngredientInfoRecipe() {
-                    @SuppressWarnings("OptionalGetWithoutIsPresent") // safe
-                    @Override
-                    public @Unmodifiable List<ITypedIngredient<?>> getIngredients() {
-                        return List.of(ingredients.createTypedIngredient(stack).get());
-                    }
-
-                    @SuppressWarnings("DataFlowIssue")
-                    @Override
-                    public @Unmodifiable List<FormattedText> getDescription() {
-                        return List.of(Component.translatable(HmrnvRegistries.EFFECT.getKey(effect).toLanguageKey(HmrnvRegistries.EFFECT.key().location().getPath())));
-                    }
-                });
+                //noinspection OptionalGetWithoutIsPresent // This is safe as we get it from a list of all ingredients
+                effectsToIngredients.computeIfAbsent(effect, (k) -> new ArrayList<>())
+                        .add(ingredients.createTypedIngredient(VanillaTypes.ITEM_STACK, itemStack).get());
             }
         }
+
+        List<NanobotEffectInfo.InfoRecipe> list = new ArrayList<>(effectsToIngredients.size());
+        for (Map.Entry<NanobotEffect, List<ITypedIngredient<ItemStack>>> entry : effectsToIngredients.entrySet()) {
+            ResourceLocation key = Objects.requireNonNull(HmrnvRegistries.EFFECT.getKey(entry.getKey()));
+            List<FormattedText> description = List.of(
+                    Component.translatable(key.toLanguageKey(HmrnvRegistries.EFFECT.key().location().getPath())).withStyle(ChatFormatting.BOLD, ChatFormatting.UNDERLINE),
+                    Component.translatable(key.toLanguageKey(HmrnvRegistries.EFFECT.key().location().getPath()) + ".description")
+            );
+            list.add(new NanobotEffectInfo.InfoRecipe(entry.getValue(), description));
+        };
         registration.addRecipes(NanobotEffectInfo.TYPE, list);
         registration.addRecipes(RecipeTypes.CRAFTING, List.of());
     }

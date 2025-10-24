@@ -71,7 +71,8 @@ public class HmrnvRegistries {
     public static final DeferredHolder<NanobotEffect, RavenousEffect> RAVENOUS = NANOBOT_EFFECTS.register("ravenous", RavenousEffect::new);
     public static final DeferredHolder<NanobotEffect, SafeRavenousEffect> SAFE_RAVENOUS = NANOBOT_EFFECTS.register("safe_ravenous", SafeRavenousEffect::new);
     public static final DeferredHolder<NanobotEffect, SpreadEffect> SPREAD = NANOBOT_EFFECTS.register("spread", SpreadEffect::new);
-    public static final DeferredHolder<NanobotEffect, NanobotEffect.None> SWARM_DEFENCE = NANOBOT_EFFECTS.register("swarm_defence", () -> new NanobotEffect.None(1));
+    public static final DeferredHolder<NanobotEffect, NanobotEffect.Static> SWARM_DEFENCE = NANOBOT_EFFECTS.register("swarm_defence", () -> new NanobotEffect.Static(1));
+    public static final DeferredHolder<NanobotEffect, NanobotEffect.Static> WILD = NANOBOT_EFFECTS.register("wild", () -> new NanobotEffect.Static(i -> -(i * i)));
 
     public static final TagKey<Block> RAVENOUS_BLACKLIST = BLOCKS.createTagKey("ravenous_blacklist");
     public static final TagKey<NanobotEffect> PREVENTS_RANDOM_TICKS = NANOBOT_EFFECTS.createTagKey("prevents_random_ticks");

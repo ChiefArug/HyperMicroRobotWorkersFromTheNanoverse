@@ -4,7 +4,7 @@
   "item.hmrw_nanoverse.nanobot": "Nanobot",
   "item.hmrw_nanoverse.nanobots": "Nanobot Swarm",
 
-  // Note to translators: These are intended to be acronyms for common AI (Artificial Intelligence, specifically programs like ChatGPT)
+  // Note to translators: These are intended to be acronyms for common AI (Artificial Intelligence, specifically programs like ChatGPT) related words
   // When translating try to keep this property, and it does not matter much what the actual translation is as long as the first letters of each word
   // mean something related to AI.
   "block.hmrw_nanoverse.slag": "Simple Light Augmented Grains",
@@ -14,7 +14,13 @@
   "item.hmrw_nanoverse.ai": "Advanced Interactor",
   "item.hmrw_nanoverse.ml": "Manipulatable Light",
 
-  "effect.hmrw_nanoverse.hunger": "Consumes nutrients from its host to provide a moderate amount of resources",
-  "effect.hmrw_nanoverse.ravenous": "Consumes everything from its host to provide more resources. A wild variant that will destroy most blocks",
-  "effect.hmrw_nanoverse.safe_ravenous": "Consumes everything from its host to provide more resources. This variant has been tamed slightly and will not destroy functional blocks"
+
+  "effect.hmrw_nanoverse.wild": "Wild",
+  "effect.hmrw_nanoverse.wild.description": "This swarm runs wild and as such as abnormal amounts of power",
+  "effect.hmrw_nanoverse.hunger": "Hunger",
+  "effect.hmrw_nanoverse.hunger.description": "Consumes nutrients from its host to provide a moderate amount of resources",
+  "effect.hmrw_nanoverse.ravenous": "Ravenous",
+  "effect.hmrw_nanoverse.ravenous.description": "Consumes everything from its host to provide more resources. A wild variant that will destroy most blocks",
+  "effect.hmrw_nanoverse.safe_ravenous": "Ravenous",
+  "effect.hmrw_nanoverse.safe_ravenous.description": "Consumes everything from its host to provide more resources. This variant has been tamed slightly and will not destroy functional blocks"
 }
