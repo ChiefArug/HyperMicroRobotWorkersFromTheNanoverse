@@ -16,7 +16,7 @@ import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.tags.TagKey;
 import net.minecraft.util.RandomSource;
-import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.chunk.ChunkAccess;
 import net.neoforged.neoforge.attachment.IAttachmentHolder;
@@ -64,7 +64,7 @@ public final class NanobotSwarm {
         if (SharedConstants.IS_RUNNING_IN_IDE) {
             switch (host) {
                 case Player ignored -> {}
-                case Entity ignored -> {}
+                case LivingEntity ignored -> {}
                 case ChunkAccess ignored -> {}
                 default -> throw new IllegalArgumentException("Attaching swarm to unknown host type: " + host.getClass());
             }

@@ -17,6 +17,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.chunk.ChunkAccess;
 import net.minecraft.world.level.chunk.LevelChunk;
@@ -130,7 +131,7 @@ public class HyperMicroRobotWorkersFromTheNanoverse {
     @SubscribeEvent
     private static void tickEntitySwarms(EntityTickEvent.Pre event) {
         Entity e = event.getEntity();
-        if (!(e.level() instanceof ServerLevel sl) || !e.hasData(SWARM)) return;
+        if (!(e.level() instanceof ServerLevel sl) || !e.hasData(SWARM) || !(e instanceof LivingEntity)) return;
         int slowDown = ENTITY_SLOW_DOWN_FACTOR.getAsInt();
         int tick = (int) (sl.getGameTime() % slowDown);
         // evenly distribute ticks based on uuid

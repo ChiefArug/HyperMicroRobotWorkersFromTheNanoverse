@@ -9,6 +9,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.chunk.LevelChunk;
@@ -28,13 +29,14 @@ public class SpreadEffect implements NanobotEffect.NonStateful, NanobotEffect.Un
 
     @Override
     public void onTick(IAttachmentHolder host, int effectLevel) {
-        if (host instanceof Entity entity) {
+        if (host instanceof LivingEntity entity) {
             Level level = entity.level();
             if (level.getRandom().nextDouble() > Math.pow(HfmrnvConfig.ENTITY_SPREAD_CHANCE.get(), effectLevel)) {
 
                 List<Entity> targets = level.getEntities(entity, entity.getBoundingBox().inflate(HfmrnvConfig.ENTITY_SPREAD_DISTANCE.get()));
-                for (var target : targets) {
-                    infect(host, level, target, HfmrnvConfig.ENTITY_SPREAD_EXPOSURES);
+                for (Entity target : targets) {
+                    if (target instanceof LivingEntity)
+                        infect(host, level, target, HfmrnvConfig.ENTITY_SPREAD_EXPOSURES);
                 }
 
             }
@@ -44,6 +46,7 @@ public class SpreadEffect implements NanobotEffect.NonStateful, NanobotEffect.Un
                         .mapToObj(level.entityManager.sectionStorage::getSection)
                         .filter(Objects::nonNull)
                         .flatMap(EntitySection::getEntities)
+                        .filter(LivingEntity.class::isInstance)
                         .forEach(target -> infect(host, level, target, HfmrnvConfig.ENTITY_SPREAD_EXPOSURES));
             }
             if (level.getRandom().nextDouble() > Math.pow(HfmrnvConfig.CHUNK_SPREAD_CHANCE.get(), effectLevel)) {
