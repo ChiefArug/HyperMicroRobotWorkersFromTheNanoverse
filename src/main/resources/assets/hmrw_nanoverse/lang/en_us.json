@@ -9,11 +9,17 @@
   // When translating try to keep this property, and it does not matter much what the actual translation is as long as the first letters of each word
   // mean something related to AI.
   "block.hmrw_nanoverse.slag": "Simple Light Augmented Grains",
+  "block.hmrw_nanoverse.slag.acronym": "SLAG",
   "block.hmrw_nanoverse.rich_slag": "Sophisticated Light Augmented Granules",
+  "block.hmrw_nanoverse.rich_slag.acronym": "SLAG",
   "item.hmrw_nanoverse.slop": "Sophisticated Light Operated Protobot",
+  "item.hmrw_nanoverse.slop.acronym": "SLOP",
   "item.hmrw_nanoverse.llm": "Light Led Module",
+  "item.hmrw_nanoverse.llm.acronym": "LLM",
   "item.hmrw_nanoverse.ai": "Advanced Interactor",
+  "item.hmrw_nanoverse.ai.acronym": "AI",
   "item.hmrw_nanoverse.ml": "Manipulatable Light",
+  "item.hmrw_nanoverse.ml.acronym": "ML",
 
 
   "effect.hmrw_nanoverse.wild": "Wild",
@@ -23,5 +29,30 @@
   "effect.hmrw_nanoverse.ravenous": "Ravenous",
   "effect.hmrw_nanoverse.ravenous.description": "Consumes everything from its host to provide more resources. A wild variant that will destroy most blocks",
   "effect.hmrw_nanoverse.safe_ravenous": "Ravenous",
-  "effect.hmrw_nanoverse.safe_ravenous.description": "Consumes everything from its host to provide more resources. This variant has been tamed slightly and will not destroy functional blocks"
+  "effect.hmrw_nanoverse.safe_ravenous.description": "Consumes everything from its host to provide more resources. This variant has been tamed slightly and will not destroy functional blocks",
+
+  // %1$s is the effect name, %2$s is the effect level.
+  "hmrw_nanoverse.effect_level.formatting": "%1$s %2$s",
+  "hmrw_nanoverse.effect_level.1": "I",
+  "hmrw_nanoverse.effect_level.2": "II",
+  "hmrw_nanoverse.effect_level.3": "III",
+  "hmrw_nanoverse.effect_level.4": "IV",
+  "hmrw_nanoverse.effect_level.5": "V",
+  "hmrw_nanoverse.effect_level.6": "VI",
+  "hmrw_nanoverse.effect_level.7": "VII",
+  "hmrw_nanoverse.effect_level.8": "VIII",
+  "hmrw_nanoverse.effect_level.9": "IX",
+  "hmrw_nanoverse.effect_level.10": "X",
+  "hmrw_nanoverse.effect_level.11": "XI",
+  "hmrw_nanoverse.effect_level.12": "XII",
+  "hmrw_nanoverse.effect_level.13": "XIII",
+  "hmrw_nanoverse.effect_level.14": "XIV",
+  "hmrw_nanoverse.effect_level.15": "XV",
+  "hmrw_nanoverse.effect_level.16": "XVI",
+  "hmrw_nanoverse.effect_level.17": "XVII",
+  "hmrw_nanoverse.effect_level.18": "XVIII",
+  "hmrw_nanoverse.effect_level.19": "XIX",
+  "hmrw_nanoverse.effect_level.20": "XX",
+
+  "hmrw_nanoverse.jei.nanobots_output.description": "Effects depend on input. see Effect Information JEI Tab."
 }

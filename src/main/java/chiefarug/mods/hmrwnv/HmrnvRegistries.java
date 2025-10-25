@@ -46,12 +46,15 @@ import net.neoforged.neoforge.registries.NeoForgeRegistries;
 import net.neoforged.neoforge.registries.NewRegistryEvent;
 import net.neoforged.neoforge.registries.RegistryBuilder;
 
+import java.util.Collection;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
 import static chiefarug.mods.hmrwnv.HyperMicroRobotWorkersFromTheNanoverse.MODID;
 import static chiefarug.mods.hmrwnv.HyperMicroRobotWorkersFromTheNanoverse.MODRL;
+import static chiefarug.mods.hmrwnv.core.NanobotSwarm.EFFECTS_CODEC;
+import static chiefarug.mods.hmrwnv.core.NanobotSwarm.EFFECTS_STREAM_CODEC;
 
 @SuppressWarnings("unused")
 public class HmrnvRegistries {
@@ -98,13 +101,13 @@ public class HmrnvRegistries {
     public static final DeferredItem<NanobotItem> NANOBOTS = ITEMS.registerItem("nanobots", NanobotItem::new);
     public static final DeferredItem<GogglesItem> NANOBOT_GOGGLES = ITEMS.registerItem("nanobot_goggles", GogglesItem::new, new Item.Properties().stacksTo(1));
 
-    public static final DeferredHolder<RecipeSerializer<?>, RecipeSerializer<NanobotAddEffectRecipe>> ADD_EFFECT_RECIPE = RECIPE_SERIALIZERS.register("add_effect_recipe", () -> NanobotAddEffectRecipe.SERIALIZER);
+    public static final DeferredHolder<RecipeSerializer<?>, RecipeSerializer<NanobotAddEffectRecipe>> ADD_EFFECT_RECIPE = RECIPE_SERIALIZERS.register("add_effect", () -> NanobotAddEffectRecipe.INSTANCE);
 
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<NanobotTableBlockEntity>> NANOBOT_TABLE_BE = BLOCK_ENTITY_TYPES.register("nanobot_table", () -> new BlockEntityType<>(NanobotTableBlockEntity::new, Set.of(NANOBOT_TABLE.get()), null));
     public static final DeferredHolder<CreativeModeTab, CreativeModeTab> TAB = TABS.register("tab", CreativeModeTab.builder()
             .title(Component.translatable("itemGroup.hmrw_nanoverse"))
             .icon(() -> NANOBOT.asItem().getDefaultInstance())
-            .displayItems(ITEMS.getEntries())
+            .displayItems(HmrnvRegistries.getAllItems())
             ::build);
 
     public static final DeferredHolder<AttachmentType<?>, AttachmentType<Object2IntMap<ResourceLocation>>> INFECTION = DATA_ATTACHMENTS.register("infection",
@@ -113,38 +116,30 @@ public class HmrnvRegistries {
                     .sync(ByteBufCodecs.map(Object2IntOpenHashMap::new, ResourceLocation.STREAM_CODEC, ByteBufCodecs.INT))
                     ::build);
 
-    public static final DataEverything<NanobotSwarm> SWARM = new DataEverything<>("swarm", NanobotSwarm.CODEC, NanobotSwarm.STREAM_CODEC);
+    public static final Swarm SWARM = new Swarm(EFFECTS_CODEC, EFFECTS_STREAM_CODEC, DATA_ATTACHMENTS.register("swarm", AttachmentType
+            .builder(HmrnvRegistries::<NanobotSwarm>justThrow)
+            .serialize(NanobotSwarm.CODEC)
+            .sync(NanobotSwarm.STREAM_CODEC)
+            ::build));
+           static {DATA_COMPONENTS.register("swarm", () -> SWARM);}
+
+    /// Returns an unmodifiable updating collection of all items from the mod.
+    public static Collection<DeferredHolder<Item, ? extends Item>> getAllItems() {
+        return ITEMS.getEntries();
+    }
 
     // This is my new favourite class. It is usable in both DataComponent and DataAttachment get/set methods.
-    public static final class DataEverything<T> implements DataComponentType<T>, Supplier<AttachmentType<T>> {
-        private final Codec<T> codec;
-        private final StreamCodec<RegistryFriendlyByteBuf, T> streamCodec;
-        private final DeferredHolder<AttachmentType<?>, AttachmentType<T>> attachment;
-
-        private DataEverything(String name, Codec<T> codec, StreamCodec<RegistryFriendlyByteBuf, T> streamCodec) {
-            this.codec = codec;
-            this.streamCodec = streamCodec;
-            this.attachment = DATA_ATTACHMENTS.register(name, AttachmentType
-                    .builder(HmrnvRegistries::<T>justThrow)
-                    .serialize(codec)
-                    .sync(streamCodec)
-                    ::build);
-            DATA_COMPONENTS.register(name, () -> this);
-            }
-
-            @Override
-            public AttachmentType<T> get() {return attachment.get();}
-
-            @Override
-            public String toString() {
-                return attachment.getRegisteredName();
-            }
+    public record Swarm(Codec<Object2IntMap<NanobotEffect>>                                 codec,
+                        StreamCodec<RegistryFriendlyByteBuf, Object2IntMap<NanobotEffect>>  streamCodec,
+                        DeferredHolder<AttachmentType<?>, AttachmentType<NanobotSwarm>>     attachment
+    ) implements DataComponentType<Object2IntMap<NanobotEffect>>, Supplier<AttachmentType<NanobotSwarm>> {
+        @Override
+        public AttachmentType<NanobotSwarm> get() {return attachment.get();}
 
         @Override
-        public Codec<T> codec() {return codec;}
-
-        @Override
-        public StreamCodec<RegistryFriendlyByteBuf, T> streamCodec() {return streamCodec;}
+        public String toString() {
+            return attachment.getRegisteredName();
+        }
     }
 
 
@@ -155,6 +150,8 @@ public class HmrnvRegistries {
         TABS.register(modBus);
         DATA_ATTACHMENTS.register(modBus);
         NANOBOT_EFFECTS.register(modBus);
+        RECIPE_SERIALIZERS.register(modBus);
+        DATA_COMPONENTS.register(modBus);
 
         modBus.addListener((NewRegistryEvent event) -> event.register(EFFECT));
     }

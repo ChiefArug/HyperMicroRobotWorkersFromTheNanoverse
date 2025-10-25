@@ -5,8 +5,11 @@ import chiefarug.mods.hmrwnv.HmrnvRegistries;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
@@ -52,6 +55,27 @@ public interface NanobotEffect {
 
     default boolean is(TagKey<NanobotEffect> tag) {
         return HmrnvRegistries.EFFECT.wrapAsHolder(this).is(tag);
+    }
+
+    default ResourceLocation id() {
+        return HmrnvRegistries.EFFECT.getKey(this);
+    }
+
+    default MutableComponent name() {
+        return Component.translatable(id().toLanguageKey(HmrnvRegistries.EFFECT.key().location().getPath()));
+    }
+
+    default MutableComponent description() {
+        return Component.translatable(id().toLanguageKey(HmrnvRegistries.EFFECT.key().location().getPath()) + ".description");
+    }
+
+    default MutableComponent nameWithLevel(int level) {
+        return Component.translatable("hmrw_nanoverse.effect_level.formatting",
+                name(), level(level));
+    }
+
+    static MutableComponent level(int i) {
+        return Component.translatable("hmrw_nanoverse.effect_level." + i);
     }
 
     /// Helper for making a nanobot effect that only ticks/doesnt use onAdd/onRemove

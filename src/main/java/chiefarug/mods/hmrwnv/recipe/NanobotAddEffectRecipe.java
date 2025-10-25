@@ -1,19 +1,20 @@
 package chiefarug.mods.hmrwnv.recipe;
 
 import chiefarug.mods.hmrwnv.HmrnvRegistries;
-import chiefarug.mods.hmrwnv.core.NanobotSwarm;
 import chiefarug.mods.hmrwnv.core.effect.NanobotEffect;
+import com.mojang.serialization.MapCodec;
 import it.unimi.dsi.fastutil.objects.Object2IntArrayMap;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.CraftingBookCategory;
 import net.minecraft.world.item.crafting.CraftingInput;
 import net.minecraft.world.item.crafting.CustomRecipe;
 import net.minecraft.world.item.crafting.RecipeSerializer;
-import net.minecraft.world.item.crafting.SimpleCraftingRecipeSerializer;
 import net.minecraft.world.level.ItemLike;
 import net.minecraft.world.level.Level;
 import net.neoforged.bus.api.IEventBus;
@@ -21,29 +22,44 @@ import net.neoforged.neoforge.registries.datamaps.DataMapType;
 import net.neoforged.neoforge.registries.datamaps.RegisterDataMapTypesEvent;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.function.IntFunction;
+
 import static chiefarug.mods.hmrwnv.HmrnvRegistries.SWARM;
 import static chiefarug.mods.hmrwnv.HyperMicroRobotWorkersFromTheNanoverse.MODRL;
 import static chiefarug.mods.hmrwnv.HyperMicroRobotWorkersFromTheNanoverse.MODRL_CODEC;
 
-public class NanobotAddEffectRecipe extends CustomRecipe {
+public class NanobotAddEffectRecipe extends CustomRecipe implements RecipeSerializer<NanobotAddEffectRecipe> {
+    public static final NanobotAddEffectRecipe INSTANCE = new NanobotAddEffectRecipe();
+    public static final MapCodec<NanobotAddEffectRecipe> CODEC = MapCodec.unit(INSTANCE);
+    public static final StreamCodec<RegistryFriendlyByteBuf, NanobotAddEffectRecipe> STREAM_CODEC = StreamCodec.unit(INSTANCE);
+
     private static final DataMapType<Item, NanobotEffect> ITEM_EFFECTS = DataMapType.builder(
             MODRL.withPath("effects"),
             Registries.ITEM,
             MODRL_CODEC.xmap(HmrnvRegistries.EFFECT::get, HmrnvRegistries.EFFECT::getKey)
     ).build();
-    public static final RecipeSerializer<NanobotAddEffectRecipe> SERIALIZER = new SimpleCraftingRecipeSerializer<>(NanobotAddEffectRecipe::new);
+
+
 
     @Nullable
     public static NanobotEffect getEffect(ItemLike item) {
         return BuiltInRegistries.ITEM.wrapAsHolder(item.asItem()).getData(ITEM_EFFECTS);
     }
 
-    public NanobotAddEffectRecipe(CraftingBookCategory category) {
-        super(category);
+    public NanobotAddEffectRecipe() {
+        super(CraftingBookCategory.MISC);
     }
 
     public static void init(IEventBus modBus) {
         modBus.addListener((RegisterDataMapTypesEvent event) -> event.register(ITEM_EFFECTS));
+    }
+
+    public static boolean hasEffect(ItemStack item) {
+        return hasEffect(item.getItem());
+    }
+
+    public static boolean hasEffect(ItemLike item) {
+        return getEffect(item) != null;
     }
 
     @Override
@@ -52,6 +68,8 @@ public class NanobotAddEffectRecipe extends CustomRecipe {
         int effects = 0;
         for (int i = 0; i < input.size(); i++) {
             var in = input.getItem(i);
+            if (in.isEmpty()) continue;
+
             if (in.is(HmrnvRegistries.NANOBOTS)) {
                 // if we have seen a bot swarm before we can't match
                 if (!(bot = !bot)) return false;
@@ -64,14 +82,14 @@ public class NanobotAddEffectRecipe extends CustomRecipe {
         return effects > 0;
     }
 
-    @Override
-    public ItemStack assemble(CraftingInput input, HolderLookup.Provider registries) {
+
+    public static ItemStack assemble(int size, IntFunction<ItemStack> items) {
         // use an array map because it's going to be tiny and fast iteration will be useful when it gets turned into a swarm
         // capacity of size - 1
-        Object2IntArrayMap<NanobotEffect> effects = new Object2IntArrayMap<>(input.size() - 1);
+        Object2IntArrayMap<NanobotEffect> effects = new Object2IntArrayMap<>(size - 1);
         ItemStack bots = null;
-        for (int i = 0; i < input.size(); i++) {
-            ItemStack item = input.getItem(i);
+        for (int i = 0; i < size; i++) {
+            ItemStack item = items.apply(i);
             if (item.is(HmrnvRegistries.NANOBOTS)) {
                 bots = item;
                 continue;
@@ -81,13 +99,20 @@ public class NanobotAddEffectRecipe extends CustomRecipe {
                 effects.mergeInt(effect, 1, Integer::sum);
         }
 
-        if (bots == null) throw new IllegalStateException("this should be impossible - NanobotAddEffectRecipe#assemble called without nanobots in input");
+        if (bots == null) return ItemStack.EMPTY; // this should be impossible but in testing I found it was not...
 
         ItemStack stack = bots.copy();
         stack.setCount(1);
-        stack.set(SWARM, NanobotSwarm.createLooseSwarm(effects));
+        stack.set(SWARM, effects);
         return stack;
     }
+
+
+    @Override
+    public ItemStack assemble(CraftingInput input, HolderLookup.Provider registries) {
+        return assemble(input.size(), input::getItem);
+    }
+
 
     @Override
     public boolean canCraftInDimensions(int width, int height) {
@@ -96,6 +121,16 @@ public class NanobotAddEffectRecipe extends CustomRecipe {
 
     @Override
     public RecipeSerializer<?> getSerializer() {
-        return SERIALIZER;
+        return this;
+    }
+
+    @Override
+    public MapCodec<NanobotAddEffectRecipe> codec() {
+        return CODEC;
+    }
+
+    @Override
+    public StreamCodec<RegistryFriendlyByteBuf, NanobotAddEffectRecipe> streamCodec() {
+        return STREAM_CODEC;
     }
 }

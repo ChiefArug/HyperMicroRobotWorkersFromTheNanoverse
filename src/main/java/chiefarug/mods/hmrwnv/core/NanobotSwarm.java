@@ -1,6 +1,7 @@
 package chiefarug.mods.hmrwnv.core;
 
 import chiefarug.mods.hmrwnv.core.effect.NanobotEffect;
+import com.google.common.collect.ImmutableList;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import it.unimi.dsi.fastutil.objects.AbstractObject2IntMap.BasicEntry;
@@ -23,6 +24,7 @@ import net.neoforged.neoforge.attachment.IAttachmentHolder;
 import net.neoforged.neoforge.common.util.strategy.IdentityStrategy;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.jetbrains.annotations.UnmodifiableView;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -37,21 +39,23 @@ import static chiefarug.mods.hmrwnv.HmrnvRegistries.SWARM;
 
 /// Represents a swarm of nanobots that is hosted on some object
 public final class NanobotSwarm {
-    public static final Codec<NanobotSwarm> CODEC = RecordCodecBuilder.create(inst -> inst.group(
-            // "effects": [{
-            RecordCodecBuilder.<Entry<NanobotEffect>>create(inst1 -> inst1.group(
-                    //     "effect" ResourceLocation[NanobotEffect]
-                    NanobotEffect.CODEC.fieldOf("effect").forGetter(Entry::getKey),
-                    //     "level" int
-                    Codec.INT.fieldOf("level").forGetter(Entry::getIntValue)
-            ).apply(inst1, BasicEntry::new)).listOf().fieldOf("effects").forGetter(NanobotSwarm::apply)
-            // }]
-    ).apply(inst, NanobotSwarm::new));
-
-    public static final StreamCodec<RegistryFriendlyByteBuf, NanobotSwarm> STREAM_CODEC = StreamCodec.composite(
-            ByteBufCodecs.map(NanobotSwarm::newMap, NanobotEffect.STREAM_CODEC, ByteBufCodecs.INT), n -> n.effects,
-            NanobotSwarm::new
-    );
+    public static final Codec<Entry<NanobotEffect>> ENTRY_CODEC = RecordCodecBuilder.create(inst1 -> inst1.group(
+            //{
+            // "effect" ResourceLocation[NanobotEffect]
+            NanobotEffect.CODEC.fieldOf("effect").forGetter(Entry::getKey),
+            // "level" int
+            Codec.INT.fieldOf("level").forGetter(Entry::getIntValue)
+            //}
+    ).apply(inst1, BasicEntry::new));
+    public static final Codec<Object2IntMap<NanobotEffect>> EFFECTS_CODEC = Codec.list(ENTRY_CODEC)
+            .xmap(c -> {
+                    Object2IntOpenHashMap<NanobotEffect> map = new Object2IntOpenHashMap<>();
+                    for (Entry<NanobotEffect> entry : c) map.put(entry.getKey(), entry.getIntValue());
+                    return map;
+                }, nanobotEffectObject2IntMap -> ImmutableList.copyOf(nanobotEffectObject2IntMap.object2IntEntrySet()));
+    public static final Codec<NanobotSwarm> CODEC = EFFECTS_CODEC.xmap(NanobotSwarm::new, ns -> ns.effects).fieldOf("effects").codec();
+    public static final StreamCodec<RegistryFriendlyByteBuf, Object2IntMap<NanobotEffect>> EFFECTS_STREAM_CODEC = ByteBufCodecs.map(NanobotSwarm::newMap, NanobotEffect.STREAM_CODEC, ByteBufCodecs.INT);
+    public static final StreamCodec<RegistryFriendlyByteBuf, NanobotSwarm> STREAM_CODEC = EFFECTS_STREAM_CODEC.map(NanobotSwarm::new, NanobotSwarm::getEffects);
 
     private final Object2IntMap<NanobotEffect> effects;
 
@@ -127,8 +131,9 @@ public final class NanobotSwarm {
         host.removeData(SWARM);
     }
 
-    public static NanobotSwarm createLooseSwarm(Object2IntMap<NanobotEffect> effects) {
-        return new NanobotSwarm(effects);
+    @UnmodifiableView
+    public Object2IntMap<NanobotEffect> getEffects() {
+        return Object2IntMaps.unmodifiable(effects);
     }
 
     /// Add or updates a single effect to this swarm with the specified level.
@@ -279,10 +284,6 @@ public final class NanobotSwarm {
     private NanobotSwarm(List<Entry<NanobotEffect>> effects) {
         this(newMap(effects.size()));
         for (var effect : effects) this.effects.put(effect.getKey(), effect.getIntValue());
-    }
-
-    private List<Entry<NanobotEffect>> apply(NanobotSwarm this) {
-        return new ArrayList<>(this.effects.object2IntEntrySet());
     }
 
     @Override
