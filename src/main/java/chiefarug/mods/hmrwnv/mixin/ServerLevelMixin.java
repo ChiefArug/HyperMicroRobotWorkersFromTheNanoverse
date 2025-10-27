@@ -34,7 +34,7 @@ public abstract class ServerLevelMixin extends Level {
     @ModifyExpressionValue(method = "tickChunk", at = @At("MIXINEXTRAS:EXPRESSION"))
     private boolean hmrw_nanoverse$consumedChunksDoNotRandomTick(boolean original, LevelChunk chunk) {
         Optional<NanobotSwarm> swarm = chunk.getExistingData(SWARM);
-        if (swarm.isPresent() && swarm.get().hasEffect(PREVENTS_RANDOM_TICKS)) return false;
+        if (swarm.isPresent() && swarm.get().hasEffect(registryAccess(), PREVENTS_RANDOM_TICKS)) return false;
         return original;
     }
 

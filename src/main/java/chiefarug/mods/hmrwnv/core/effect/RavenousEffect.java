@@ -1,7 +1,9 @@
 package chiefarug.mods.hmrwnv.core.effect;
 
-import chiefarug.mods.hmrwnv.HfmrnvConfig;
 import chiefarug.mods.hmrwnv.HmrnvRegistries;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.level.Level;
@@ -10,6 +12,24 @@ import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.NotNull;
 
 public class RavenousEffect extends HungerEffect {
+    public static final MapCodec<RavenousEffect> CODEC = RecordCodecBuilder.mapCodec(g -> g.group(
+            Codec.INT.fieldOf("decay_rate").forGetter(HungerEffect::decayRate),
+            Codec.INT.fieldOf("player_exhaustion").forGetter(HungerEffect::playerExhaustion),
+            LEVEL_MULTIPLIER.forGetter(HungerEffect::level),
+            Codec.BOOL.fieldOf("keep_block_entities").forGetter(RavenousEffect::keepBlockEntities)
+    ).apply(g, RavenousEffect::new));
+
+    private final boolean keepBlockEntities;
+
+    public RavenousEffect(int decayRate, int playerExhaustion, int level, boolean keepBlockEntities) {
+        super(decayRate, playerExhaustion, level);
+        this.keepBlockEntities = keepBlockEntities;
+    }
+
+    public boolean keepBlockEntities() {
+        return keepBlockEntities;
+    }
+
 
     @Override
     protected boolean canTransform(BlockState state, BlockPos inPos, Level level) {
@@ -61,7 +81,11 @@ public class RavenousEffect extends HungerEffect {
     }
 
     @Override
-    protected float getExhaustion(int effectLevel) {
-        return (float) (super.getExhaustion(effectLevel) * HfmrnvConfig.RAVENOUS_HUNGER_MULTIPLIER.get());
+    public String toString() {
+        return "RavenousEffect[" +
+                "keepBlockEntities=" + keepBlockEntities + ", " +
+                "decayRate=" + decayRate() + ", " +
+                "playerExhaustion=" + playerExhaustion() + ", " +
+                "level=" + level() + ']';
     }
 }

@@ -1,11 +1,14 @@
 package chiefarug.mods.hmrwnv.core.effect;
 
-import chiefarug.mods.hmrwnv.HfmrnvConfig;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.SectionPos;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.server.level.ChunkHolder;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
@@ -36,8 +39,14 @@ import static net.minecraft.world.level.block.state.properties.BlockStatePropert
 
 /// An effect that consumes something from the target to provide energy.
 /// Entities do not have anything to consume so this provides free energy to them.
-public class HungerEffect implements NanobotEffect.NonStateful, NanobotEffect.Unit {
+public class HungerEffect implements NanobotEffect.NonStateful {
     private static final Codec<BlockState> TRANSFORM_RESULT_CODEC = Codec.withAlternative(BlockState.CODEC, BuiltInRegistries.BLOCK.byNameCodec().xmap(Block::defaultBlockState, BlockState::getBlock));
+    public static final MapCodec<HungerEffect> CODEC = RecordCodecBuilder.mapCodec(g -> g.group(
+            Codec.INT.fieldOf("decay_rate").forGetter(HungerEffect::decayRate),
+            Codec.INT.fieldOf("player_exhaustion").forGetter(HungerEffect::playerExhaustion),
+            LEVEL_MULTIPLIER.forGetter(HungerEffect::level)
+    ).apply(g, HungerEffect::new));
+
     private static final DataMapType<Block, BlockState> HUNGER_TRANSFORM = DataMapType.builder(MODRL.withPath("hunger_transform"), Registries.BLOCK, TRANSFORM_RESULT_CODEC).build();
     private static final Map<Block, Function<BlockState, @Nullable BlockState>> STATE_AWARE_TRANSFORM = Collections.synchronizedMap(new HashMap<>());
 
@@ -84,6 +93,7 @@ public class HungerEffect implements NanobotEffect.NonStateful, NanobotEffect.Un
         }
         STATE_AWARE_TRANSFORM.put(block, stateMapper);
     }
+
     private static final int COMPOSTER_MAX_LEVEL = 8;
     static {
         registerTransformation(Blocks.COMPOSTER, state -> {
@@ -92,6 +102,11 @@ public class HungerEffect implements NanobotEffect.NonStateful, NanobotEffect.Un
                 return state.setValue(LEVEL, COMPOSTER_MAX_LEVEL - 2);
             return state.setValue(LEVEL, Math.max(state.getValue(LEVEL) - 1, 0));
         });
+    }
+
+    @Override
+    public MapCodec<? extends NanobotEffect> codec() {
+        return CODEC;
     }
 
     @Override
@@ -126,15 +141,29 @@ public class HungerEffect implements NanobotEffect.NonStateful, NanobotEffect.Un
     }
 
     protected float getExhaustion(int effectLevel) {
-        return (float) (HfmrnvConfig.HUNGER_EXHAUSTION.getAsDouble() * effectLevel);
+        return (float) (playerExhaustion * effectLevel);
     }
 
     @Override
     public int getRequiredPower(int level) {
-        return -2 * level;
+        return this.level * level;
     }
 
     public static void init(IEventBus modBus) {
         modBus.addListener((RegisterDataMapTypesEvent event) -> event.register(HungerEffect.HUNGER_TRANSFORM));
+    }
+
+    public int decayRate() {return decayRate;}
+
+    public int playerExhaustion() {return playerExhaustion;}
+
+    public int level() {return level;}
+
+    @Override
+    public String toString() {
+        return "HungerEffect[" +
+                "decayRate=" + decayRate + ", " +
+                "playerExhaustion=" + playerExhaustion + ", " +
+                "level=" + level + ']';
     }
 }

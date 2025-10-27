@@ -1,0 +1,7 @@
+{
+  "type": "hmrw_nanoverse:ravenous",
+  "decay_rate": 8,
+  "player_exhaustion": 0.25,
+  "energy_multiplier": -2,
+  "keep_block_entities": false
+}

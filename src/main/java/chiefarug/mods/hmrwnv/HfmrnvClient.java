@@ -52,7 +52,7 @@ public class HfmrnvClient {
         if (!( // three ways to get bot vision
                 helmet.is(BOT_VISION_ITEM) ||
                 helmet.canPerformAction(BOT_VISION) ||
-                swarm.isPresent() && swarm.get().hasEffect(BOT_VISION_EFFECT)
+                swarm.isPresent() && swarm.get().hasEffect(mc.player.registryAccess(), BOT_VISION_EFFECT)
         )) return;
 
         PoseStack pose = event.getPoseStack();

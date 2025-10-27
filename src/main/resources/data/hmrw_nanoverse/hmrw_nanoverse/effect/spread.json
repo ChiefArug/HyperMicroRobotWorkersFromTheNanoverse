@@ -1,0 +1,14 @@
+{
+  "type": "hmrw_nanoverse:spread",
+  "entity_config": {
+    "chance": 0.999,
+    "exposures": 20
+  },
+  "chunk_config": {
+    "chance": 0.998,
+    "exposures": 5
+  },
+  "player_exposures": 30,
+  "entity_spread_distance": 2,
+  "energy_multiplier": 4
+}

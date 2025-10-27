@@ -3,6 +3,9 @@
   "package": "chiefarug.mods.hmrwnv.mixin",
   "compatibilityLevel": "JAVA_21",
   "mixins": [
+    "RegistryCracker",
+    "RegistryCracker$DelegateCracker",
+    "RegistryCracker$MappedRegistryCracker",
     "ServerLevelMixin"
   ],
   "injectors": {
@@ -13,5 +16,6 @@
   },
   "client": [
   ],
-  "mixinextras": {"minVersion": "0.5.0"}
+  "mixinextras": {
+    "minVersion": "0.5.0"}
 }

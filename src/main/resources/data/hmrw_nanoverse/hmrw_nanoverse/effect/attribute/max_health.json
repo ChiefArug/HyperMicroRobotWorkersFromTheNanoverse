@@ -1,0 +1,8 @@
+{
+  "type": "hmrw_nanoverse:attribute",
+  "attribute": "generic.max_health",
+  "id": "hmrw_nanoverse:nanobot_max_health_boost",
+  "operation": "add_value",
+  "amount": 4,
+  "energy_multiplier": 2
+}

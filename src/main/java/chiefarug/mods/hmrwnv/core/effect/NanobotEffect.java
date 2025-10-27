@@ -1,9 +1,11 @@
 package chiefarug.mods.hmrwnv.core.effect;
 
 import chiefarug.mods.hmrwnv.HfmrnvConfig;
-import chiefarug.mods.hmrwnv.HmrnvRegistries;
+import chiefarug.mods.hmrwnv.RegistryInjectionXMapCodec;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
+import net.minecraft.core.Registry;
+import net.minecraft.core.RegistryAccess;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
@@ -16,15 +18,17 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.chunk.ChunkAccess;
 import net.neoforged.neoforge.attachment.IAttachmentHolder;
 
-import java.util.function.Function;
-import java.util.function.IntUnaryOperator;
+import static chiefarug.mods.hmrwnv.HmrnvRegistries.EFFECTS;
+import static chiefarug.mods.hmrwnv.HyperMicroRobotWorkersFromTheNanoverse.MODRL_CODEC;
 
 /// An interface representing an effect from nanobots.
 /// Has some sub-interfaces for composing common default methods
 public interface NanobotEffect {
-    Codec<NanobotEffect> CODEC = HmrnvRegistries.EFFECT.byNameCodec().dispatch(Function.identity(), NanobotEffect::codec);
-    // Only sync the id over the network, not the full object.
-    StreamCodec<RegistryFriendlyByteBuf, NanobotEffect> STREAM_CODEC = ByteBufCodecs.registry(HmrnvRegistries.EFFECT.key());
+
+//    Codec<NanobotEffect> ID_CODEC = ResourceLocation.CODEC.
+    Codec<NanobotEffect> ID_CODEC = RegistryInjectionXMapCodec.createRegistryValue(MODRL_CODEC, EFFECTS);//RegistryFixedCodec.create(EFFECTS).xmap(Holder::value, Holder::direct); // pls dont break TODO: it broke, direct holders dont like sending over network.
+    StreamCodec<? super RegistryFriendlyByteBuf, NanobotEffect> STREAM_CODEC = ByteBufCodecs.registry(EFFECTS);
+    MapCodec<Integer> LEVEL_MULTIPLIER = Codec.INT.fieldOf("energy_multiplier");
 
     /// The codec used for serializing this to disk
     MapCodec<? extends NanobotEffect> codec();
@@ -53,25 +57,29 @@ public interface NanobotEffect {
         };
     }
 
-    default boolean is(TagKey<NanobotEffect> tag) {
-        return HmrnvRegistries.EFFECT.wrapAsHolder(this).is(tag);
+    static Registry<NanobotEffect> reg(RegistryAccess access) {
+        return access.registryOrThrow(EFFECTS);
     }
 
-    default ResourceLocation id() {
-        return HmrnvRegistries.EFFECT.getKey(this);
+    default boolean is(RegistryAccess access, TagKey<NanobotEffect> tag) {
+        return reg(access).wrapAsHolder(this).is(tag);
     }
 
-    default MutableComponent name() {
-        return Component.translatable(id().toLanguageKey(HmrnvRegistries.EFFECT.key().location().getPath()));
+    default ResourceLocation id(RegistryAccess access) {
+        return reg(access).getKey(this);
     }
 
-    default MutableComponent description() {
-        return Component.translatable(id().toLanguageKey(HmrnvRegistries.EFFECT.key().location().getPath()) + ".description");
+    default MutableComponent name(RegistryAccess access) {
+        return Component.translatable(id(access).toLanguageKey(EFFECTS.location().getPath()));
     }
 
-    default MutableComponent nameWithLevel(int level) {
+    default MutableComponent description(RegistryAccess access) {
+        return Component.translatable(id(access).toLanguageKey(EFFECTS.location().getPath()) + ".description");
+    }
+
+    default MutableComponent nameWithLevel(RegistryAccess access, int level) {
         return Component.translatable("hmrw_nanoverse.effect_level.formatting",
-                name(), level(level));
+                name(access), level(level));
     }
 
     static MutableComponent level(int i) {
@@ -89,20 +97,28 @@ public interface NanobotEffect {
         default void onTick(IAttachmentHolder holds, int level) {}
     }
 
-    ///  Helper interface for an effect that has no constructor parameters so can use a Unit codec.
-    interface Unit extends NanobotEffect {
-        default MapCodec<? extends NanobotEffect> codec() {
-            return MapCodec.unit(this);
-        }
-    }
-
     /// Helper record for effects that are implemented elsewhere (ie a mixin) so don't need overrides of any methods.
-    record Static(IntUnaryOperator levelToPower) implements Unit, NonStateful, NonTicking {
-        public Static(int powerPerLevel) { this(i -> i * powerPerLevel); }
+    record Static(int levelMultiplier) implements NonStateful, NonTicking {
+        public static final MapCodec<Static> CODEC = LEVEL_MULTIPLIER.xmap(Static::new, Static::levelMultiplier);
+
+        @Override
+        public MapCodec<NanobotEffect.Static> codec() {
+            return CODEC;
+        }
 
         @Override
         public int getRequiredPower(int level) {
-            return levelToPower.applyAsInt(level);
+            return levelMultiplier * level;
+        }
+
+        @Override
+        public int hashCode() {
+            return System.identityHashCode(this);
+        }
+
+        @Override // referential equality
+        public boolean equals(Object obj) {
+            return this == obj;
         }
     }
 }

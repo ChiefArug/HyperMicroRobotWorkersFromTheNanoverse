@@ -26,7 +26,6 @@ import java.util.function.IntFunction;
 
 import static chiefarug.mods.hmrwnv.HmrnvRegistries.SWARM;
 import static chiefarug.mods.hmrwnv.HyperMicroRobotWorkersFromTheNanoverse.MODRL;
-import static chiefarug.mods.hmrwnv.HyperMicroRobotWorkersFromTheNanoverse.MODRL_CODEC;
 
 public class NanobotAddEffectRecipe extends CustomRecipe implements RecipeSerializer<NanobotAddEffectRecipe> {
     public static final NanobotAddEffectRecipe INSTANCE = new NanobotAddEffectRecipe();
@@ -36,7 +35,7 @@ public class NanobotAddEffectRecipe extends CustomRecipe implements RecipeSerial
     private static final DataMapType<Item, NanobotEffect> ITEM_EFFECTS = DataMapType.builder(
             MODRL.withPath("effects"),
             Registries.ITEM,
-            MODRL_CODEC.xmap(HmrnvRegistries.EFFECT::get, HmrnvRegistries.EFFECT::getKey)
+            NanobotEffect.ID_CODEC
     ).build();
 
 

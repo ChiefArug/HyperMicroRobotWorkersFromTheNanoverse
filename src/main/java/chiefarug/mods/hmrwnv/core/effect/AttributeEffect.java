@@ -1,7 +1,6 @@
 package chiefarug.mods.hmrwnv.core.effect;
 
 import com.google.common.collect.ImmutableMultimap;
-import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.Holder;
@@ -16,7 +15,7 @@ public record AttributeEffect(Holder<Attribute> attribute, ResourceLocation id, 
     public static final MapCodec<AttributeEffect> CODEC = RecordCodecBuilder.mapCodec(inst -> inst.group(
             BuiltInRegistries.ATTRIBUTE.holderByNameCodec().fieldOf("attribute").forGetter(AttributeEffect::attribute),
             AttributeModifier.MAP_CODEC.forGetter(AttributeEffect::asModifier),
-            Codec.INT.fieldOf("powerFactor").forGetter(AttributeEffect::powerPerLevel)
+            LEVEL_MULTIPLIER.forGetter(AttributeEffect::powerPerLevel)
     ).apply(inst, AttributeEffect::new));
 
     private AttributeEffect(Holder<Attribute> attribute, AttributeModifier modifier, int powerPerLevel) {

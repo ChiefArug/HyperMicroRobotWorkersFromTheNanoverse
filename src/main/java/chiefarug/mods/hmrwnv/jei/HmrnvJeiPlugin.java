@@ -21,6 +21,8 @@ import mezz.jei.api.registration.IRecipeRegistration;
 import mezz.jei.api.registration.IVanillaCategoryExtensionRegistration;
 import mezz.jei.api.runtime.IIngredientManager;
 import net.minecraft.ChatFormatting;
+import net.minecraft.client.Minecraft;
+import net.minecraft.core.RegistryAccess;
 import net.minecraft.locale.Language;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
@@ -83,11 +85,13 @@ public class HmrnvJeiPlugin implements IModPlugin {
             }
         }
 
+        RegistryAccess access = Objects.requireNonNull(Minecraft.getInstance().level).registryAccess();
+
         List<NanobotEffectInfo.InfoRecipe> list = new ArrayList<>(effectsToIngredients.size());
         for (Map.Entry<NanobotEffect, List<ITypedIngredient<ItemStack>>> entry : effectsToIngredients.entrySet()) {
             list.add(new NanobotEffectInfo.InfoRecipe(entry.getValue(), List.of(
-                    entry.getKey().name().withStyle(ChatFormatting.BOLD, ChatFormatting.UNDERLINE),
-                    entry.getKey().description()
+                    entry.getKey().name(access).withStyle(ChatFormatting.BOLD, ChatFormatting.UNDERLINE),
+                    entry.getKey().description(access)
             )));
         };
         registration.addRecipes(NanobotEffectInfo.TYPE, list);

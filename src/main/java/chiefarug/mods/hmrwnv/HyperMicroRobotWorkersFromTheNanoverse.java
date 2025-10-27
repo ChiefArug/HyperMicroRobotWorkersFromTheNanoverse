@@ -10,6 +10,8 @@ import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.objects.ObjectBidirectionalIterator;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Registry;
+import net.minecraft.core.RegistryAccess;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ChunkHolder;
@@ -42,6 +44,7 @@ import java.util.Map;
 import static chiefarug.mods.hmrwnv.HfmrnvConfig.CHUNK_SLOW_DOWN_FACTOR;
 import static chiefarug.mods.hmrwnv.HfmrnvConfig.ENTITY_SLOW_DOWN_FACTOR;
 import static chiefarug.mods.hmrwnv.HfmrnvConfig.PLAYER_SLOW_DOWN_FACTOR;
+import static chiefarug.mods.hmrwnv.HmrnvRegistries.EFFECTS;
 import static chiefarug.mods.hmrwnv.HmrnvRegistries.INFECTION;
 import static chiefarug.mods.hmrwnv.HmrnvRegistries.SWARM;
 import static chiefarug.mods.hmrwnv.HyperMicroRobotWorkersFromTheNanoverse.MODID;
@@ -57,7 +60,7 @@ public class HyperMicroRobotWorkersFromTheNanoverse {
             .xmap(location -> {
                 int index = location.indexOf(':');
                 if (index == -1) return MODRL.withPath(location);
-                return ResourceLocation.fromNamespaceAndPath(location.substring(0, index), location.substring(index));
+                return ResourceLocation.fromNamespaceAndPath(location.substring(0, index), location.substring(index + 1));
             }, ResourceLocation::toString)
             .stable();
     public static final Logger LGGR = LogUtils.getLogger();
@@ -122,7 +125,7 @@ public class HyperMicroRobotWorkersFromTheNanoverse {
             int hash = 31 * seedHash + pos.hashCode();
             // chance to become swarmed is based on hash of world seed and hash of the position
             if (hash % chance == 0) {
-                NanobotSwarm.attachSwarm(event.getChunk(), generateSpawnSwarmEffects(RandomSource.create(pos.toLong())));
+                NanobotSwarm.attachSwarm(event.getChunk(), generateSpawnSwarmEffects(event.getLevel().registryAccess(), RandomSource.create(pos.toLong())));
                 LGGR.debug("Swarmed chunk {}, {}", pos.x, pos.z);
             }
         }
@@ -174,15 +177,16 @@ public class HyperMicroRobotWorkersFromTheNanoverse {
     }
 
     //TODO: infect on spawn entities in an entity tag
-
-
-    private static Map<NanobotEffect, Integer> generateSpawnSwarmEffects(RandomSource random) {
+    //TODO: max level of effects
+    //TODO: unhardcode this
+    private static Map<NanobotEffect, Integer> generateSpawnSwarmEffects(RegistryAccess access, RandomSource random) {
+        Registry<NanobotEffect> reg = access.registryOrThrow(EFFECTS);
         return Map.of(
                 random.nextDouble() > 0.8 ?
-                        HmrnvRegistries.RAVENOUS.get() :
-                        HmrnvRegistries.HUNGER.get(),
+                        reg.get(MODRL.withPath("ravenous")) :
+                        reg.get(MODRL.withPath("hunger")),
                 4,
-                HmrnvRegistries.SPREAD.get(), 8);
+                reg.get(MODRL.withPath("spread")), 8);
     }
 
 }

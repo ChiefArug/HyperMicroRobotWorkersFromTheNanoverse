@@ -1,0 +1,84 @@
+package chiefarug.mods.hmrwnv;
+
+import chiefarug.mods.hmrwnv.mixin.RegistryCracker;
+import com.mojang.datafixers.util.Pair;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.DataResult;
+import com.mojang.serialization.DynamicOps;
+import net.minecraft.core.HolderGetter;
+import net.minecraft.core.Registry;
+import net.minecraft.resources.RegistryOps;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.resources.ResourceLocation;
+
+import java.util.Optional;
+import java.util.function.BiFunction;
+
+/// Injects a HolderGetter for a specific
+public class RegistryInjectionXMapCodec<B, A> implements Codec<A> {
+
+    private final ResourceKey<? extends Registry<A>> reg;
+    private final Codec<B> base;
+    private final BiFunction<HolderGetter<A>, B, A> apply;
+    private final BiFunction<HolderGetter<A>, A, B> unapply;
+
+
+    public static <A> RegistryInjectionXMapCodec<ResourceLocation, A> createRegistryValue(ResourceKey<? extends Registry<A>> reg) {
+        return createRegistryValue(ResourceLocation.CODEC, reg);
+    }
+    public static <A> RegistryInjectionXMapCodec<ResourceLocation, A> createRegistryValue(Codec<ResourceLocation> modrlCodec, ResourceKey<? extends Registry<A>> reg) {
+        return create(reg, modrlCodec,
+                (hg, rl) -> hg.get(ResourceKey.create(reg, rl)).orElseThrow().value(),
+                (hg, a) -> crack(hg).getKey(a));
+    }
+
+    public static <B,A> RegistryInjectionXMapCodec<B, A> create(ResourceKey<? extends Registry<A>> reg, Codec<B> base, BiFunction<HolderGetter<A>, B, A> apply, BiFunction<HolderGetter<A>, A, B> unapply) {
+        return new RegistryInjectionXMapCodec<>(reg, base, apply, unapply);
+    }
+
+    private RegistryInjectionXMapCodec(ResourceKey<? extends Registry<A>> reg, Codec<B> base, BiFunction<HolderGetter<A>, B, A> apply, BiFunction<HolderGetter<A>, A, B> unapply) {
+        this.reg = reg;
+        this.base = base;
+        this.apply = apply;
+        this.unapply = unapply;
+    }
+
+
+    @Override
+    public <T> DataResult<Pair<A, T>> decode(DynamicOps<T> ops, T input) {
+        if (ops instanceof RegistryOps<T> rops) {
+            DataResult<Pair<B, T>> decoded = base.decode(ops, input);
+            Optional<HolderGetter<A>> getter = rops.lookupProvider.lookup(reg).map(RegistryOps.RegistryInfo::getter);
+            if (decoded.isError())
+                decoded = decoded.mapError(s -> "Couldn't decode with registry due to inner error: " + s);
+            if (getter.isEmpty())
+                return DataResult.error(() -> "Registry " + reg + " holder getter not found!");
+
+            return decoded.map(p -> Pair.of(apply.apply(getter.get(), p.getFirst()), p.getSecond()));
+        }
+        return DataResult.error(() -> "Cannot decode RegistryInjectionCodec without a RegistryOps!");
+    }
+
+    @Override
+    public <T> DataResult<T> encode(A input, DynamicOps<T> ops, T prefix) {
+        if (ops instanceof RegistryOps<T> rops) {
+            Optional<HolderGetter<A>> getter = rops.lookupProvider.lookup(reg).map(RegistryOps.RegistryInfo::getter);
+            if (getter.isEmpty())
+                return DataResult.error(() -> "Registry " + reg + " holder getter not found!");
+
+            B midResult = unapply.apply(getter.get(), input);
+            return base.encode(midResult, ops, prefix);
+        }
+        return DataResult.error(() -> "Cannot encode RegistryInjectionCodec without a RegistryOps!");
+    }
+
+    @Override
+    public String toString() {
+        return "RegistryInjectCodec[" + base + " through " + apply + ',' + unapply + ']';
+    }
+
+    public static <T> Registry<T> crack(HolderGetter<T> hg) {
+        if (hg instanceof RegistryCracker<T> cracked) return cracked.hmrw_nanoverse$crack();
+        throw new IllegalStateException("Failed to crack open HolderGetter into full registry! Unexpected implementation of HolderGetter: " + hg.getClass().getName());
+    }
+}

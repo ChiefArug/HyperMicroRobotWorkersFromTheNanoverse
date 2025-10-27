@@ -55,14 +55,16 @@ public class NanobotItem extends Item {
     @Override
     public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltipComponents, TooltipFlag tooltipFlag) {
         super.appendHoverText(stack, context, tooltipComponents, tooltipFlag);
-
-
+        Level level = context.level();
         Object2IntMap<NanobotEffect> effects = getSwarm(stack);
         if (effects == null) return;
-
-        tooltipComponents.addAll(effects.object2IntEntrySet().stream()
-                .map(e -> e.getKey().nameWithLevel(e.getIntValue()).withStyle(ChatFormatting.GRAY))
-                .toList());
+        if (level != null) {
+            tooltipComponents.addAll(effects.object2IntEntrySet().stream()
+                    .map(e -> e.getKey().nameWithLevel(level.registryAccess(), e.getIntValue()).withStyle(ChatFormatting.GRAY))
+                    .toList());
+        } else if (!effects.isEmpty()){
+            tooltipComponents.add(Component.translatable("hmrw_nanoverse.tooltip.cannot_display_effects"));
+        }
 
     }
 

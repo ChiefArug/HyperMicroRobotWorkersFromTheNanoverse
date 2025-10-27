@@ -12,6 +12,7 @@ import it.unimi.dsi.fastutil.objects.Object2IntMaps;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenCustomHashMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import net.minecraft.SharedConstants;
+import net.minecraft.core.RegistryAccess;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
@@ -42,7 +43,7 @@ public final class NanobotSwarm {
     public static final Codec<Entry<NanobotEffect>> ENTRY_CODEC = RecordCodecBuilder.create(inst1 -> inst1.group(
             //{
             // "effect" ResourceLocation[NanobotEffect]
-            NanobotEffect.CODEC.fieldOf("effect").forGetter(Entry::getKey),
+            NanobotEffect.ID_CODEC.fieldOf("effect").forGetter(Entry::getKey),
             // "level" int
             Codec.INT.fieldOf("level").forGetter(Entry::getIntValue)
             //}
@@ -173,17 +174,17 @@ public final class NanobotSwarm {
         markDirty(host);
     }
 
-    /// Called once when this swarm is first added to a host.
+    /// Called once server-side when this swarm is first added to a host.
     public void afterAdd(IAttachmentHolder host) {
         forEachEffect(effects, host, NanobotEffect::onAdd);
     }
 
-    /// Called once just before this swarm is removed from a host
+    /// Called once server-side just before this swarm is removed from a host
     public void beforeRemove(IAttachmentHolder host) {
         forEachEffect(effects, host, NanobotEffect::onRemove);
     }
 
-    /// Called frequently while this effect is part of a swarm is on something.
+    /// Called frequently server-side while this effect is part of a swarm is on something.
     /// The exact rate is configurable, but by default is every tick for players and entities, and twice a second for chunks.
     public void tick(IAttachmentHolder host) {
         forEachEffect(effects, host, NanobotEffect::onTick);
@@ -254,9 +255,9 @@ public final class NanobotSwarm {
         return t.getKey();
     }
 
-    public boolean hasEffect(TagKey<NanobotEffect> tag) {
+    public boolean hasEffect(RegistryAccess access, TagKey<NanobotEffect> tag) {
         for (NanobotEffect value : effects.keySet()) {
-            if (value.is(tag))
+            if (value.is(access, tag))
                 return true;
         }
         return false;
