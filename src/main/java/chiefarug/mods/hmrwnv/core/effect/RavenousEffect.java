@@ -33,7 +33,11 @@ public class RavenousEffect extends HungerEffect {
 
     @Override
     protected boolean canTransform(BlockState state, BlockPos inPos, Level level) {
-        if (!super.canTransform(state, inPos, level) || state.is(HmrnvRegistries.RAVENOUS_BLACKLIST) || !state.getFluidState().isEmpty()) return false;
+        if (
+                !super.canTransform(state, inPos, level) ||
+                state.is(HmrnvRegistries.RAVENOUS_BLACKLIST) ||
+                (keepBlockEntities && level.getBlockEntity(inPos) != null)
+        ) return false;
 
         int airCount = 0;
         BlockPos.MutableBlockPos pos = inPos.mutable();

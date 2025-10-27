@@ -95,6 +95,16 @@ public class HungerEffect implements NanobotEffect.NonStateful {
     }
 
     private static final int COMPOSTER_MAX_LEVEL = 8;
+    private final int decayRate;
+    private final int playerExhaustion;
+    private final int level;
+
+    public HungerEffect(int decayRate, int playerExhaustion, int level) {
+        this.decayRate = decayRate;
+        this.playerExhaustion = playerExhaustion;
+        this.level = level;
+    }
+
     static {
         registerTransformation(Blocks.COMPOSTER, state -> {
             if (state.getValue(LEVEL) == COMPOSTER_MAX_LEVEL)
@@ -111,27 +121,32 @@ public class HungerEffect implements NanobotEffect.NonStateful {
 
     @Override
     public void onTick(IAttachmentHolder host, int effectLevel) {
-        switch(host) {
+        switch (host) {
             case Player player -> player.causeFoodExhaustion(getExhaustion(effectLevel));
             case LevelChunk chunk -> {
-                LevelChunkSection[] alevelchunksection = chunk.getSections();
+                LevelChunkSection[] chunkSections = chunk.getSections();
 
-                for (int i = 0; i < alevelchunksection.length; i++) {
-                    LevelChunkSection levelchunksection = alevelchunksection[i];
-                    if (levelchunksection.hasOnlyAir()) continue;
-                    Level level = chunk.getLevel();
+                for (int i = 0; i < chunkSections.length; i++) {
+                    LevelChunkSection section = chunkSections[i];
+                    if (section.hasOnlyAir()) continue;
+                    ServerLevel level = (ServerLevel) chunk.getLevel();
                     int minY = SectionPos.sectionToBlockCoord(chunk.getSectionYFromSectionIndex(i));
                     int minX = chunk.getPos().getMinBlockX();
                     int minZ = chunk.getPos().getMinBlockZ();
 
-                    int blocks = HfmrnvConfig.HUNGER_CHUNK_DECAY.getAsInt() * effectLevel;
+                    int blocks = decayRate * effectLevel;
                     for (int j = 0; j < blocks; j++) {
                         BlockPos pos = level.getBlockRandomPos(minX, minY, minZ, 15);
-                        BlockState state = levelchunksection.getBlockState(pos.getX() - minX, pos.getY() - minY, pos.getZ() - minZ);
+                        BlockState state = section.getBlockState(pos.getX() - minX, pos.getY() - minY, pos.getZ() - minZ);
                         if (canTransform(state, pos, level)) {
                             BlockState newState = transform(state);
-                            if (state != newState)
-                                level.setBlock(pos, newState, Block.UPDATE_CLIENTS);
+                            if (state != newState) {
+                                // manually set it and queue a resync to the client to avoid block updates
+                                section.setBlockState(pos.getX() - minX, pos.getY() - minY, pos.getZ() - minZ, newState);
+                                ChunkHolder chunkHolder = level.getChunkSource().chunkMap.getVisibleChunkIfPresent(chunk.getPos().toLong());
+                                if (chunkHolder != null)
+                                    chunkHolder.blockChanged(pos);
+                            }
                         }
                     }
                 }
