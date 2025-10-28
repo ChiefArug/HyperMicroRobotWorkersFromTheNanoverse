@@ -6,7 +6,7 @@
   },
   "chunk_config": {
     "chance": 0.998,
-    "exposures": 5
+    "exposures": 10
   },
   "player_exposures": 30,
   "entity_spread_distance": 2,

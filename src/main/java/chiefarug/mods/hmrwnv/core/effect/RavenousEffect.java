@@ -14,14 +14,14 @@ import org.jetbrains.annotations.NotNull;
 public class RavenousEffect extends HungerEffect {
     public static final MapCodec<RavenousEffect> CODEC = RecordCodecBuilder.mapCodec(g -> g.group(
             Codec.INT.fieldOf("decay_rate").forGetter(HungerEffect::decayRate),
-            Codec.INT.fieldOf("player_exhaustion").forGetter(HungerEffect::playerExhaustion),
+            Codec.DOUBLE.fieldOf("player_exhaustion").forGetter(HungerEffect::playerExhaustion),
             LEVEL_MULTIPLIER.forGetter(HungerEffect::level),
             Codec.BOOL.fieldOf("keep_block_entities").forGetter(RavenousEffect::keepBlockEntities)
     ).apply(g, RavenousEffect::new));
 
     private final boolean keepBlockEntities;
 
-    public RavenousEffect(int decayRate, int playerExhaustion, int level, boolean keepBlockEntities) {
+    public RavenousEffect(int decayRate, double playerExhaustion, int level, boolean keepBlockEntities) {
         super(decayRate, playerExhaustion, level);
         this.keepBlockEntities = keepBlockEntities;
     }

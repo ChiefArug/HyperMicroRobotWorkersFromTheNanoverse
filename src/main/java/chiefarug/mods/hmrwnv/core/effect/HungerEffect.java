@@ -43,7 +43,7 @@ public class HungerEffect implements NanobotEffect.NonStateful {
     private static final Codec<BlockState> TRANSFORM_RESULT_CODEC = Codec.withAlternative(BlockState.CODEC, BuiltInRegistries.BLOCK.byNameCodec().xmap(Block::defaultBlockState, BlockState::getBlock));
     public static final MapCodec<HungerEffect> CODEC = RecordCodecBuilder.mapCodec(g -> g.group(
             Codec.INT.fieldOf("decay_rate").forGetter(HungerEffect::decayRate),
-            Codec.INT.fieldOf("player_exhaustion").forGetter(HungerEffect::playerExhaustion),
+            Codec.DOUBLE.fieldOf("player_exhaustion").forGetter(HungerEffect::playerExhaustion),
             LEVEL_MULTIPLIER.forGetter(HungerEffect::level)
     ).apply(g, HungerEffect::new));
 
@@ -96,10 +96,10 @@ public class HungerEffect implements NanobotEffect.NonStateful {
 
     private static final int COMPOSTER_MAX_LEVEL = 8;
     private final int decayRate;
-    private final int playerExhaustion;
+    private final double playerExhaustion;
     private final int level;
 
-    public HungerEffect(int decayRate, int playerExhaustion, int level) {
+    public HungerEffect(int decayRate, double playerExhaustion, int level) {
         this.decayRate = decayRate;
         this.playerExhaustion = playerExhaustion;
         this.level = level;
@@ -170,7 +170,7 @@ public class HungerEffect implements NanobotEffect.NonStateful {
 
     public int decayRate() {return decayRate;}
 
-    public int playerExhaustion() {return playerExhaustion;}
+    public double playerExhaustion() {return playerExhaustion;}
 
     public int level() {return level;}
 

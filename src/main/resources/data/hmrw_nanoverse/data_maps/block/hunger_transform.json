@@ -27,7 +27,7 @@
     "moss_carpet": "air",
     "moss_block": "dirt",
     "pink_petals": "air",
-    // don't include stem to avoid entire thing breaking
+    // don't include stem to avoid entire thing breaking TODO: add 'stem' back as we now suppress block updates
     "big_dripleaf": "air",
     "small_dripleaf": "air",
     "cave_vines": "air",
@@ -43,6 +43,9 @@
     "pumpkin": "carved_pumpkin",
     "carved_pumpkin": "air",
     "melon": "air",
+
+    // snow on dirt looks odd
+    "snow": "air",
 
     //TODO: empty spawner cage, which can be broken/used for nanobot parts?
     "spawner": "iron_block",
@@ -117,8 +120,7 @@
 
     // There is custom handling for things that hold fluids, they will turn to the fluidstate they hold if set to air
     "kelp": "air",
-    // note we only remove kelp's head, and will work downwards like that, otherwise we will end up with lots of kelp items
-    //"kelp_plant": "air",
+    "kelp_plant": "air",
     "seagrass": "air",
     "tall_seagrass": "air",
     "sea_pickle": "air",
@@ -146,8 +148,6 @@
 
   },
   "remove": [
-    "flower_pot",
-    // added by bee_growables, we don't want to have the entire vine collapse at once
-    "cave_vines_plant"
+    "flower_pot"
   ]
 }
