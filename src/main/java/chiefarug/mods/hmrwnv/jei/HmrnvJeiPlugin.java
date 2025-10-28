@@ -108,10 +108,12 @@ public class HmrnvJeiPlugin implements IModPlugin {
             @Override
             public void setRecipe(RecipeHolder<NanobotAddEffectRecipe> recipeHolder, IRecipeLayoutBuilder builder, ICraftingGridHelper craftingGridHelper, IFocusGroup focuses) {
                 List<ItemStack> focusedEffects = focuses.isEmpty() ? List.of() : focuses.getItemStackFocuses()
-                                .map(IFocus::getTypedValue)
-                                .map(ITypedIngredient::getIngredient)
-                                .filter(NanobotAddEffectRecipe::hasEffect)
-                                .toList();
+                        .map(IFocus::getTypedValue)
+                        .map(ITypedIngredient::getIngredient)
+                        .filter(NanobotAddEffectRecipe::hasEffect)
+                        // we have to set count to 1 as JEI does not normalise the stacks.
+                        .map(itemStack -> itemStack.copyWithCount(1))
+                        .toList();
 
                 List<ItemStack> bot = List.of(HmrnvRegistries.NANOBOTS.get().getDefaultInstance());
                 List<ItemStack> first;
