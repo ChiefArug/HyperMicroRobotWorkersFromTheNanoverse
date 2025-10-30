@@ -1,4 +1,7 @@
 {
-  "type": "hmrw_nanoverse:unit",
-  "energy_multiplier": -4
+  "effect": {
+   "type": "hmrw_nanoverse:empty"
+ },
+  "energy_factor": -4,
+  "color": "#055600"
 }

@@ -1,6 +1,7 @@
 package chiefarug.mods.hmrwnv.core.effect;
 
 import chiefarug.mods.hmrwnv.HmrnvRegistries;
+import chiefarug.mods.hmrwnv.core.EffectConfiguration;
 import chiefarug.mods.hmrwnv.core.NanobotSwarm;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
@@ -27,7 +28,7 @@ import static chiefarug.mods.hmrwnv.HmrnvRegistries.INFECTION;
 import static chiefarug.mods.hmrwnv.HmrnvRegistries.PROTECTS_AGAINST_SPREAD;
 import static chiefarug.mods.hmrwnv.HmrnvRegistries.SWARM;
 
-public record SpreadEffect(TypeConfiguration entityConfig, TypeConfiguration chunkConfig, int playerExposures, int entitySpreadDistance, int levelMultiplier) implements NanobotEffect.NonStateful {
+public record SpreadEffect(TypeConfiguration entityConfig, TypeConfiguration chunkConfig, int playerExposures, int entitySpreadDistance) implements NanobotEffect.NonStateful {
 
     record TypeConfiguration(double chance, int exposures) {
         public static final MapCodec<TypeConfiguration> CODEC = RecordCodecBuilder.mapCodec(g -> g.group(
@@ -40,8 +41,7 @@ public record SpreadEffect(TypeConfiguration entityConfig, TypeConfiguration chu
                     TypeConfiguration.CODEC.fieldOf("entity_config").forGetter(SpreadEffect::entityConfig),
                     TypeConfiguration.CODEC.fieldOf("chunk_config").forGetter(SpreadEffect::chunkConfig),
                     Codec.INT.fieldOf("player_exposures").forGetter(SpreadEffect::playerExposures),
-                    Codec.INT.fieldOf("entity_spread_distance").forGetter(SpreadEffect::entitySpreadDistance),
-                    LEVEL_MULTIPLIER.forGetter(SpreadEffect::levelMultiplier)
+                    Codec.INT.fieldOf("entity_spread_distance").forGetter(SpreadEffect::entitySpreadDistance)
             ).apply(inst, SpreadEffect::new));
 
     @Override
@@ -87,7 +87,7 @@ public record SpreadEffect(TypeConfiguration entityConfig, TypeConfiguration chu
         Optional<NanobotSwarm> targetSwarm = target.getExistingData(SWARM);
         if (targetSwarm.isPresent() && targetSwarm.get().hasEffect(level.registryAccess(), PROTECTS_AGAINST_SPREAD)) return;
 
-        final NanobotEffect effect;
+        final EffectConfiguration<?> effect;
         if (targetSwarm.isPresent())
             effect = host.getData(HmrnvRegistries.SWARM).randomEffectExcept(level.getRandom(), targetSwarm.get());
         else
@@ -103,10 +103,5 @@ public record SpreadEffect(TypeConfiguration entityConfig, TypeConfiguration chu
             infections.removeInt(effect);
             target.setData(INFECTION, infections);
         }
-    }
-
-    @Override
-    public int getRequiredPower(int level) {
-        return level * 4;
     }
 }

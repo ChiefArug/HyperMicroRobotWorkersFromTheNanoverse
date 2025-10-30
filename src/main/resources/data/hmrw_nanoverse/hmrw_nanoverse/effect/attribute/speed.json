@@ -1,0 +1,11 @@
+{
+  "effect": {
+    "type": "hmrw_nanoverse:attribute",
+    "attribute": "generic.movement_speed",
+    "id": "hmrw_nanoverse:nanobot_speed_effect",
+    "operation": "add_multiplied_total",
+    "amount": 0.2
+  },
+  "energy_factor": 2,
+  "color": "#b5121c"
+}

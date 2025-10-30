@@ -1,6 +1,6 @@
 package chiefarug.mods.hmrwnv;
 
-import chiefarug.mods.hmrwnv.client.ClientEffect;
+import chiefarug.mods.hmrwnv.core.EffectConfiguration;
 import chiefarug.mods.hmrwnv.core.NanobotSwarm;
 import chiefarug.mods.hmrwnv.core.effect.AttributeEffect;
 import chiefarug.mods.hmrwnv.core.effect.HungerEffect;
@@ -57,7 +57,7 @@ import static chiefarug.mods.hmrwnv.core.NanobotSwarm.EFFECTS_STREAM_CODEC;
 @SuppressWarnings("unused")
 public class HmrnvRegistries {
     //<editor-fold desc="Registries">
-    public static final ResourceKey<Registry<NanobotEffect>> EFFECTS_KEY = ResourceKey.createRegistryKey(MODRL.withPath("effect"));
+    public static final ResourceKey<Registry<EffectConfiguration<?>>> EFFECTS_KEY = ResourceKey.createRegistryKey(MODRL.withPath("effect"));
     public static final Registry<MapCodec<? extends NanobotEffect>> EFFECT_CODEC_REG = new RegistryBuilder<MapCodec<? extends NanobotEffect>>(ResourceKey.createRegistryKey(MODRL.withPath("effect_codec"))).create();
     //</editor-fold>
 
@@ -77,16 +77,16 @@ public class HmrnvRegistries {
     public static final DeferredHolder<MapCodec<? extends NanobotEffect>, MapCodec<HungerEffect>> HUNGER = EFFECT_CODECS.register("hunger", () -> HungerEffect.CODEC);
     public static final DeferredHolder<MapCodec<? extends NanobotEffect>, MapCodec<RavenousEffect>> RAVENOUS = EFFECT_CODECS.register("ravenous", () -> RavenousEffect.CODEC);
     public static final DeferredHolder<MapCodec<? extends NanobotEffect>, MapCodec<SpreadEffect>> SPREAD = EFFECT_CODECS.register("spread", () -> SpreadEffect.CODEC);
-    public static final DeferredHolder<MapCodec<? extends NanobotEffect>, MapCodec<NanobotEffect.Static>> UNIT = EFFECT_CODECS.register("unit", () -> NanobotEffect.Static.CODEC);
+    public static final DeferredHolder<MapCodec<? extends NanobotEffect>, MapCodec<NanobotEffect.Empty>> EMPTY = EFFECT_CODECS.register("empty", () -> NanobotEffect.Empty.CODEC);
     //</editor-fold>
 
     //<editor-fold desc="Tags & Taglikes">
     public static final TagKey<Item> BOT_VISION_ITEM = ITEMS.createTagKey("nanobot_vision");
-    public static final TagKey<NanobotEffect> BOT_VISION_EFFECT = TagKey.create(EFFECTS_KEY, MODRL.withPath("nanobot_vision"));
+    public static final TagKey<EffectConfiguration<?>> BOT_VISION_EFFECT = TagKey.create(EFFECTS_KEY, MODRL.withPath("nanobot_vision"));
     public static final ItemAbility BOT_VISION = ItemAbility.get("hmrw_nanoverse:bot_vision");
     public static final TagKey<Block> RAVENOUS_BLACKLIST = BLOCKS.createTagKey("ravenous_blacklist");
-    public static final TagKey<NanobotEffect> PREVENTS_RANDOM_TICKS = TagKey.create(EFFECTS_KEY, MODRL.withPath("prevents_random_ticks"));
-    public static final TagKey<NanobotEffect> PROTECTS_AGAINST_SPREAD = TagKey.create(EFFECTS_KEY, MODRL.withPath("protects_against_spread"));
+    public static final TagKey<EffectConfiguration<?>> PREVENTS_RANDOM_TICKS = TagKey.create(EFFECTS_KEY, MODRL.withPath("prevents_random_ticks"));
+    public static final TagKey<EffectConfiguration<?>> PROTECTS_AGAINST_SPREAD = TagKey.create(EFFECTS_KEY, MODRL.withPath("protects_against_spread"));
     //</editor-fold>
 
     //<editor-fold desc="Blocks">
@@ -124,7 +124,7 @@ public class HmrnvRegistries {
     public static final Swarm SWARM = new Swarm(EFFECTS_CODEC, EFFECTS_STREAM_CODEC, DATA_ATTACHMENTS.register("swarm", AttachmentType
             .<NanobotSwarm>builder(_t -> { throw new IllegalStateException("No default value. Use hasData to check presence before getting, or use one of the getExistingData methods!"); })
             .serialize(NanobotSwarm.CODEC)
-            .sync(NanobotSwarm.STREAM_CODEC)
+            .sync((StreamCodec<? super RegistryFriendlyByteBuf, NanobotSwarm>) NanobotSwarm.STREAM_CODEC)
             ::build));
            static {DATA_COMPONENTS.register("swarm", () -> SWARM);}
     //</editor-fold>
@@ -135,10 +135,10 @@ public class HmrnvRegistries {
     }
 
     // This is my new favourite class. It is usable in both DataComponent and DataAttachment get/set methods.
-    public record Swarm(Codec<@Unmodifiable Object2IntMap<NanobotEffect>>                                 codec,
-                        StreamCodec<RegistryFriendlyByteBuf, @Unmodifiable Object2IntMap<NanobotEffect>>  streamCodec,
+    public record Swarm(Codec<@Unmodifiable Object2IntMap<EffectConfiguration<?>>>                                 codec,
+                        StreamCodec<RegistryFriendlyByteBuf, @Unmodifiable Object2IntMap<EffectConfiguration<?>>>  streamCodec,
                         DeferredHolder<AttachmentType<?>, AttachmentType<NanobotSwarm>>     attachment
-    ) implements DataComponentType<@Unmodifiable Object2IntMap<NanobotEffect>>, Supplier<AttachmentType<NanobotSwarm>> {
+    ) implements DataComponentType<@Unmodifiable Object2IntMap<EffectConfiguration<?>>>, Supplier<AttachmentType<NanobotSwarm>> {
         @Override
         public AttachmentType<NanobotSwarm> get() {return attachment.get();}
 
@@ -161,7 +161,7 @@ public class HmrnvRegistries {
 
         modBus.addListener((NewRegistryEvent event) -> event.register(EFFECT_CODEC_REG));
         modBus.addListener((DataPackRegistryEvent.NewRegistry event) ->
-                event.dataPackRegistry(EFFECTS_KEY, NanobotEffect.CODEC, ClientEffect.Guard.CODEC.codec())
+                event.dataPackRegistry(EFFECTS_KEY, EffectConfiguration.CODEC, EffectConfiguration.CLIENT_CODEC)
         );
     }
 }

@@ -70,6 +70,7 @@ public class HfmrnvClient {
             for (int i = 0; i < iter.length(); i++) {
                 LevelChunk next = iter.get(i);
                 if (next == null) continue;
+                next.getExistingData(SWARM);
                 if (next.hasData(SWARM)) {
                     float baseX = next.getPos().getMiddleBlockX() + 0.5f;
                     float baseZ = next.getPos().getMiddleBlockZ() + 0.5f;

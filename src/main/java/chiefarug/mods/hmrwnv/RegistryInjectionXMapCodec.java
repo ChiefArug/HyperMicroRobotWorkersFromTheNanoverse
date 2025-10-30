@@ -14,33 +14,26 @@ import net.minecraft.resources.ResourceLocation;
 import java.util.Optional;
 import java.util.function.BiFunction;
 
-/// Injects a HolderGetter for a specific
-public class RegistryInjectionXMapCodec<B, A> implements Codec<A> {
-
-    private final ResourceKey<? extends Registry<A>> reg;
-    private final Codec<B> base;
-    private final BiFunction<HolderGetter<A>, B, A> apply;
-    private final BiFunction<HolderGetter<A>, A, B> unapply;
-
+/// Injects a HolderGetter for a specific registry into the apply/unapply functions
+/// Also includes a utility method for cracking open said holder getter into a full registry
+public record RegistryInjectionXMapCodec<B, A>(
+        ResourceKey<? extends Registry<A>> reg,
+        Codec<B> base,
+        BiFunction<HolderGetter<A>, B, A> apply,
+        BiFunction<HolderGetter<A>, A, B> unapply) implements Codec<A> {
 
     public static <A> RegistryInjectionXMapCodec<ResourceLocation, A> createRegistryValue(ResourceKey<? extends Registry<A>> reg) {
         return createRegistryValue(ResourceLocation.CODEC, reg);
     }
+
     public static <A> RegistryInjectionXMapCodec<ResourceLocation, A> createRegistryValue(Codec<ResourceLocation> modrlCodec, ResourceKey<? extends Registry<A>> reg) {
         return create(reg, modrlCodec,
                 (hg, rl) -> hg.get(ResourceKey.create(reg, rl)).orElseThrow().value(),
                 (hg, a) -> crack(hg).getKey(a));
     }
 
-    public static <B,A> RegistryInjectionXMapCodec<B, A> create(ResourceKey<? extends Registry<A>> reg, Codec<B> base, BiFunction<HolderGetter<A>, B, A> apply, BiFunction<HolderGetter<A>, A, B> unapply) {
+    public static <B, A> RegistryInjectionXMapCodec<B, A> create(ResourceKey<? extends Registry<A>> reg, Codec<B> base, BiFunction<HolderGetter<A>, B, A> apply, BiFunction<HolderGetter<A>, A, B> unapply) {
         return new RegistryInjectionXMapCodec<>(reg, base, apply, unapply);
-    }
-
-    private RegistryInjectionXMapCodec(ResourceKey<? extends Registry<A>> reg, Codec<B> base, BiFunction<HolderGetter<A>, B, A> apply, BiFunction<HolderGetter<A>, A, B> unapply) {
-        this.reg = reg;
-        this.base = base;
-        this.apply = apply;
-        this.unapply = unapply;
     }
 
 

@@ -1,6 +1,9 @@
 {
-  "type": "hmrw_nanoverse:hunger",
-  "decay_rate": 8,
-  "player_exhaustion": 0.001,
-  "energy_multiplier": -1
+  "effect": {
+   "type": "hmrw_nanoverse:hunger",
+   "decay_rate": 8,
+   "player_exhaustion": 0.001
+ },
+  "energy_factor": -2,
+  "color": "#825001"
 }

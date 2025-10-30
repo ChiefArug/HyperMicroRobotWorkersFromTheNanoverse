@@ -27,9 +27,4 @@ public record PotionEffect(Holder<MobEffect> effect, int amplifier, int powerPer
         if (!(host instanceof LivingEntity entity)) return;
         entity.addEffect(new MobEffectInstance(effect, NanobotEffect.getTickRate(host) + 10, level * amplifier));
     }
-
-    @Override
-    public int getRequiredPower(int level) {
-        return powerPerLevel * level;
-    }
 }

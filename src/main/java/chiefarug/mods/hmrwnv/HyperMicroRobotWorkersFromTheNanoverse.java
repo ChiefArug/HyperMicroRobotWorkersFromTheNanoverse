@@ -1,17 +1,21 @@
 package chiefarug.mods.hmrwnv;
 
+import chiefarug.mods.hmrwnv.core.EffectConfiguration;
 import chiefarug.mods.hmrwnv.core.NanobotSwarm;
 import chiefarug.mods.hmrwnv.core.effect.HungerEffect;
-import chiefarug.mods.hmrwnv.core.effect.NanobotEffect;
 import chiefarug.mods.hmrwnv.recipe.NanobotAddEffectRecipe;
 import com.mojang.logging.LogUtils;
 import com.mojang.serialization.Codec;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
+import it.unimi.dsi.fastutil.objects.Object2IntMap;
+import it.unimi.dsi.fastutil.objects.Object2IntMap.Entry;
+import it.unimi.dsi.fastutil.objects.Object2IntMaps;
 import it.unimi.dsi.fastutil.objects.ObjectBidirectionalIterator;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Registry;
 import net.minecraft.core.RegistryAccess;
+import net.minecraft.core.SectionPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ChunkHolder;
@@ -31,6 +35,7 @@ import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.config.ModConfig;
 import net.neoforged.neoforge.event.RegisterCommandsEvent;
+import net.neoforged.neoforge.event.entity.EntityEvent;
 import net.neoforged.neoforge.event.level.ChunkEvent;
 import net.neoforged.neoforge.event.server.ServerAboutToStartEvent;
 import net.neoforged.neoforge.event.tick.EntityTickEvent;
@@ -40,6 +45,7 @@ import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 
 import java.util.Map;
+import java.util.Optional;
 
 import static chiefarug.mods.hmrwnv.HfmrnvConfig.CHUNK_SLOW_DOWN_FACTOR;
 import static chiefarug.mods.hmrwnv.HfmrnvConfig.ENTITY_SLOW_DOWN_FACTOR;
@@ -180,8 +186,8 @@ public class HyperMicroRobotWorkersFromTheNanoverse {
     //TODO: infect on spawn entities in an entity tag
     //TODO: max level of effects
     //TODO: unhardcode this
-    private static Map<NanobotEffect, Integer> generateSpawnSwarmEffects(RegistryAccess access, RandomSource random) {
-        Registry<NanobotEffect> reg = access.registryOrThrow(EFFECTS_KEY);
+    private static Map<EffectConfiguration<?>, Integer> generateSpawnSwarmEffects(RegistryAccess access, RandomSource random) {
+        Registry<EffectConfiguration<?>> reg = access.registryOrThrow(EFFECTS_KEY);
         return Map.of(
                 random.nextDouble() > 0.8 ?
                         reg.get(MODRL.withPath("ravenous")) :

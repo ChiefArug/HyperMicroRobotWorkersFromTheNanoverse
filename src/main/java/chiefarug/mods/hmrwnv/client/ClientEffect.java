@@ -9,31 +9,34 @@ import net.neoforged.neoforge.attachment.IAttachmentHolder;
 public class ClientEffect implements NanobotEffect {
     // in theory this prevents ClientEffect from loading until the codec is actually called.
     public static class Guard {
-        @SuppressWarnings("Convert2MethodRef")
-        public static final MapCodec<NanobotEffect> CODEC = MapCodec.unit(() -> getInstance());
+        public static final MapCodec<NanobotEffect> CODEC = MapCodec.unit(Guard::getInstance);
+        public static NanobotEffect getInstance() {
+            return ClientEffect.getInstance();
+        }
     }
 
-    // return a new instance each time to make suer that value -> id mapping still works.
+    private static final ClientEffect INSTANCE = new ClientEffect();
     private static ClientEffect getInstance() {
-        return new ClientEffect();
+        return INSTANCE;
     }
 
     @Override
     public MapCodec<? extends NanobotEffect> codec() {
-        return Guard.CODEC;
+        throw new UnsupportedOperationException("Cannot serialize on the client");
     }
 
     @Override
-    public void onAdd(IAttachmentHolder host, int level) {}
+    public void onAdd(IAttachmentHolder host, int level) {
+        throw new UnsupportedOperationException("Cannot add effects on the client");
+    }
 
     @Override
-    public void onRemove(IAttachmentHolder host, int level) {}
+    public void onRemove(IAttachmentHolder host, int level) {
+        throw new UnsupportedOperationException("Cannot remove effects on the client");
+    }
 
     @Override
-    public void onTick(IAttachmentHolder host, int level) {}
-
-    @Override
-    public int getRequiredPower(int level) {
-        return 0;
+    public void onTick(IAttachmentHolder host, int level) {
+        throw new UnsupportedOperationException("Cannot tick on the client");
     }
 }

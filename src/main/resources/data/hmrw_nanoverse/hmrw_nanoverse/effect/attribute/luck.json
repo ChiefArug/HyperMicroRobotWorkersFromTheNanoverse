@@ -1,8 +1,8 @@
 {
   "effect": {
     "type": "hmrw_nanoverse:attribute",
-    "attribute": "generic.max_health",
-    "id": "hmrw_nanoverse:nanobot_max_health_effect",
+    "attribute": "generic.luck",
+    "id": "hmrw_nanoverse:nanobot_luck_effect",
     "operation": "add_value",
     "amount": 4
   },
