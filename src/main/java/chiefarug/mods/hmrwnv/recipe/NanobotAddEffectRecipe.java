@@ -4,6 +4,7 @@ import chiefarug.mods.hmrwnv.HmrnvRegistries;
 import chiefarug.mods.hmrwnv.core.effect.NanobotEffect;
 import com.mojang.serialization.MapCodec;
 import it.unimi.dsi.fastutil.objects.Object2IntArrayMap;
+import it.unimi.dsi.fastutil.objects.Object2IntMaps;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
@@ -35,7 +36,7 @@ public class NanobotAddEffectRecipe extends CustomRecipe implements RecipeSerial
     private static final DataMapType<Item, NanobotEffect> ITEM_EFFECTS = DataMapType.builder(
             MODRL.withPath("effects"),
             Registries.ITEM,
-            NanobotEffect.ID_CODEC
+            NanobotEffect.BY_ID_CODEC
     ).build();
 
 
@@ -102,7 +103,7 @@ public class NanobotAddEffectRecipe extends CustomRecipe implements RecipeSerial
 
         ItemStack stack = bots.copy();
         stack.setCount(1);
-        stack.set(SWARM, effects);
+        stack.set(SWARM, Object2IntMaps.unmodifiable(effects));
         return stack;
     }
 

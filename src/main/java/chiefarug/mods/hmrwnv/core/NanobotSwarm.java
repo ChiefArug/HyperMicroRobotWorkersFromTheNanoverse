@@ -43,7 +43,7 @@ public final class NanobotSwarm {
     public static final Codec<Entry<NanobotEffect>> ENTRY_CODEC = RecordCodecBuilder.create(inst1 -> inst1.group(
             //{
             // "effect" ResourceLocation[NanobotEffect]
-            NanobotEffect.ID_CODEC.fieldOf("effect").forGetter(Entry::getKey),
+            NanobotEffect.BY_ID_CODEC.fieldOf("effect").forGetter(Entry::getKey),
             // "level" int
             Codec.INT.fieldOf("level").forGetter(Entry::getIntValue)
             //}

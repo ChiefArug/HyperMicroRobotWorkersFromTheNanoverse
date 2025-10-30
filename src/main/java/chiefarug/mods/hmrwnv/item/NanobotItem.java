@@ -11,6 +11,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.Nullable;
+import org.jetbrains.annotations.Unmodifiable;
 
 import java.util.List;
 
@@ -69,6 +70,7 @@ public class NanobotItem extends Item {
     }
 
     @Nullable
+    @Unmodifiable
     public static Object2IntMap<NanobotEffect> getSwarm(ItemStack stack) {
         return stack.get(SWARM);
     }

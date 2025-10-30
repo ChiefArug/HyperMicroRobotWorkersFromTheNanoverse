@@ -44,7 +44,7 @@ import java.util.Map;
 import static chiefarug.mods.hmrwnv.HfmrnvConfig.CHUNK_SLOW_DOWN_FACTOR;
 import static chiefarug.mods.hmrwnv.HfmrnvConfig.ENTITY_SLOW_DOWN_FACTOR;
 import static chiefarug.mods.hmrwnv.HfmrnvConfig.PLAYER_SLOW_DOWN_FACTOR;
-import static chiefarug.mods.hmrwnv.HmrnvRegistries.EFFECTS;
+import static chiefarug.mods.hmrwnv.HmrnvRegistries.EFFECTS_KEY;
 import static chiefarug.mods.hmrwnv.HmrnvRegistries.INFECTION;
 import static chiefarug.mods.hmrwnv.HmrnvRegistries.SWARM;
 import static chiefarug.mods.hmrwnv.HyperMicroRobotWorkersFromTheNanoverse.MODID;
@@ -176,11 +176,12 @@ public class HyperMicroRobotWorkersFromTheNanoverse {
         }
     }
 
+    // TODO:?make recording snippets of the end poem that play in nanobot clouds
     //TODO: infect on spawn entities in an entity tag
     //TODO: max level of effects
     //TODO: unhardcode this
     private static Map<NanobotEffect, Integer> generateSpawnSwarmEffects(RegistryAccess access, RandomSource random) {
-        Registry<NanobotEffect> reg = access.registryOrThrow(EFFECTS);
+        Registry<NanobotEffect> reg = access.registryOrThrow(EFFECTS_KEY);
         return Map.of(
                 random.nextDouble() > 0.8 ?
                         reg.get(MODRL.withPath("ravenous")) :

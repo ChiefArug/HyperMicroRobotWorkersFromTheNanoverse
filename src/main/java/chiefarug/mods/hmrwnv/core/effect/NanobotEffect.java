@@ -18,16 +18,19 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.chunk.ChunkAccess;
 import net.neoforged.neoforge.attachment.IAttachmentHolder;
 
-import static chiefarug.mods.hmrwnv.HmrnvRegistries.EFFECTS;
+import java.util.function.Function;
+
+import static chiefarug.mods.hmrwnv.HmrnvRegistries.EFFECTS_KEY;
+import static chiefarug.mods.hmrwnv.HmrnvRegistries.EFFECT_CODEC_REG;
 import static chiefarug.mods.hmrwnv.HyperMicroRobotWorkersFromTheNanoverse.MODRL_CODEC;
 
 /// An interface representing an effect from nanobots.
 /// Has some sub-interfaces for composing common default methods
 public interface NanobotEffect {
 
-//    Codec<NanobotEffect> ID_CODEC = ResourceLocation.CODEC.
-    Codec<NanobotEffect> ID_CODEC = RegistryInjectionXMapCodec.createRegistryValue(MODRL_CODEC, EFFECTS);//RegistryFixedCodec.create(EFFECTS).xmap(Holder::value, Holder::direct); // pls dont break TODO: it broke, direct holders dont like sending over network.
-    StreamCodec<? super RegistryFriendlyByteBuf, NanobotEffect> STREAM_CODEC = ByteBufCodecs.registry(EFFECTS);
+    Codec<NanobotEffect> CODEC = EFFECT_CODEC_REG.byNameCodec().dispatch(NanobotEffect::codec, Function.identity());
+    Codec<NanobotEffect> BY_ID_CODEC = RegistryInjectionXMapCodec.createRegistryValue(MODRL_CODEC, EFFECTS_KEY);//RegistryFixedCodec.create(EFFECTS).xmap(Holder::value, Holder::direct); // pls dont break TODO: it broke, direct holders dont like sending over network.
+    StreamCodec<? super RegistryFriendlyByteBuf, NanobotEffect> STREAM_CODEC = ByteBufCodecs.registry(EFFECTS_KEY);
     MapCodec<Integer> LEVEL_MULTIPLIER = Codec.INT.fieldOf("energy_multiplier");
 
     /// The codec used for serializing this to disk
@@ -58,7 +61,7 @@ public interface NanobotEffect {
     }
 
     static Registry<NanobotEffect> reg(RegistryAccess access) {
-        return access.registryOrThrow(EFFECTS);
+        return access.registryOrThrow(EFFECTS_KEY);
     }
 
     default boolean is(RegistryAccess access, TagKey<NanobotEffect> tag) {
@@ -70,11 +73,11 @@ public interface NanobotEffect {
     }
 
     default MutableComponent name(RegistryAccess access) {
-        return Component.translatable(id(access).toLanguageKey(EFFECTS.location().getPath()));
+        return Component.translatable(id(access).toLanguageKey(EFFECTS_KEY.location().getPath()));
     }
 
     default MutableComponent description(RegistryAccess access) {
-        return Component.translatable(id(access).toLanguageKey(EFFECTS.location().getPath()) + ".description");
+        return Component.translatable(id(access).toLanguageKey(EFFECTS_KEY.location().getPath()) + ".description");
     }
 
     default MutableComponent nameWithLevel(RegistryAccess access, int level) {

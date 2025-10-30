@@ -95,7 +95,7 @@ public record SpreadEffect(TypeConfiguration entityConfig, TypeConfiguration chu
 
         if (effect == null) return;
 
-        ResourceLocation key = level.registryAccess().registryOrThrow(HmrnvRegistries.EFFECTS).getKey(effect);
+        ResourceLocation key = level.registryAccess().registryOrThrow(HmrnvRegistries.EFFECTS_KEY).getKey(effect);
         Object2IntMap<ResourceLocation> infections = target.getData(INFECTION);
         int exposures = infections.mergeInt(key, 1, Integer::sum);
         if (exposures >= maxExposures) {
