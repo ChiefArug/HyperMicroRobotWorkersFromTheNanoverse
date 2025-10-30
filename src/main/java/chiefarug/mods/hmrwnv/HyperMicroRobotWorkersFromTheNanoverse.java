@@ -7,6 +7,7 @@ import chiefarug.mods.hmrwnv.recipe.NanobotAddEffectRecipe;
 import com.mojang.logging.LogUtils;
 import com.mojang.serialization.Codec;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
+import it.unimi.dsi.fastutil.objects.Object2IntArrayMap;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntMap.Entry;
 import it.unimi.dsi.fastutil.objects.Object2IntMaps;
@@ -42,6 +43,7 @@ import net.neoforged.neoforge.event.tick.EntityTickEvent;
 import net.neoforged.neoforge.event.tick.LevelTickEvent;
 import net.neoforged.neoforge.event.tick.PlayerTickEvent;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.UnmodifiableView;
 import org.slf4j.Logger;
 
 import java.util.Map;
@@ -182,8 +184,63 @@ public class HyperMicroRobotWorkersFromTheNanoverse {
         }
     }
 
+    @SubscribeEvent
+    private static void chunkSwarmAffectEntities(EntityEvent.EnteringSection event) {
+        // don't trigger on only y level changes
+        if (!event.didChunkChange()) return;
+        // don't trigger on client side
+        if (!(event.getEntity().level() instanceof ServerLevel level)) return;
+
+        SectionPos oldPos = event.getOldPos();
+        Optional<@UnmodifiableView Object2IntMap<EffectConfiguration<?>>> oldChunk = level.getChunk(oldPos.x(), oldPos.z())
+                .getExistingData(SWARM)
+                .map(NanobotSwarm::getEffects);
+
+        SectionPos newPos = event.getNewPos();
+        Optional<@UnmodifiableView Object2IntMap<EffectConfiguration<?>>> newChunk = level.getChunk(newPos.x(), newPos.z())
+                .getExistingData(SWARM)
+                .map(NanobotSwarm::getEffects);
+
+        Object2IntMap<EffectConfiguration<?>> toAdd = Object2IntMaps.emptyMap();;
+        Object2IntMap<EffectConfiguration<?>> toRemove = Object2IntMaps.emptyMap();
+        if (oldChunk.isPresent()) {
+            Object2IntMap<EffectConfiguration<?>> oldSwarm = oldChunk.get();
+            if (newChunk.isPresent()) {
+                // both have data, find differences
+                Object2IntMap<EffectConfiguration<?>> newSwarm = newChunk.get();
+                toAdd = new Object2IntArrayMap<>(0);
+                toRemove = new Object2IntArrayMap<>(0);
+                for (Entry<EffectConfiguration<?>> effect : Object2IntMaps.fastIterable(oldSwarm)) {
+                    final int NULL = -0xDEAD;
+                    int value = newSwarm.getOrDefault(effect.getKey(), NULL);
+                    if (value == NULL) {
+                        toRemove.put(effect.getKey(), effect.getIntValue());
+                    } else if (value != effect.getIntValue()) {
+                        toRemove.put(effect.getKey(), effect.getIntValue());
+                        toAdd.put(effect.getKey(), effect.getIntValue());
+                    }
+                }
+            } else {
+                // only old has data, remove everything
+                toRemove = oldSwarm;
+            }
+        } else if (newChunk.isPresent()) {
+            // only new has data, add everything
+            toAdd = newChunk.get();
+        }
+
+        Entity entity = event.getEntity();
+        for (Entry<EffectConfiguration<?>> effect : Object2IntMaps.fastIterable(toRemove)) {
+            effect.getKey().onRemove(entity, effect.getIntValue());
+
+        }
+        for (Entry<EffectConfiguration<?>> effect : Object2IntMaps.fastIterable(toAdd)) {
+            effect.getKey().onAdd(entity, effect.getIntValue());
+        }
+    }
+
     // TODO:?make recording snippets of the end poem that play in nanobot clouds
-    //TODO: infect on spawn entities in an entity tag
+    //TODO: infect on spawn entities in an entity tag (also those who aren't should still have the chunks effects added temporarily)
     //TODO: max level of effects
     //TODO: unhardcode this
     private static Map<EffectConfiguration<?>, Integer> generateSpawnSwarmEffects(RegistryAccess access, RandomSource random) {
@@ -193,7 +250,7 @@ public class HyperMicroRobotWorkersFromTheNanoverse {
                         reg.get(MODRL.withPath("ravenous")) :
                         reg.get(MODRL.withPath("hunger")),
                 4,
-                reg.get(MODRL.withPath("spread")), 8);
+                reg.get(MODRL.withPath("spread")), 8, reg.get(MODRL.withPath("attribute/scale")), 5);
     }
 
 }

@@ -60,15 +60,15 @@ public record EffectConfiguration<T extends NanobotEffect>(T effect, int energyP
         return access.registryOrThrow(EFFECTS_KEY);
     }
 
-    void onAdd(IAttachmentHolder host, int level) {
+    public void onAdd(IAttachmentHolder host, int level) {
         effect.onAdd(host, level);
     }
 
-    void onRemove(IAttachmentHolder host, int level) {
+    public void onRemove(IAttachmentHolder host, int level) {
         effect.onRemove(host, level);
     }
 
-    void onTick(IAttachmentHolder host, int level) {
+    public void onTick(IAttachmentHolder host, int level) {
         effect.onTick(host, level);
     }
 
