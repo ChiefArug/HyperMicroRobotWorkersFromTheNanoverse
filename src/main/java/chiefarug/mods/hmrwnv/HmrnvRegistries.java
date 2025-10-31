@@ -1,5 +1,7 @@
 package chiefarug.mods.hmrwnv;
 
+import chiefarug.mods.hmrwnv.block.NanobotDiffuserBlock;
+import chiefarug.mods.hmrwnv.block.NanobotDiffuserBlockEntity;
 import chiefarug.mods.hmrwnv.core.EffectConfiguration;
 import chiefarug.mods.hmrwnv.core.NanobotSwarm;
 import chiefarug.mods.hmrwnv.core.effect.AttributeEffect;
@@ -96,6 +98,9 @@ public class HmrnvRegistries {
            static {ITEMS.registerSimpleBlockItem(SLAG);}
     public static final DeferredBlock<Block> RICH_SLAG = BLOCKS.registerSimpleBlock("rich_slag", BlockBehaviour.Properties.ofFullCopy(Blocks.IRON_BLOCK));
            static {ITEMS.registerSimpleBlockItem(RICH_SLAG);}
+    public static final DeferredBlock<NanobotDiffuserBlock> NANOBOT_DIFFUSER = BLOCKS.registerBlock("nanobot_diffuser", NanobotDiffuserBlock::new);
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<NanobotDiffuserBlockEntity>> NANOBOT_DIFFUSER_BE = BLOCK_ENTITY_TYPES.register("nanobot_diffuser", () -> BlockEntityType.Builder.of(NanobotDiffuserBlockEntity::new, NANOBOT_DIFFUSER.get()).build(null));
+           static {ITEMS.registerSimpleBlockItem(NANOBOT_DIFFUSER);}
     //</editor-fold>
 
     //<editor-fold desc="Items">
@@ -160,6 +165,7 @@ public class HmrnvRegistries {
         EFFECT_CODECS.register(modBus);
         RECIPE_SERIALIZERS.register(modBus);
         DATA_COMPONENTS.register(modBus);
+        BLOCK_ENTITY_TYPES.register(modBus);
 
         modBus.addListener((NewRegistryEvent event) -> event.register(EFFECT_CODEC_REG));
         modBus.addListener((DataPackRegistryEvent.NewRegistry event) ->

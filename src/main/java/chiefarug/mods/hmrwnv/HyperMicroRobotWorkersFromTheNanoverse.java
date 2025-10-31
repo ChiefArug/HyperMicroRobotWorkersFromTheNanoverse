@@ -308,7 +308,7 @@ public class HyperMicroRobotWorkersFromTheNanoverse {
                         reg.get(MODRL.withPath("ravenous")) :
                         reg.get(MODRL.withPath("hunger")),
                 4,
-                reg.get(MODRL.withPath("spread")), 8, reg.get(MODRL.withPath("attribute/bigger")), 5);
+                reg.get(MODRL.withPath("spread")), 8, reg.get(MODRL.withPath("attribute/bigger")), 5, reg.get(MODRL.withPath("wild")), 10);
     }
 
     private static CompletableFuture<Suggestions> suggestEffects(CommandContext<CommandSourceStack> ctx, SuggestionsBuilder builder) {

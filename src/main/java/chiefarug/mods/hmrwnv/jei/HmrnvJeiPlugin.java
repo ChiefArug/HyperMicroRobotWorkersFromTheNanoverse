@@ -1,5 +1,6 @@
 package chiefarug.mods.hmrwnv.jei;
 
+import chiefarug.mods.hmrwnv.HfmrnvClient;
 import chiefarug.mods.hmrwnv.HmrnvRegistries;
 import chiefarug.mods.hmrwnv.core.EffectConfiguration;
 import chiefarug.mods.hmrwnv.recipe.NanobotAddEffectRecipe;
@@ -16,12 +17,12 @@ import mezz.jei.api.recipe.RecipeIngredientRole;
 import mezz.jei.api.recipe.category.extensions.vanilla.crafting.ICraftingCategoryExtension;
 import mezz.jei.api.registration.IIngredientAliasRegistration;
 import mezz.jei.api.registration.IModInfoRegistration;
+import mezz.jei.api.registration.IRecipeCatalystRegistration;
 import mezz.jei.api.registration.IRecipeCategoryRegistration;
 import mezz.jei.api.registration.IRecipeRegistration;
 import mezz.jei.api.registration.IVanillaCategoryExtensionRegistration;
 import mezz.jei.api.runtime.IIngredientManager;
 import net.minecraft.ChatFormatting;
-import net.minecraft.client.Minecraft;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.locale.Language;
 import net.minecraft.resources.ResourceLocation;
@@ -71,21 +72,25 @@ public class HmrnvJeiPlugin implements IModPlugin {
         registration.addRecipeCategories(new NanobotEffectInfo(registration.getJeiHelpers().getGuiHelper()));
     }
 
+    @Override
+    public void registerRecipeCatalysts(IRecipeCatalystRegistration registration) {
+        registration.addRecipeCatalyst(HmrnvRegistries.NANOBOTS, NanobotEffectInfo.TYPE);
+    }
 
     @Override
     public void registerRecipes(IRecipeRegistration registration) {
         IIngredientManager ingredients = registration.getIngredientManager();
+        RegistryAccess access = HfmrnvClient.getAuthoritiveRegistryAccess();
         Map<EffectConfiguration<?>, List<ITypedIngredient<ItemStack>>> effectsToIngredients = new HashMap<>();
         for (ItemStack itemStack : registration.getJeiHelpers().getIngredientManager().getAllIngredients(VanillaTypes.ITEM_STACK)) {
             EffectConfiguration<?> effect = NanobotAddEffectRecipe.getEffect(itemStack.getItem());
             if (effect != null) {
                 //noinspection OptionalGetWithoutIsPresent // This is safe as we get it from a list of all ingredients
-                effectsToIngredients.computeIfAbsent(effect, (k) -> new ArrayList<>())
+                effectsToIngredients.computeIfAbsent(effect, k -> new ArrayList<>())
                         .add(ingredients.createTypedIngredient(VanillaTypes.ITEM_STACK, itemStack).get());
             }
         }
 
-        RegistryAccess access = Objects.requireNonNull(Minecraft.getInstance().level).registryAccess();
 
         List<NanobotEffectInfo.InfoRecipe> list = new ArrayList<>(effectsToIngredients.size());
         for (Map.Entry<EffectConfiguration<?>, List<ITypedIngredient<ItemStack>>> entry : effectsToIngredients.entrySet()) {

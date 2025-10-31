@@ -1,5 +1,7 @@
 package chiefarug.mods.hmrwnv.core.effect;
 
+import chiefarug.mods.hmrwnv.HmrnvRegistries;
+import chiefarug.mods.hmrwnv.block.NanobotDiffuserBlock;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
@@ -19,6 +21,7 @@ import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.level.chunk.LevelChunkSection;
 import net.minecraft.world.level.material.Fluids;
 import net.neoforged.bus.api.IEventBus;
+import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.neoforged.neoforge.attachment.IAttachmentHolder;
 import net.neoforged.neoforge.registries.datamaps.DataMapType;
 import net.neoforged.neoforge.registries.datamaps.RegisterDataMapTypesEvent;
@@ -33,6 +36,8 @@ import java.util.function.UnaryOperator;
 
 import static chiefarug.mods.hmrwnv.HyperMicroRobotWorkersFromTheNanoverse.LGGR;
 import static chiefarug.mods.hmrwnv.HyperMicroRobotWorkersFromTheNanoverse.MODRL;
+import static chiefarug.mods.hmrwnv.block.NanobotDiffuserBlock.DAMAGE;
+import static chiefarug.mods.hmrwnv.block.NanobotDiffuserBlock.MAX_DAMAGE;
 import static java.lang.StackWalker.Option.RETAIN_CLASS_REFERENCE;
 import static net.minecraft.world.level.block.ComposterBlock.LEVEL;
 import static net.minecraft.world.level.block.state.properties.BlockStateProperties.WATERLOGGED;
@@ -102,12 +107,18 @@ public class HungerEffect implements NanobotEffect.Ticking {
         this.playerExhaustion = playerExhaustion;
     }
 
-    static {
+    private static void setupTransforms(FMLCommonSetupEvent event) {
         registerTransformation(Blocks.COMPOSTER, state -> {
             if (state.getValue(LEVEL) == COMPOSTER_MAX_LEVEL)
-                // subtract two if its the max level, otherwise nothing changes
+                // subtract two if it's the max level, otherwise nothing changes
                 return state.setValue(LEVEL, COMPOSTER_MAX_LEVEL - 2);
             return state.setValue(LEVEL, Math.max(state.getValue(LEVEL) - 1, 0));
+        });
+        registerTransformation(HmrnvRegistries.NANOBOT_DIFFUSER.get(), state -> {
+            int newValue = state.getValue(DAMAGE) + 1;
+            // this gets destroyed even by the regular hunger effect
+            if (newValue > MAX_DAMAGE) return Blocks.AIR.defaultBlockState();
+            return state.setValue(DAMAGE, newValue);
         });
     }
 
@@ -139,6 +150,10 @@ public class HungerEffect implements NanobotEffect.Ticking {
                             BlockState newState = transform(state);
                             if (state != newState) {
                                 // manually set it and queue a resync to the client to avoid block updates
+                                //TODO: this doesnt seem to do saved lighting updates?, so we should probably queue a lighting update for this section if any block changes succeeded.
+                                // https://discord.com/channels/176780432371744769/1432866625341751366/1433784410301534208
+                                // also invalidate block entities here
+                                //  chunk.removeBlockEntity(pos);
                                 section.setBlockState(pos.getX() - minX, pos.getY() - minY, pos.getZ() - minZ, newState);
                                 ChunkHolder chunkHolder = level.getChunkSource().chunkMap.getVisibleChunkIfPresent(chunk.getPos().toLong());
                                 if (chunkHolder != null)
@@ -158,6 +173,7 @@ public class HungerEffect implements NanobotEffect.Ticking {
 
     public static void init(IEventBus modBus) {
         modBus.addListener((RegisterDataMapTypesEvent event) -> event.register(HungerEffect.HUNGER_TRANSFORM));
+        modBus.addListener(HungerEffect::setupTransforms);
     }
 
     public int decayRate() {return decayRate;}

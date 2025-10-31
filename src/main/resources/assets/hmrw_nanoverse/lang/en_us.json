@@ -4,6 +4,7 @@
   "item.hmrw_nanoverse.nanobot": "Nanobot",
   "item.hmrw_nanoverse.nanobots": "Nanobot Swarm",
   "item.hmrw_nanoverse.nanobot_goggles": "Nanobot Goggles",
+  "block.hmrw_nanoverse.nanobot_diffuser": "Nanobot Chunk Diffuser",
 
   // Note to translators: These are intended to be acronyms for common AI (Artificial Intelligence, specifically programs like ChatGPT) related words
   // When translating try to keep this property, and it does not matter much what the actual translation is as long as the first letters of each word
@@ -22,6 +23,7 @@
   "item.hmrw_nanoverse.ml.acronym": "ML",
 
 
+  // Effects
   "effect.hmrw_nanoverse.wild": "Wild",
   "effect.hmrw_nanoverse.wild.description": "This swarm runs wild and as such as abnormal amounts of power",
   "effect.hmrw_nanoverse.hunger": "Hunger",
@@ -30,9 +32,14 @@
   "effect.hmrw_nanoverse.ravenous.description": "Consumes everything from its host to provide more resources. A wild variant that will destroy most blocks",
   "effect.hmrw_nanoverse.safe_ravenous": "Ravenous",
   "effect.hmrw_nanoverse.safe_ravenous.description": "Consumes everything from its host to provide more resources. This variant has been tamed slightly and will not destroy functional blocks",
+  "effect.hmrw_nanoverse.potion.night_vision": "Nigh Vision",
+  "effect.hmrw_nanoverse.potion.night_vision.description": "Gives permanent night vision",
+
+
 
   // %1$s is the effect name, %2$s is the effect level.
   "hmrw_nanoverse.effect_level.formatting": "%1$s %2$s",
+  // Minecraft's enchantment ones only go up to 9. We support up to 20.
   "hmrw_nanoverse.effect_level.1": "I",
   "hmrw_nanoverse.effect_level.2": "II",
   "hmrw_nanoverse.effect_level.3": "III",
@@ -54,6 +61,6 @@
   "hmrw_nanoverse.effect_level.19": "XIX",
   "hmrw_nanoverse.effect_level.20": "XX",
 
-  "hmrw_nanoverse.jei.nanobots_output.description": "Effects depend on input. see Effect Information JEI Tab.",
-  "hmrw_nanoverse.tooltip.cannot_display_effects": "Could not display effects due to lack of level"
+  // Informational
+  "hmrw_nanoverse.tooltip.cannot_display_effects": "Could not display effects due to lack of level/world context"
 }

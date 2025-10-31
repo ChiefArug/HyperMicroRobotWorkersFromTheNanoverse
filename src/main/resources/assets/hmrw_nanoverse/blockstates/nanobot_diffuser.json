@@ -1,0 +1,52 @@
+{
+  "variants": {
+    "damage=0": {
+      "model": "hmrw_nanoverse:block/nanobot_diffuser_0"
+    },
+    "damage=1": {
+      "model": "hmrw_nanoverse:block/nanobot_diffuser_0"
+    },
+    "damage=2": {
+      "model": "hmrw_nanoverse:block/nanobot_diffuser_0"
+    },
+    "damage=3": {
+      "model": "hmrw_nanoverse:block/nanobot_diffuser_1"
+    },
+    "damage=4": {
+      "model": "hmrw_nanoverse:block/nanobot_diffuser_1"
+    },
+    "damage=5": {
+      "model": "hmrw_nanoverse:block/nanobot_diffuser_1"
+    },
+    "damage=6": {
+      "model": "hmrw_nanoverse:block/nanobot_diffuser_1"
+    },
+    "damage=7": {
+      "model": "hmrw_nanoverse:block/nanobot_diffuser_2"
+    },
+    "damage=8": {
+      "model": "hmrw_nanoverse:block/nanobot_diffuser_2"
+    },
+    "damage=9": {
+      "model": "hmrw_nanoverse:block/nanobot_diffuser_2"
+    },
+    "damage=10": {
+      "model": "hmrw_nanoverse:block/nanobot_diffuser_2"
+    },
+    "damage=11": {
+      "model": "hmrw_nanoverse:block/nanobot_diffuser_3"
+    },
+    "damage=12": {
+      "model": "hmrw_nanoverse:block/nanobot_diffuser_3"
+    },
+    "damage=13": {
+      "model": "hmrw_nanoverse:block/nanobot_diffuser_3"
+    },
+    "damage=14": {
+      "model": "hmrw_nanoverse:block/nanobot_diffuser_4"
+    },
+    "damage=15": {
+      "model": "hmrw_nanoverse:block/nanobot_diffuser_4"
+    }
+  }
+}

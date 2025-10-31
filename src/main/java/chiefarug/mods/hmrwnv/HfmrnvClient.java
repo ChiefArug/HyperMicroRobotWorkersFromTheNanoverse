@@ -6,6 +6,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.blockentity.BeaconRenderer;
+import net.minecraft.core.RegistryAccess;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
@@ -103,5 +104,20 @@ public class HfmrnvClient {
             BeaconRenderer.renderBeaconBeam(pose, bufferSource, BEAM_LOCATION, partialTick, 1, level.getGameTime(), 0, height, color, 0.2F, 0.25F);
         }
         pose.popPose();
+    }
+
+    /// This is required as neo gives you server side datamap objects in singleplayer even if querying from a client side reg access
+    /// (I suspect this is because both sides will use the same item registry object and as such it has no context as to which side it is on)
+    /// so we just use the server side reg access if on singleplayer client
+    // TODO: bug report this
+    public static RegistryAccess getAuthoritiveRegistryAccess() {
+        Minecraft mc = Minecraft.getInstance();
+        if (mc.hasSingleplayerServer()) {
+            // we are singleplayer, so use the server
+            return Objects.requireNonNull(mc.getSingleplayerServer()).registryAccess();
+        } else {
+            // we are multiplayer so we only have the client values and don't need to care about differences
+            return Objects.requireNonNull(mc.level).registryAccess();
+        }
     }
 }

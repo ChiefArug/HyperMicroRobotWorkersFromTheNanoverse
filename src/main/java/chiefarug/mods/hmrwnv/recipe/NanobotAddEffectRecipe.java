@@ -37,7 +37,7 @@ public class NanobotAddEffectRecipe extends CustomRecipe implements RecipeSerial
             MODRL.withPath("effects"),
             Registries.ITEM,
             EffectConfiguration.BY_ID_CODEC
-    ).build();
+    ).synced(EffectConfiguration.CLIENT_CODEC, true).build();
 
 
 
@@ -73,7 +73,7 @@ public class NanobotAddEffectRecipe extends CustomRecipe implements RecipeSerial
             if (in.is(HmrnvRegistries.NANOBOTS)) {
                 // if we have seen a bot swarm before we can't match
                 if (!(bot = !bot)) return false;
-            } else if (getEffect(in.getItem()) == null) {
+            } else if (!hasEffect(in.getItem())) {
                 return false;
             } else {
                 effects++;
@@ -86,7 +86,7 @@ public class NanobotAddEffectRecipe extends CustomRecipe implements RecipeSerial
 
     public static ItemStack assemble(int size, IntFunction<ItemStack> items) {
         // use an array map because it's going to be tiny and fast iteration will be useful when it gets turned into a swarm
-        // capacity of size - 1
+        // capacity of size - 1 as we know the bot won't have an effect
         Object2IntArrayMap<EffectConfiguration<?>> effects = new Object2IntArrayMap<>(size - 1);
         ItemStack bots = null;
         for (int i = 0; i < size; i++) {

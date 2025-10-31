@@ -93,11 +93,11 @@ public record EffectConfiguration<T extends NanobotEffect>(T effect, int energyP
     }
 
     public MutableComponent name(RegistryAccess access) {
-        return Component.translatable(id(access).toLanguageKey(EFFECTS_KEY.location().getPath()));
+        return Component.translatable(id(access).toLanguageKey(EFFECTS_KEY.location().getPath()).replace('/', '.'));
     }
 
     public MutableComponent description(RegistryAccess access) {
-        return Component.translatable(id(access).toLanguageKey(EFFECTS_KEY.location().getPath()) + ".description");
+        return Component.translatable(id(access).toLanguageKey(EFFECTS_KEY.location().getPath()).replace('/', '.') + ".description");
     }
 
     public MutableComponent nameWithLevel(RegistryAccess access, int level) {
