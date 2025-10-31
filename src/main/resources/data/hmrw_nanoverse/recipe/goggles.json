@@ -1,0 +1,23 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "GGG",
+    "SES",
+    "GGG"
+  ],
+  "key": {
+    "G": {
+      "item": "glass"
+    },
+    "E": {
+      "item": "ender_pearl"
+    },
+    "S": {
+      "item": "hmrw_nanoverse:slop"
+    }
+  },
+  "result": {
+    "id": "hmrw_nanoverse:nanobot_goggles",
+    "count": 1
+  }
+}
