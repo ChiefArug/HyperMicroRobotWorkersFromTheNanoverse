@@ -2,7 +2,8 @@
   "effect": {
     "type": "potion",
     "effect": "night_vision",
-    "amplifier": 1
+    "amplifier": 1,
+    "buffer": 10
   },
   "energy_factor": 2,
   "max_level": 1,

@@ -5,6 +5,7 @@ import chiefarug.mods.hmrwnv.core.NanobotSwarm;
 import chiefarug.mods.hmrwnv.core.effect.AttributeEffect;
 import chiefarug.mods.hmrwnv.core.effect.HungerEffect;
 import chiefarug.mods.hmrwnv.core.effect.NanobotEffect;
+import chiefarug.mods.hmrwnv.core.effect.PotionEffect;
 import chiefarug.mods.hmrwnv.core.effect.RavenousEffect;
 import chiefarug.mods.hmrwnv.core.effect.SpreadEffect;
 import chiefarug.mods.hmrwnv.item.GogglesItem;
@@ -74,6 +75,7 @@ public class HmrnvRegistries {
 
     //<editor-fold desc="NanobotEffect Codecs">
     public static final DeferredHolder<MapCodec<? extends NanobotEffect>, MapCodec<AttributeEffect>> ATTRIBUTE = EFFECT_CODECS.register("attribute", () -> AttributeEffect.CODEC);
+    public static final DeferredHolder<MapCodec<? extends NanobotEffect>, MapCodec<PotionEffect>> POTION = EFFECT_CODECS.register("potion", () -> PotionEffect.CODEC);
     public static final DeferredHolder<MapCodec<? extends NanobotEffect>, MapCodec<HungerEffect>> HUNGER = EFFECT_CODECS.register("hunger", () -> HungerEffect.CODEC);
     public static final DeferredHolder<MapCodec<? extends NanobotEffect>, MapCodec<RavenousEffect>> RAVENOUS = EFFECT_CODECS.register("ravenous", () -> RavenousEffect.CODEC);
     public static final DeferredHolder<MapCodec<? extends NanobotEffect>, MapCodec<SpreadEffect>> SPREAD = EFFECT_CODECS.register("spread", () -> SpreadEffect.CODEC);

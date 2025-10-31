@@ -10,10 +10,12 @@ import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.LivingEntity;
 import net.neoforged.neoforge.attachment.IAttachmentHolder;
 
-public record PotionEffect(Holder<MobEffect> effect, int amplifier) implements NanobotEffect.Ticking {
+/// Effect that gives affected entities a potion effect at the specified amplifier * level
+public record PotionEffect(Holder<MobEffect> effect, int amplifier, int buffer) implements NanobotEffect.Ticking {
     public static final MapCodec<PotionEffect> CODEC = RecordCodecBuilder.mapCodec(inst -> inst.group(
             BuiltInRegistries.MOB_EFFECT.holderByNameCodec().fieldOf("effect").forGetter(PotionEffect::effect),
-            Codec.INT.fieldOf("amplifier").forGetter(PotionEffect::amplifier)
+            Codec.INT.fieldOf("amplifier").forGetter(PotionEffect::amplifier),
+            Codec.INT.fieldOf("buffer_ticks").forGetter(PotionEffect::buffer)
     ).apply(inst, PotionEffect::new));
     
     @Override
@@ -24,6 +26,6 @@ public record PotionEffect(Holder<MobEffect> effect, int amplifier) implements N
     @Override
     public void onTick(IAttachmentHolder host, int level) {
         if (!(host instanceof LivingEntity entity)) return;
-        entity.addEffect(new MobEffectInstance(effect, NanobotEffect.getTickRate(host) + 10, level * amplifier));
+        entity.addEffect(new MobEffectInstance(effect, NanobotEffect.getTickRate(host) + buffer, level * amplifier));
     }
 }
