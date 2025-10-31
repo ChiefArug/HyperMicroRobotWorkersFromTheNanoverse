@@ -26,6 +26,8 @@ public record PotionEffect(Holder<MobEffect> effect, int amplifier, int buffer) 
     @Override
     public void onTick(IAttachmentHolder host, int level) {
         if (!(host instanceof LivingEntity entity)) return;
-        entity.addEffect(new MobEffectInstance(effect, NanobotEffect.getTickRate(host) + buffer, level * amplifier));
+        // Because amplifier starts at 0 for level one we need some weird math to make it level up properly.
+        int finalAmplifier = amplifier + (level - 1) * (amplifier + 1);
+        entity.addEffect(new MobEffectInstance(effect, NanobotEffect.getTickRate(host) + buffer, finalAmplifier));
     }
 }

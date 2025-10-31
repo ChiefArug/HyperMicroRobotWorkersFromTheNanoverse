@@ -52,6 +52,7 @@ import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -64,6 +65,7 @@ import static chiefarug.mods.hmrwnv.HmrnvRegistries.EFFECTS_KEY;
 import static chiefarug.mods.hmrwnv.HmrnvRegistries.INFECTION;
 import static chiefarug.mods.hmrwnv.HmrnvRegistries.SWARM;
 import static chiefarug.mods.hmrwnv.HyperMicroRobotWorkersFromTheNanoverse.MODID;
+import static chiefarug.mods.hmrwnv.core.NanobotSwarm.forEachEffect;
 import static net.minecraft.commands.Commands.argument;
 import static net.minecraft.commands.Commands.literal;
 
@@ -201,12 +203,19 @@ public class HyperMicroRobotWorkersFromTheNanoverse {
                         NanobotSwarm swarm = chunk.getExistingDataOrNull(SWARM);
                         if (swarm != null) {
                             swarm.tick(chunk);
+                            Object2IntMap<EffectConfiguration<?>> effects = new Object2IntArrayMap<>(swarm.getEffects());
+                            Iterator<Object2IntMap.Entry<EffectConfiguration<?>>> effectIter = Object2IntMaps.fastIterator(effects);
+
+                            // filter out effects that don't support ticking
+                            while (effectIter.hasNext()) {
+                                if (!effectIter.next().getKey().affectsEntitiesInChunk()) effectIter.remove();
+                            }
 
                             // tick entities inside the chunk
                             sl.entityManager.sectionStorage.getExistingSectionsInChunk(posAsLong)
                                     // use storage.find as that caches the results of the search for next time.
                                     .flatMap(entityEntitySection -> entityEntitySection.storage.find(LivingEntity.class).stream())
-                                    .forEach(entity -> swarm.forEachEffect(entity, EffectConfiguration::onTick));
+                                    .forEach(entity -> forEachEffect(effects, entity, EffectConfiguration::onTick));
                         }
                     }
                 }
@@ -271,8 +280,8 @@ public class HyperMicroRobotWorkersFromTheNanoverse {
         }
 
         Entity entity = event.getEntity();
-        NanobotSwarm.forEachEffect(toRemove, entity, EffectConfiguration::onRemove);
-        NanobotSwarm.forEachEffect(toAdd, entity, EffectConfiguration::onAdd);
+        forEachEffect(toRemove, entity, EffectConfiguration::onRemove);
+        forEachEffect(toAdd, entity, EffectConfiguration::onAdd);
     }
 
     private static Set<EffectConfiguration<?>> collectEffects(Object2IntMap<EffectConfiguration<?>> oldSwarm, Object2IntMap<EffectConfiguration<?>> newSwarm) {

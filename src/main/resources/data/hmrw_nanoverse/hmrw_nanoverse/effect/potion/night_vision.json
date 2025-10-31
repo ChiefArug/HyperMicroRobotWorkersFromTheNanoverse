@@ -2,8 +2,8 @@
   "effect": {
     "type": "hmrw_nanoverse:potion",
     "effect": "night_vision",
-    "amplifier": 1,
-    "buffer_ticks": 10
+    "amplifier": 0,
+    "buffer_ticks": 219
   },
   "energy_factor": 2,
   "max_level": 1,
