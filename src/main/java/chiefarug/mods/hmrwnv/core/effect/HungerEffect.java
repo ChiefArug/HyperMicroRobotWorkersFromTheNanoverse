@@ -39,7 +39,7 @@ import static net.minecraft.world.level.block.state.properties.BlockStatePropert
 
 /// An effect that consumes something from the target to provide energy.
 /// Entities do not have anything to consume so this provides free energy to them.
-public class HungerEffect implements NanobotEffect.NonStateful {
+public class HungerEffect implements NanobotEffect.Ticking {
     private static final Codec<BlockState> TRANSFORM_RESULT_CODEC = Codec.withAlternative(BlockState.CODEC, BuiltInRegistries.BLOCK.byNameCodec().xmap(Block::defaultBlockState, BlockState::getBlock));
     public static final MapCodec<HungerEffect> CODEC = RecordCodecBuilder.mapCodec(g -> g.group(
             Codec.INT.fieldOf("decay_rate").forGetter(HungerEffect::decayRate),

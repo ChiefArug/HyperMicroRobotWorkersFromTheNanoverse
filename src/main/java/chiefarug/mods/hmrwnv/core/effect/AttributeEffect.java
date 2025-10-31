@@ -11,7 +11,7 @@ import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.neoforged.neoforge.attachment.IAttachmentHolder;
 
-public record AttributeEffect(Holder<Attribute> attribute, ResourceLocation id, double baseAmount, AttributeModifier.Operation operation) implements NanobotEffect.NonTicking {
+public record AttributeEffect(Holder<Attribute> attribute, ResourceLocation id, double baseAmount, AttributeModifier.Operation operation) implements NanobotEffect.Stateful {
     public static final MapCodec<AttributeEffect> CODEC = RecordCodecBuilder.mapCodec(inst -> inst.group(
             BuiltInRegistries.ATTRIBUTE.holderByNameCodec().fieldOf("attribute").forGetter(AttributeEffect::attribute),
             AttributeModifier.MAP_CODEC.forGetter(AttributeEffect::asModifier)

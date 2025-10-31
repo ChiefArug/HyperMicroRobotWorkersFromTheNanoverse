@@ -1,0 +1,10 @@
+{
+  "effect": {
+    "type": "potion",
+    "effect": "night_vision",
+    "amplifier": 1
+  },
+  "energy_factor": 2,
+  "max_level": 1,
+  "color": "#4763CE"
+}

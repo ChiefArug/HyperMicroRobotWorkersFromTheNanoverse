@@ -28,7 +28,7 @@ import static chiefarug.mods.hmrwnv.HmrnvRegistries.INFECTION;
 import static chiefarug.mods.hmrwnv.HmrnvRegistries.PROTECTS_AGAINST_SPREAD;
 import static chiefarug.mods.hmrwnv.HmrnvRegistries.SWARM;
 
-public record SpreadEffect(TypeConfiguration entityConfig, TypeConfiguration chunkConfig, int playerExposures, int entitySpreadDistance) implements NanobotEffect.NonStateful {
+public record SpreadEffect(TypeConfiguration entityConfig, TypeConfiguration chunkConfig, int playerExposures, int entitySpreadDistance) implements NanobotEffect.Ticking {
 
     record TypeConfiguration(double chance, int exposures) {
         public static final MapCodec<TypeConfiguration> CODEC = RecordCodecBuilder.mapCodec(g -> g.group(

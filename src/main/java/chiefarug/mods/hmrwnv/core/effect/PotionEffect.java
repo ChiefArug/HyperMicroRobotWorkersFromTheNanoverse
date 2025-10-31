@@ -10,11 +10,10 @@ import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.LivingEntity;
 import net.neoforged.neoforge.attachment.IAttachmentHolder;
 
-public record PotionEffect(Holder<MobEffect> effect, int amplifier, int powerPerLevel) implements NanobotEffect.NonStateful {
+public record PotionEffect(Holder<MobEffect> effect, int amplifier) implements NanobotEffect.Ticking {
     public static final MapCodec<PotionEffect> CODEC = RecordCodecBuilder.mapCodec(inst -> inst.group(
             BuiltInRegistries.MOB_EFFECT.holderByNameCodec().fieldOf("effect").forGetter(PotionEffect::effect),
-            Codec.INT.fieldOf("amplifier").forGetter(PotionEffect::amplifier),
-            Codec.INT.fieldOf("powerFactor").forGetter(PotionEffect::powerPerLevel)
+            Codec.INT.fieldOf("amplifier").forGetter(PotionEffect::amplifier)
     ).apply(inst, PotionEffect::new));
     
     @Override

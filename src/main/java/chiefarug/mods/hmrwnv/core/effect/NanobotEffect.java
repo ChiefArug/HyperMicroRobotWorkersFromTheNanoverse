@@ -45,20 +45,20 @@ public interface NanobotEffect {
         };
     }
 
-    /// Helper for making a nanobot effect that only ticks/doesnt use onAdd/onRemove
-    interface NonStateful extends NanobotEffect {
+    /// Helper for making a nanobot effect that only ticks
+    interface Ticking extends NanobotEffect {
         default void onAdd(IAttachmentHolder host, int level) {}
         default void onRemove(IAttachmentHolder host, int level) {}
     }
 
     /// Helper interface for making a nanobot effect that doesn't tick, but has a static effect that needs applying/removing.
-    interface NonTicking extends NanobotEffect {
+    interface Stateful extends NanobotEffect {
         default void onTick(IAttachmentHolder holds, int level) {}
     }
 
     /// For effects that are implemented elsewhere (ie a mixin) so don't need overrides of any methods.
-    /// Implementations like that should use a tag so that effects can be stacked.
-    final class Empty implements NonStateful, NonTicking {
+    /// Implementations like that should use a tag so that such effects can be stacked or changed if desired.
+    final class Empty implements Ticking, Stateful {
         private static final Empty INSTANCE = new Empty();
         public static final MapCodec<Empty> CODEC = MapCodec.unit(INSTANCE);
 

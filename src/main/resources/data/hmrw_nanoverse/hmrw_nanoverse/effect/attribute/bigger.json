@@ -2,7 +2,7 @@
   "effect": {
     "type": "hmrw_nanoverse:attribute",
     "attribute": "generic.scale",
-    "id": "hmrw_nanoverse:nanobot_scale_effect",
+    "id": "hmrw_nanoverse:nanobot_bigger_effect",
     "operation": "add_multiplied_total",
     "amount": 0.2
   },

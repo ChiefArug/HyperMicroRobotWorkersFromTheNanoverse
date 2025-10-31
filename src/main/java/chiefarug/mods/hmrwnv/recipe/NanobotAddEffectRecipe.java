@@ -79,6 +79,7 @@ public class NanobotAddEffectRecipe extends CustomRecipe implements RecipeSerial
                 effects++;
             }
         }
+        // TODO: this needs to calculate if any are above max level!
         return effects > 0;
     }
 
@@ -101,8 +102,7 @@ public class NanobotAddEffectRecipe extends CustomRecipe implements RecipeSerial
 
         if (bots == null) return ItemStack.EMPTY; // this should be impossible but in testing I found it was not...
 
-        ItemStack stack = bots.copy();
-        stack.setCount(1);
+        ItemStack stack = bots.copyWithCount(1);
         stack.set(SWARM, Object2IntMaps.unmodifiable(effects));
         return stack;
     }
