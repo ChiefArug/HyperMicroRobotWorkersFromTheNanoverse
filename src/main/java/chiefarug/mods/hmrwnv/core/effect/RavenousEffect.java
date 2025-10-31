@@ -44,7 +44,7 @@ public class RavenousEffect extends HungerEffect {
         Direction[] airDirs = new Direction[6];
         for (Direction dir : allDirs) {
             pos.move(dir, 1);
-            if (level.getBlockState(pos).canBeReplaced()) {
+            if (level.getBlockState(pos).isAir()) {
                 airDirs[airCount++] = dir;
             }
             pos.move(dir, -1);
@@ -63,7 +63,7 @@ public class RavenousEffect extends HungerEffect {
                 for (Direction dir3 : allDirs) {
                     if (dir3.getOpposite() == dir1 || dir3.getOpposite() == dir2) continue;
                     pos.move(dir3, 1);
-                    if (level.getBlockState(pos).canBeReplaced())
+                    if (level.getBlockState(pos).isAir())
                         if (airCount++ >= 20)
                             return true;
                     pos.move(dir3, -1);
