@@ -254,11 +254,15 @@ public final class NanobotSwarm {
         return false;
     }
 
-    private interface EffectConsumer {
+    public interface EffectConsumer {
         void accept(EffectConfiguration<?> effect, IAttachmentHolder host, int level);
     }
 
-    private static void forEachEffect(Object2IntMap<EffectConfiguration<?>> effects, IAttachmentHolder host, EffectConsumer consumer) {
+    public void forEachEffect(IAttachmentHolder host, EffectConsumer consumer) {
+        forEachEffect(effects, host, consumer);
+    }
+
+    public static void forEachEffect(Object2IntMap<EffectConfiguration<?>> effects, IAttachmentHolder host, EffectConsumer consumer) {
         for (Entry<EffectConfiguration<?>> entry : Object2IntMaps.fastIterable(effects)) {
             consumer.accept(entry.getKey(), host, entry.getIntValue());
         }

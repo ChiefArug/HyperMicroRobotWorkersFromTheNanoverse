@@ -171,12 +171,19 @@ public class HyperMicroRobotWorkersFromTheNanoverse {
                 Long2ObjectMap.Entry<ChunkHolder> next = iter.next();
 
                 // evenly distribute ticks based on position
-                if (tick == Math.abs(next.getLongKey() % slowDown)) {
-                    LevelChunk tickingChunk = next.getValue().getTickingChunk();
-                    if (tickingChunk != null) {
-                        NanobotSwarm swarm = tickingChunk.getExistingDataOrNull(SWARM);
+                long posAsLong = next.getLongKey();
+                if (tick == Math.abs(posAsLong % slowDown)) {
+                    LevelChunk chunk = next.getValue().getTickingChunk();
+                    if (chunk != null) {
+                        NanobotSwarm swarm = chunk.getExistingDataOrNull(SWARM);
                         if (swarm != null) {
-                            swarm.tick(tickingChunk);
+                            swarm.tick(chunk);
+
+                            // tick entities inside the chunk
+                            sl.entityManager.sectionStorage.getExistingSectionsInChunk(posAsLong)
+                                    // use storage.find as that caches the results of the search for next time.
+                                    .flatMap(entityEntitySection -> entityEntitySection.storage.find(LivingEntity.class).stream())
+                                    .forEach(entity -> swarm.forEachEffect(entity, EffectConfiguration::onTick));
                         }
                     }
                 }
@@ -190,6 +197,8 @@ public class HyperMicroRobotWorkersFromTheNanoverse {
         if (!event.didChunkChange()) return;
         // don't trigger on client side
         if (!(event.getEntity().level() instanceof ServerLevel level)) return;
+        // don't trigger on non living entities
+        if (!(event.getEntity() instanceof LivingEntity)) return;
 
         SectionPos oldPos = event.getOldPos();
         Optional<@UnmodifiableView Object2IntMap<EffectConfiguration<?>>> oldChunk = level.getChunk(oldPos.x(), oldPos.z())
