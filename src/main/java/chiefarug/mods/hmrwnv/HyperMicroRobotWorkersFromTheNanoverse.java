@@ -13,7 +13,6 @@ import com.mojang.serialization.Codec;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.objects.Object2IntArrayMap;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
-import it.unimi.dsi.fastutil.objects.Object2IntMap.Entry;
 import it.unimi.dsi.fastutil.objects.Object2IntMaps;
 import it.unimi.dsi.fastutil.objects.ObjectBidirectionalIterator;
 import net.minecraft.commands.CommandSourceStack;
@@ -50,11 +49,12 @@ import net.neoforged.neoforge.event.tick.EntityTickEvent;
 import net.neoforged.neoforge.event.tick.LevelTickEvent;
 import net.neoforged.neoforge.event.tick.PlayerTickEvent;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.UnmodifiableView;
 import org.slf4j.Logger;
 
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 
 import static chiefarug.mods.hmrwnv.HfmrnvConfig.CHUNK_SLOW_DOWN_FACTOR;
@@ -214,7 +214,7 @@ public class HyperMicroRobotWorkersFromTheNanoverse {
         }
     }
 
-    @SubscribeEvent
+    @SubscribeEvent // trigger add/remove effects when entities enter and leave chunks
     private static void chunkSwarmAffectEntities(EntityEvent.EnteringSection event) {
         // don't trigger on only y level changes
         if (!event.didChunkChange()) return;
@@ -224,12 +224,12 @@ public class HyperMicroRobotWorkersFromTheNanoverse {
         if (!(event.getEntity() instanceof LivingEntity)) return;
 
         SectionPos oldPos = event.getOldPos();
-        Optional<@UnmodifiableView Object2IntMap<EffectConfiguration<?>>> oldChunk = level.getChunk(oldPos.x(), oldPos.z())
+        Optional<Object2IntMap<EffectConfiguration<?>>> oldChunk = level.getChunk(oldPos.x(), oldPos.z())
                 .getExistingData(SWARM)
                 .map(NanobotSwarm::getEffects);
 
         SectionPos newPos = event.getNewPos();
-        Optional<@UnmodifiableView Object2IntMap<EffectConfiguration<?>>> newChunk = level.getChunk(newPos.x(), newPos.z())
+        Optional<Object2IntMap<EffectConfiguration<?>>> newChunk = level.getChunk(newPos.x(), newPos.z())
                 .getExistingData(SWARM)
                 .map(NanobotSwarm::getEffects);
 
@@ -242,14 +242,23 @@ public class HyperMicroRobotWorkersFromTheNanoverse {
                 Object2IntMap<EffectConfiguration<?>> newSwarm = newChunk.get();
                 toAdd = new Object2IntArrayMap<>(0);
                 toRemove = new Object2IntArrayMap<>(0);
-                for (Entry<EffectConfiguration<?>> effect : Object2IntMaps.fastIterable(oldSwarm)) {
+
+                for (EffectConfiguration<?> effect : collectEffects(oldSwarm, newSwarm)) {
+                    // negative level values are not possible, so use this rando negative value.
                     final int NULL = -0xDEAD;
-                    int value = newSwarm.getOrDefault(effect.getKey(), NULL);
-                    if (value == NULL) {
-                        toRemove.put(effect.getKey(), effect.getIntValue());
-                    } else if (value != effect.getIntValue()) {
-                        toRemove.put(effect.getKey(), effect.getIntValue());
-                        toAdd.put(effect.getKey(), effect.getIntValue());
+                    int newValue = newSwarm.getOrDefault(effect, NULL);
+                    int oldValue = oldSwarm.getOrDefault(effect, NULL);
+
+                    // if they are the same we don't need to care about them.
+                    if (newValue == oldValue) continue;
+
+                    if (newValue == NULL) { // oldValue is not null
+                        toRemove.put(effect, oldValue);
+                    } else if (oldValue == NULL) { // newValue is not null
+                        toAdd.put(effect, newValue);
+                    } else { // both are not null and also not equal
+                        toRemove.put(effect, oldValue);
+                        toAdd.put(effect, newValue);
                     }
                 }
             } else {
@@ -262,13 +271,21 @@ public class HyperMicroRobotWorkersFromTheNanoverse {
         }
 
         Entity entity = event.getEntity();
-        for (Entry<EffectConfiguration<?>> effect : Object2IntMaps.fastIterable(toRemove)) {
-            effect.getKey().onRemove(entity, effect.getIntValue());
+        NanobotSwarm.forEachEffect(toRemove, entity, EffectConfiguration::onRemove);
+        NanobotSwarm.forEachEffect(toAdd, entity, EffectConfiguration::onAdd);
+    }
 
+    private static Set<EffectConfiguration<?>> collectEffects(Object2IntMap<EffectConfiguration<?>> oldSwarm, Object2IntMap<EffectConfiguration<?>> newSwarm) {
+        Set<EffectConfiguration<?>> effects = new HashSet<>(oldSwarm.size() + newSwarm.size());
+        for (EffectConfiguration<?> effectConfiguration : oldSwarm.keySet()) {
+            if (effectConfiguration.affectsEntitiesInChunk())
+                effects.add(effectConfiguration);
         }
-        for (Entry<EffectConfiguration<?>> effect : Object2IntMaps.fastIterable(toAdd)) {
-            effect.getKey().onAdd(entity, effect.getIntValue());
+        for (EffectConfiguration<?> effectConfiguration : newSwarm.keySet()) {
+            if (effectConfiguration.affectsEntitiesInChunk())
+                effects.add(effectConfiguration);
         }
+        return effects;
     }
 
     // TODO:?make recording snippets of the end poem that play in nanobot clouds
@@ -282,7 +299,7 @@ public class HyperMicroRobotWorkersFromTheNanoverse {
                         reg.get(MODRL.withPath("ravenous")) :
                         reg.get(MODRL.withPath("hunger")),
                 4,
-                reg.get(MODRL.withPath("spread")), 8, reg.get(MODRL.withPath("attribute/scale")), 5);
+                reg.get(MODRL.withPath("spread")), 8, reg.get(MODRL.withPath("attribute/bigger")), 5);
     }
 
     private static CompletableFuture<Suggestions> suggestEffects(CommandContext<CommandSourceStack> ctx, SuggestionsBuilder builder) {

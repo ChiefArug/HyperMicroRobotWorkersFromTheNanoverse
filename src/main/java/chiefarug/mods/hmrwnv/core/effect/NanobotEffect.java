@@ -28,12 +28,22 @@ public interface NanobotEffect {
 
     /// Called just before this effect is removed from a nanobot swarm (or the swarm itself is removed)
     /// Also called when the level changes, before {@link NanobotEffect#onAdd} has been called
-    /// NOTE: Can be called if the host does not currently have this effect, in the case of entities leaving chunks
+    /// Can be called if the host does not currently have this effect, in the case of entities
+    /// leaving chunks, unless explicitly disabled by implementing {@link ChunkLocal}
     void onRemove(IAttachmentHolder host, int level);
 
     /// Called frequently while this effect is part of a swarm is on something
     /// The exact rate is configurable, but by default is every tick for players and entities, and twice a second for chunks
     void onTick(IAttachmentHolder host, int level);
+
+    /// If this effect should affect entities inside the chunk.
+    /// If this returns false, then in the {@link NanobotEffect#onAdd}, {@link NanobotEffect#onRemove} and {@link NanobotEffect#onTick} methods, host is always guaranteed to have an effect of the provided level.
+    /// If this returns true (the default value) the host may not have the effect in their swarm, and may not even have a swarm.
+    /// Not a tag because of certain effects relying on the above guarantee.
+    /// @see ChunkLocal
+    default boolean affectsEntitiesInChunk() {
+        return true;
+    }
 
     /// Get tick rate for the given host type.
     static int getTickRate(IAttachmentHolder host) {
@@ -54,6 +64,12 @@ public interface NanobotEffect {
     /// Helper interface for making a nanobot effect that doesn't tick, but has a static effect that needs applying/removing.
     interface Stateful extends NanobotEffect {
         default void onTick(IAttachmentHolder holds, int level) {}
+    }
+
+    /// Helper interface for making a nanobot effect that doesn't affect entities inside a chunk with this effect
+    /// @see NanobotEffect#affectsEntitiesInChunk()
+    interface ChunkLocal extends NanobotEffect {
+        default boolean affectsEntitiesInChunk() { return false; }
     }
 
     /// For effects that are implemented elsewhere (ie a mixin) so don't need overrides of any methods.

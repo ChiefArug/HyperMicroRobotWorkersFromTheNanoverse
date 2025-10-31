@@ -60,16 +60,24 @@ public record EffectConfiguration<T extends NanobotEffect>(T effect, int energyP
         return access.registryOrThrow(EFFECTS_KEY);
     }
 
+    /// @see NanobotEffect#onAdd(IAttachmentHolder, int)
     public void onAdd(IAttachmentHolder host, int level) {
         effect.onAdd(host, level);
     }
 
+    /// @see NanobotEffect#onRemove(IAttachmentHolder, int)
     public void onRemove(IAttachmentHolder host, int level) {
         effect.onRemove(host, level);
     }
 
+    /// @see NanobotEffect#onTick(IAttachmentHolder, int)
     public void onTick(IAttachmentHolder host, int level) {
         effect.onTick(host, level);
+    }
+
+    /// @see NanobotEffect#affectsEntitiesInChunk()
+    public boolean affectsEntitiesInChunk() {
+        return effect.affectsEntitiesInChunk();
     }
 
     public int getRequiredPower(int level) {
