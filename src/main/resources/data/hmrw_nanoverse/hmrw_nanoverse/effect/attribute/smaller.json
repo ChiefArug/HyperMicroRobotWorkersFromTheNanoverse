@@ -4,7 +4,7 @@
     "attribute": "generic.scale",
     "id": "hmrw_nanoverse:nanobot_smaller_effect",
     "operation": "add_multiplied_total",
-    "amount": 0.2
+    "amount": -0.2
   },
   "energy_factor": 2,
   "color": "#b5121c"

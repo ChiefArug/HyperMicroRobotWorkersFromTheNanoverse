@@ -4,6 +4,10 @@ import chiefarug.mods.hmrwnv.core.EffectConfiguration;
 import chiefarug.mods.hmrwnv.core.NanobotSwarm;
 import chiefarug.mods.hmrwnv.core.effect.HungerEffect;
 import chiefarug.mods.hmrwnv.recipe.NanobotAddEffectRecipe;
+import com.mojang.brigadier.arguments.IntegerArgumentType;
+import com.mojang.brigadier.context.CommandContext;
+import com.mojang.brigadier.suggestion.Suggestions;
+import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import com.mojang.logging.LogUtils;
 import com.mojang.serialization.Codec;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
@@ -13,11 +17,14 @@ import it.unimi.dsi.fastutil.objects.Object2IntMap.Entry;
 import it.unimi.dsi.fastutil.objects.Object2IntMaps;
 import it.unimi.dsi.fastutil.objects.ObjectBidirectionalIterator;
 import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.commands.SharedSuggestionProvider;
+import net.minecraft.commands.arguments.ResourceKeyArgument;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Registry;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.SectionPos;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ChunkHolder;
 import net.minecraft.server.level.ServerLevel;
@@ -48,6 +55,7 @@ import org.slf4j.Logger;
 
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 
 import static chiefarug.mods.hmrwnv.HfmrnvConfig.CHUNK_SLOW_DOWN_FACTOR;
 import static chiefarug.mods.hmrwnv.HfmrnvConfig.ENTITY_SLOW_DOWN_FACTOR;
@@ -56,6 +64,7 @@ import static chiefarug.mods.hmrwnv.HmrnvRegistries.EFFECTS_KEY;
 import static chiefarug.mods.hmrwnv.HmrnvRegistries.INFECTION;
 import static chiefarug.mods.hmrwnv.HmrnvRegistries.SWARM;
 import static chiefarug.mods.hmrwnv.HyperMicroRobotWorkersFromTheNanoverse.MODID;
+import static net.minecraft.commands.Commands.argument;
 import static net.minecraft.commands.Commands.literal;
 
 // This class is basically unused cause who can be bothered typing such a long name.
@@ -83,18 +92,18 @@ public class HyperMicroRobotWorkersFromTheNanoverse {
         modContainer.registerConfig(ModConfig.Type.COMMON, HfmrnvConfig.SPEC);
     }
 
-    @SubscribeEvent
+    @SubscribeEvent //TODO: translations
     private static void registerCommands(RegisterCommandsEvent event) {
         event.getDispatcher().register(
                 literal("hmrwnv")
                         .then(literal("swarm")
-                        .executes(c -> {
-                            CommandSourceStack source = c.getSource();
-                            Vec3 pos = source.getPosition();
-                            ChunkAccess chunk = source.getLevel().getChunk(new BlockPos((int) pos.x, (int) pos.y, (int) pos.z));
-                            source.sendSuccess(() -> Component.literal(chunk.getExistingData(SWARM).map(d -> "has data: " + d).orElse("no data")), true);
-                            return 1;
-                        })
+                                .executes(c -> {
+                                    CommandSourceStack source = c.getSource();
+                                    Vec3 pos = source.getPosition();
+                                    ChunkAccess chunk = source.getLevel().getChunk(new BlockPos((int) pos.x, (int) pos.y, (int) pos.z));
+                                    source.sendSuccess(() -> Component.literal(chunk.getExistingData(SWARM).map(d -> "has data: " + d).orElse("no data")), true);
+                                    return 1;
+                                })
                                 .then(literal("clear")
                                         .executes(c -> {
                                             CommandSourceStack source = c.getSource();
@@ -117,7 +126,21 @@ public class HyperMicroRobotWorkersFromTheNanoverse {
                                     source.sendSuccess(() -> Component.literal(chunk.getExistingData(INFECTION).map(d -> "has data: " + d).orElse("no data")), true);
                                     return 1;
                                 })
-        ));
+                        )
+                        .then(literal("add")
+                                .then(argument("effect", ResourceKeyArgument.key(EFFECTS_KEY)).suggests(HyperMicroRobotWorkersFromTheNanoverse::suggestEffects)
+                                        .then(argument("level", IntegerArgumentType.integer(0))
+                                        .executes(c -> {
+                                            CommandSourceStack source = c.getSource();
+                                            Vec3 pos = source.getPosition();
+                                            ChunkAccess chunk = source.getLevel().getChunk(new BlockPos((int) pos.x, (int) pos.y, (int) pos.z));
+                                            ResourceKey effectKey = c.getArgument("effect", ResourceKey.class);
+                                            EffectConfiguration<?> effect = source.registryAccess().registryOrThrow(EFFECTS_KEY).get(effectKey);
+                                            int level = c.getArgument("level", Integer.class);
+                                            NanobotSwarm.mergeSwarm(chunk, Object2IntMaps.singleton(effect, level));
+                                            source.sendSuccess(() -> Component.literal("swarmed " + chunk + " with " + effectKey.location()), true);
+                                            return 1;
+                                        })))));
     }
 
     @SubscribeEvent
@@ -262,4 +285,7 @@ public class HyperMicroRobotWorkersFromTheNanoverse {
                 reg.get(MODRL.withPath("spread")), 8, reg.get(MODRL.withPath("attribute/scale")), 5);
     }
 
+    private static CompletableFuture<Suggestions> suggestEffects(CommandContext<CommandSourceStack> ctx, SuggestionsBuilder builder) {
+        return SharedSuggestionProvider.suggestResource(ctx.getSource().registryAccess().registryOrThrow(EFFECTS_KEY).keySet(), builder);
+    }
 }
