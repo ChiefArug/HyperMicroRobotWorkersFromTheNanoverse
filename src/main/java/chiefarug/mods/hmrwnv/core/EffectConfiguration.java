@@ -7,15 +7,12 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.Holder;
-import net.minecraft.core.Registry;
-import net.minecraft.core.RegistryAccess;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.tags.TagKey;
 import net.neoforged.neoforge.attachment.IAttachmentHolder;
 
 import java.util.Objects;
@@ -56,10 +53,6 @@ public record EffectConfiguration<T extends NanobotEffect>(T effect, int energyP
         this((T) ClientEffect.Guard.getInstance(), 0, Integer.MAX_VALUE, color);
     }
 
-    static Registry<EffectConfiguration<?>> reg(RegistryAccess access) {
-        return access.registryOrThrow(EFFECTS_KEY);
-    }
-
     /// @see NanobotEffect#onAdd(IAttachmentHolder, int)
     public void onAdd(IAttachmentHolder host, int level) {
         effect.onAdd(host, level);
@@ -82,10 +75,6 @@ public record EffectConfiguration<T extends NanobotEffect>(T effect, int energyP
 
     public int getRequiredPower(int level) {
         return energyPerLevel * level;
-    }
-
-    public static boolean is(Holder<EffectConfiguration<?>> self, TagKey<EffectConfiguration<?>> tag) {
-        return self.is(tag);
     }
 
     public static ResourceLocation id(Holder<EffectConfiguration<?>> self) {

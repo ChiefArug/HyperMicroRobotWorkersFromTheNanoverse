@@ -1,7 +1,6 @@
 package chiefarug.mods.hmrwnv.core.effect;
 
 import chiefarug.mods.hmrwnv.HmrnvRegistries;
-import chiefarug.mods.hmrwnv.block.NanobotDiffuserBlock;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;

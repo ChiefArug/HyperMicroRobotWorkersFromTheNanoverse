@@ -25,10 +25,6 @@ public record RegistryInjectionXMapCodec<B, A>(
         BiFunction<HolderGetter<A>, B, Holder<A>> apply,
         BiFunction<HolderGetter<A>, Holder<A>, B> unapply) implements Codec<Holder<A>> {
 
-    public static <A> RegistryInjectionXMapCodec<ResourceLocation, A> createRegistryValue(ResourceKey<? extends Registry<A>> reg) {
-        return createRegistryValue(ResourceLocation.CODEC, reg);
-    }
-
     public static <A> RegistryInjectionXMapCodec<ResourceLocation, A> createRegistryValue(Codec<ResourceLocation> modrlCodec, ResourceKey<? extends Registry<A>> reg) {
         return create(reg, modrlCodec,
                 (hg, rl) -> hg.get(ResourceKey.create(reg, rl)).orElseThrow(),

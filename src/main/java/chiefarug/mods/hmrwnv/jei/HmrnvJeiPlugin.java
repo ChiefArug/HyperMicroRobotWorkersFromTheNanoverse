@@ -1,6 +1,5 @@
 package chiefarug.mods.hmrwnv.jei;
 
-import chiefarug.mods.hmrwnv.HfmrnvClient;
 import chiefarug.mods.hmrwnv.HmrnvRegistries;
 import chiefarug.mods.hmrwnv.core.EffectConfiguration;
 import chiefarug.mods.hmrwnv.recipe.NanobotAddEffectRecipe;
@@ -24,7 +23,6 @@ import mezz.jei.api.registration.IVanillaCategoryExtensionRegistration;
 import mezz.jei.api.runtime.IIngredientManager;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.Holder;
-import net.minecraft.core.RegistryAccess;
 import net.minecraft.locale.Language;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
@@ -83,7 +81,6 @@ public class HmrnvJeiPlugin implements IModPlugin {
     @Override
     public void registerRecipes(IRecipeRegistration registration) {
         IIngredientManager ingredients = registration.getIngredientManager();
-        RegistryAccess access = HfmrnvClient.getAuthoritiveRegistryAccess();
         Map<Holder<EffectConfiguration<?>>, List<ITypedIngredient<ItemStack>>> effectsToIngredients = new HashMap<>();
         for (ItemStack itemStack : registration.getJeiHelpers().getIngredientManager().getAllIngredients(VanillaTypes.ITEM_STACK)) {
             Holder<EffectConfiguration<?>> effect = NanobotAddEffectRecipe.getEffect(itemStack.getItem());

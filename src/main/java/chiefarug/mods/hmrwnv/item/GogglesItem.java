@@ -9,6 +9,7 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 
+@SuppressWarnings("unused")
 public class GogglesItem extends Item implements Equipable {
 
     public GogglesItem(Properties properties) {

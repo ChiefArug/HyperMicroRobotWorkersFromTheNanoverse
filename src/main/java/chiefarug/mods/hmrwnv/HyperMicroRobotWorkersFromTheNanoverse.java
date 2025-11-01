@@ -71,7 +71,7 @@ import static chiefarug.mods.hmrwnv.core.NanobotSwarm.forEachEffect;
 import static net.minecraft.commands.Commands.argument;
 import static net.minecraft.commands.Commands.literal;
 
-// This class is basically unused cause who can be bothered typing such a long name.
+// This class is basically unused externally cause who can be bothered typing such a long name.
 @Mod(MODID)
 @EventBusSubscriber(modid = MODID)
 public class HyperMicroRobotWorkersFromTheNanoverse {

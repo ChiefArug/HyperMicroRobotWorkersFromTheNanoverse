@@ -58,7 +58,6 @@ import static chiefarug.mods.hmrwnv.HyperMicroRobotWorkersFromTheNanoverse.MODRL
 import static chiefarug.mods.hmrwnv.core.NanobotSwarm.EFFECTS_CODEC;
 import static chiefarug.mods.hmrwnv.core.NanobotSwarm.EFFECTS_STREAM_CODEC;
 
-@SuppressWarnings("unused")
 public class HmrnvRegistries {
     //<editor-fold desc="Registries">
     public static final ResourceKey<Registry<EffectConfiguration<?>>> EFFECTS_KEY = ResourceKey.createRegistryKey(MODRL.withPath("effect"));
@@ -77,12 +76,12 @@ public class HmrnvRegistries {
     //</editor-fold>
 
     //<editor-fold desc="NanobotEffect Codecs">
-    public static final DeferredHolder<MapCodec<? extends NanobotEffect>, MapCodec<AttributeEffect>> ATTRIBUTE = EFFECT_CODECS.register("attribute", () -> AttributeEffect.CODEC);
-    public static final DeferredHolder<MapCodec<? extends NanobotEffect>, MapCodec<PotionEffect>> POTION = EFFECT_CODECS.register("potion", () -> PotionEffect.CODEC);
-    public static final DeferredHolder<MapCodec<? extends NanobotEffect>, MapCodec<HungerEffect>> HUNGER = EFFECT_CODECS.register("hunger", () -> HungerEffect.CODEC);
-    public static final DeferredHolder<MapCodec<? extends NanobotEffect>, MapCodec<RavenousEffect>> RAVENOUS = EFFECT_CODECS.register("ravenous", () -> RavenousEffect.CODEC);
-    public static final DeferredHolder<MapCodec<? extends NanobotEffect>, MapCodec<SpreadEffect>> SPREAD = EFFECT_CODECS.register("spread", () -> SpreadEffect.CODEC);
-    public static final DeferredHolder<MapCodec<? extends NanobotEffect>, MapCodec<NanobotEffect.Empty>> EMPTY = EFFECT_CODECS.register("empty", () -> NanobotEffect.Empty.CODEC);
+            static { EFFECT_CODECS.register("attribute", () -> AttributeEffect.CODEC); }
+            static { EFFECT_CODECS.register("potion", () -> PotionEffect.CODEC); }
+            static { EFFECT_CODECS.register("hunger", () -> HungerEffect.CODEC); }
+            static { EFFECT_CODECS.register("ravenous", () -> RavenousEffect.CODEC); }
+            static { EFFECT_CODECS.register("spread", () -> SpreadEffect.CODEC); }
+            static { EFFECT_CODECS.register("empty", () -> NanobotEffect.Empty.CODEC); }
     //</editor-fold>
 
     //<editor-fold desc="Tags & Taglikes">
@@ -106,22 +105,22 @@ public class HmrnvRegistries {
 
     //<editor-fold desc="Items">
     public static final DeferredItem<Item> NANOBOT = ITEMS.registerSimpleItem("nanobot");
-    public static final DeferredItem<Item> SLOP = ITEMS.registerSimpleItem("slop");
-    public static final DeferredItem<Item> LLM = ITEMS.registerSimpleItem("llm");
-    public static final DeferredItem<Item> AI = ITEMS.registerSimpleItem("ai");
-    public static final DeferredItem<Item> ML = ITEMS.registerSimpleItem("ml");
+           static { ITEMS.registerSimpleItem("slop"); }
+           static { ITEMS.registerSimpleItem("llm"); }
+           static { ITEMS.registerSimpleItem("ai"); }
+           static { ITEMS.registerSimpleItem("ml"); }
     public static final DeferredItem<NanobotItem> NANOBOTS = ITEMS.registerItem("nanobots", NanobotItem::new);
-    public static final DeferredItem<GogglesItem> NANOBOT_GOGGLES = ITEMS.registerItem("nanobot_goggles", GogglesItem::new, new Item.Properties().stacksTo(1));
+           static { ITEMS.registerItem("nanobot_goggles", GogglesItem::new, new Item.Properties().stacksTo(1)); }
     //</editor-fold>
 
     //<editor-fold desc="Misc">
-    public static final DeferredHolder<RecipeSerializer<?>, RecipeSerializer<NanobotAddEffectRecipe>> ADD_EFFECT_RECIPE = RECIPE_SERIALIZERS.register("add_effect", () -> NanobotAddEffectRecipe.INSTANCE);
-
-    public static final DeferredHolder<CreativeModeTab, CreativeModeTab> TAB = TABS.register("tab", CreativeModeTab.builder()
-            .title(Component.translatable("itemGroup.hmrw_nanoverse"))
-            .icon(() -> NANOBOT.asItem().getDefaultInstance())
-            .displayItems(HmrnvRegistries.getAllItems())
-            ::build);
+           static { RECIPE_SERIALIZERS.register("add_effect", () -> NanobotAddEffectRecipe.INSTANCE); }
+           static { TABS.register("tab", CreativeModeTab.builder()
+                   .title(Component.translatable("itemGroup.hmrw_nanoverse"))
+                   .icon(() -> NANOBOT.asItem().getDefaultInstance())
+                   .displayItems(HmrnvRegistries.getAllItems())
+                   ::build);
+           }
 
     public static final DeferredHolder<AttachmentType<?>, AttachmentType<Object2IntMap<ResourceLocation>>> INFECTION = DATA_ATTACHMENTS.register("infection",
             AttachmentType.<Object2IntMap<ResourceLocation>>builder(() -> new Object2IntOpenHashMap<>())
@@ -132,7 +131,7 @@ public class HmrnvRegistries {
     public static final Swarm SWARM = new Swarm(EFFECTS_CODEC, EFFECTS_STREAM_CODEC, DATA_ATTACHMENTS.register("swarm", AttachmentType
             .<NanobotSwarm>builder(_t -> { throw new IllegalStateException("No default value. Use hasData to check presence before getting, or use one of the getExistingData methods!"); })
             .serialize(NanobotSwarm.CODEC)
-            .sync((StreamCodec<? super RegistryFriendlyByteBuf, NanobotSwarm>) NanobotSwarm.STREAM_CODEC)
+            .sync(NanobotSwarm.STREAM_CODEC)
             ::build));
            static {DATA_COMPONENTS.register("swarm", () -> SWARM);}
     //</editor-fold>
