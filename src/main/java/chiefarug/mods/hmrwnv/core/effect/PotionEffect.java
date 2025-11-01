@@ -28,6 +28,6 @@ public record PotionEffect(Holder<MobEffect> effect, int amplifier, int buffer) 
         if (!(host instanceof LivingEntity entity)) return;
         // Because amplifier starts at 0 for level one we need some weird math to make it level up properly.
         int finalAmplifier = amplifier + (level - 1) * (amplifier + 1);
-        entity.addEffect(new MobEffectInstance(effect, NanobotEffect.getTickRate(host) + buffer, finalAmplifier));
+        entity.addEffect(new MobEffectInstance(effect, NanobotEffect.getTickRate(host) + buffer, finalAmplifier, true, true));
     }
 }
