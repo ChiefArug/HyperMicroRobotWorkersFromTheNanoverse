@@ -19,6 +19,7 @@ import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.SharedSuggestionProvider;
 import net.minecraft.commands.arguments.ResourceKeyArgument;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Holder;
 import net.minecraft.core.Registry;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.SectionPos;
@@ -57,6 +58,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
+import java.util.stream.Collectors;
 
 import static chiefarug.mods.hmrwnv.HfmrnvConfig.CHUNK_SLOW_DOWN_FACTOR;
 import static chiefarug.mods.hmrwnv.HfmrnvConfig.ENTITY_SLOW_DOWN_FACTOR;
@@ -136,8 +138,9 @@ public class HyperMicroRobotWorkersFromTheNanoverse {
                                             CommandSourceStack source = c.getSource();
                                             Vec3 pos = source.getPosition();
                                             ChunkAccess chunk = source.getLevel().getChunk(new BlockPos((int) pos.x, (int) pos.y, (int) pos.z));
-                                            ResourceKey effectKey = c.getArgument("effect", ResourceKey.class);
-                                            EffectConfiguration<?> effect = source.registryAccess().registryOrThrow(EFFECTS_KEY).get(effectKey);
+                                            //noinspection unchecked // command args dont support generics very well
+                                            ResourceKey<EffectConfiguration<?>> effectKey = c.getArgument("effect", ResourceKey.class);
+                                            Holder<EffectConfiguration<?>> effect = source.registryAccess().registryOrThrow(EFFECTS_KEY).getHolderOrThrow(effectKey);
                                             int level = c.getArgument("level", Integer.class);
                                             NanobotSwarm.mergeSwarm(chunk, Object2IntMaps.singleton(effect, level));
                                             source.sendSuccess(() -> Component.literal("swarmed " + chunk + " with " + effectKey.location()), true);
@@ -203,12 +206,12 @@ public class HyperMicroRobotWorkersFromTheNanoverse {
                         NanobotSwarm swarm = chunk.getExistingDataOrNull(SWARM);
                         if (swarm != null) {
                             swarm.tick(chunk);
-                            Object2IntMap<EffectConfiguration<?>> effects = new Object2IntArrayMap<>(swarm.getEffects());
-                            Iterator<Object2IntMap.Entry<EffectConfiguration<?>>> effectIter = Object2IntMaps.fastIterator(effects);
+                            Object2IntMap<Holder<EffectConfiguration<?>>> effects = new Object2IntArrayMap<>(swarm.getEffects());
+                            Iterator<Object2IntMap.Entry<Holder<EffectConfiguration<?>>>> effectIter = Object2IntMaps.fastIterator(effects);
 
                             // filter out effects that don't support ticking
                             while (effectIter.hasNext()) {
-                                if (!effectIter.next().getKey().affectsEntitiesInChunk()) effectIter.remove();
+                                if (!effectIter.next().getKey().value().affectsEntitiesInChunk()) effectIter.remove();
                             }
 
                             // tick entities inside the chunk
@@ -233,26 +236,26 @@ public class HyperMicroRobotWorkersFromTheNanoverse {
         if (!(event.getEntity() instanceof LivingEntity)) return;
 
         SectionPos oldPos = event.getOldPos();
-        Optional<Object2IntMap<EffectConfiguration<?>>> oldChunk = level.getChunk(oldPos.x(), oldPos.z())
+        Optional<Object2IntMap<Holder<EffectConfiguration<?>>>> oldChunk = level.getChunk(oldPos.x(), oldPos.z())
                 .getExistingData(SWARM)
                 .map(NanobotSwarm::getEffects);
 
         SectionPos newPos = event.getNewPos();
-        Optional<Object2IntMap<EffectConfiguration<?>>> newChunk = level.getChunk(newPos.x(), newPos.z())
+        Optional<Object2IntMap<Holder<EffectConfiguration<?>>>> newChunk = level.getChunk(newPos.x(), newPos.z())
                 .getExistingData(SWARM)
                 .map(NanobotSwarm::getEffects);
 
-        Object2IntMap<EffectConfiguration<?>> toAdd = Object2IntMaps.emptyMap();;
-        Object2IntMap<EffectConfiguration<?>> toRemove = Object2IntMaps.emptyMap();
+        Object2IntMap<Holder<EffectConfiguration<?>>> toAdd = Object2IntMaps.emptyMap();;
+        Object2IntMap<Holder<EffectConfiguration<?>>> toRemove = Object2IntMaps.emptyMap();
         if (oldChunk.isPresent()) {
-            Object2IntMap<EffectConfiguration<?>> oldSwarm = oldChunk.get();
+            Object2IntMap<Holder<EffectConfiguration<?>>> oldSwarm = oldChunk.get();
             if (newChunk.isPresent()) {
                 // both have data, find differences
-                Object2IntMap<EffectConfiguration<?>> newSwarm = newChunk.get();
+                Object2IntMap<Holder<EffectConfiguration<?>>> newSwarm = newChunk.get();
                 toAdd = new Object2IntArrayMap<>(0);
                 toRemove = new Object2IntArrayMap<>(0);
 
-                for (EffectConfiguration<?> effect : collectEffects(oldSwarm, newSwarm)) {
+                for (Holder<EffectConfiguration<?>> effect : collectEffects(oldSwarm, newSwarm)) {
                     // negative level values are not possible, so use this rando negative value.
                     final int NULL = -0xDEAD;
                     int newValue = newSwarm.getOrDefault(effect, NULL);
@@ -284,14 +287,14 @@ public class HyperMicroRobotWorkersFromTheNanoverse {
         forEachEffect(toAdd, entity, EffectConfiguration::onAdd);
     }
 
-    private static Set<EffectConfiguration<?>> collectEffects(Object2IntMap<EffectConfiguration<?>> oldSwarm, Object2IntMap<EffectConfiguration<?>> newSwarm) {
-        Set<EffectConfiguration<?>> effects = new HashSet<>(oldSwarm.size() + newSwarm.size());
-        for (EffectConfiguration<?> effectConfiguration : oldSwarm.keySet()) {
-            if (effectConfiguration.affectsEntitiesInChunk())
+    private static Set<Holder<EffectConfiguration<?>>> collectEffects(Object2IntMap<Holder<EffectConfiguration<?>>> oldSwarm, Object2IntMap<Holder<EffectConfiguration<?>>> newSwarm) {
+        Set<Holder<EffectConfiguration<?>>> effects = new HashSet<>(oldSwarm.size() + newSwarm.size());
+        for (Holder<EffectConfiguration<?>> effectConfiguration : oldSwarm.keySet()) {
+            if (effectConfiguration.value().affectsEntitiesInChunk())
                 effects.add(effectConfiguration);
         }
-        for (EffectConfiguration<?> effectConfiguration : newSwarm.keySet()) {
-            if (effectConfiguration.affectsEntitiesInChunk())
+        for (Holder<EffectConfiguration<?>> effectConfiguration : newSwarm.keySet()) {
+            if (effectConfiguration.value().affectsEntitiesInChunk())
                 effects.add(effectConfiguration);
         }
         return effects;
@@ -301,14 +304,15 @@ public class HyperMicroRobotWorkersFromTheNanoverse {
     //TODO: infect on spawn entities in an entity tag (also those who aren't should still have the chunks effects added temporarily)
     //TODO: max level of effects
     //TODO: unhardcode this
-    private static Map<EffectConfiguration<?>, Integer> generateSpawnSwarmEffects(RegistryAccess access, RandomSource random) {
+    private static Map<Holder<EffectConfiguration<?>>, Integer> generateSpawnSwarmEffects(RegistryAccess access, RandomSource random) {
         Registry<EffectConfiguration<?>> reg = access.registryOrThrow(EFFECTS_KEY);
         return Map.of(
                 random.nextDouble() > 0.8 ?
-                        reg.get(MODRL.withPath("ravenous")) :
-                        reg.get(MODRL.withPath("hunger")),
+                        reg.getHolder(MODRL.withPath("ravenous")) :
+                        reg.getHolder(MODRL.withPath("hunger")),
                 4,
-                reg.get(MODRL.withPath("spread")), 8, reg.get(MODRL.withPath("attribute/bigger")), 5, reg.get(MODRL.withPath("wild")), 10);
+                reg.getHolder(MODRL.withPath("spread")), 8, reg.getHolder(MODRL.withPath("attribute/bigger")), 5, reg.getHolder(MODRL.withPath("wild")), 10)
+                .entrySet().stream().filter(e -> e.getKey().isPresent()).collect(Collectors.toMap(e -> e.getKey().get(), Map.Entry::getValue));
     }
 
     private static CompletableFuture<Suggestions> suggestEffects(CommandContext<CommandSourceStack> ctx, SuggestionsBuilder builder) {

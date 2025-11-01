@@ -1,11 +1,10 @@
 package chiefarug.mods.hmrwnv.item;
 
-import chiefarug.mods.hmrwnv.HfmrnvClient;
 import chiefarug.mods.hmrwnv.core.EffectConfiguration;
 import chiefarug.mods.hmrwnv.core.NanobotSwarm;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import net.minecraft.ChatFormatting;
-import net.minecraft.core.RegistryAccess;
+import net.minecraft.core.Holder;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.Item;
@@ -33,7 +32,7 @@ public class NanobotItem extends Item {
 
     @Override
     public ItemStack finishUsingItem(ItemStack stack, Level level, LivingEntity entity) {
-        Object2IntMap<EffectConfiguration<?>> swarm = getSwarm(stack);
+        Object2IntMap<Holder<EffectConfiguration<?>>> swarm = getSwarm(stack);
         if (swarm == null) return super.finishUsingItem(stack, level, entity);
 
         NanobotSwarm.attachSwarm(entity, swarm);
@@ -60,15 +59,12 @@ public class NanobotItem extends Item {
     public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltipComponents, TooltipFlag tooltipFlag) {
         super.appendHoverText(stack, context, tooltipComponents, tooltipFlag);
         Level level = context.level();
-        Object2IntMap<EffectConfiguration<?>> effects = getSwarm(stack);
+        Object2IntMap<Holder<EffectConfiguration<?>>> effects = getSwarm(stack);
         if (effects == null) return;
         if (level != null) {
 
-            RegistryAccess access = level.isClientSide ?  // get the server side reg access if we are on the client due to reasons mentioned in javadoc of getAuthoritiveRegistryAccess
-                    HfmrnvClient.getAuthoritiveRegistryAccess() :
-                    level.registryAccess();
             tooltipComponents.addAll(effects.object2IntEntrySet().stream()
-                    .map(e -> e.getKey().nameWithLevel(access, e.getIntValue()).withStyle(ChatFormatting.GRAY))
+                    .map(e -> EffectConfiguration.nameWithLevel(e.getKey(), e.getIntValue()).withStyle(ChatFormatting.GRAY))
                     .toList());
         } else if (!effects.isEmpty()){
             tooltipComponents.add(Component.translatable("hmrw_nanoverse.tooltip.cannot_display_effects"));
@@ -78,7 +74,7 @@ public class NanobotItem extends Item {
 
     @Nullable
     @Unmodifiable
-    public static Object2IntMap<EffectConfiguration<?>> getSwarm(ItemStack stack) {
+    public static Object2IntMap<Holder<EffectConfiguration<?>>> getSwarm(ItemStack stack) {
         return stack.get(SWARM);
     }
 

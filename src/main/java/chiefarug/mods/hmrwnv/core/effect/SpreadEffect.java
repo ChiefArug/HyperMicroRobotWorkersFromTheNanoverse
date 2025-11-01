@@ -9,6 +9,7 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntMaps;
 import net.minecraft.core.Direction;
+import net.minecraft.core.Holder;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
@@ -86,9 +87,9 @@ public record SpreadEffect(TypeConfiguration entityConfig, TypeConfiguration chu
 
     private static void infect(IAttachmentHolder host, Level level, IAttachmentHolder target, int maxExposures) {
         Optional<NanobotSwarm> targetSwarm = target.getExistingData(SWARM);
-        if (targetSwarm.isPresent() && targetSwarm.get().hasEffect(level.registryAccess(), PROTECTS_AGAINST_SPREAD)) return;
+        if (targetSwarm.isPresent() && targetSwarm.get().hasEffect(PROTECTS_AGAINST_SPREAD)) return;
 
-        final EffectConfiguration<?> effect;
+        final Holder<EffectConfiguration<?>> effect;
         if (targetSwarm.isPresent())
             effect = host.getData(HmrnvRegistries.SWARM).randomEffectExcept(level.getRandom(), targetSwarm.get());
         else
@@ -96,7 +97,7 @@ public record SpreadEffect(TypeConfiguration entityConfig, TypeConfiguration chu
 
         if (effect == null) return;
 
-        ResourceLocation key = level.registryAccess().registryOrThrow(HmrnvRegistries.EFFECTS_KEY).getKey(effect);
+        ResourceLocation key = effect.getKey().location();
         Object2IntMap<ResourceLocation> infections = target.getData(INFECTION);
         int exposures = infections.mergeInt(key, 1, Integer::sum);
         if (exposures >= maxExposures) {

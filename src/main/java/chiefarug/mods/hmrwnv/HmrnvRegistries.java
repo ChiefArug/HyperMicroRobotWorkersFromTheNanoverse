@@ -17,6 +17,7 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
+import net.minecraft.core.Holder;
 import net.minecraft.core.Registry;
 import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -142,10 +143,10 @@ public class HmrnvRegistries {
     }
 
     // This is my new favourite class. It is usable in both DataComponent and DataAttachment get/set methods.
-    public record Swarm(Codec<@Unmodifiable Object2IntMap<EffectConfiguration<?>>>                                 codec,
-                        StreamCodec<RegistryFriendlyByteBuf, @Unmodifiable Object2IntMap<EffectConfiguration<?>>>  streamCodec,
+    public record Swarm(Codec<@Unmodifiable Object2IntMap<Holder<EffectConfiguration<?>>>>                                 codec,
+                        StreamCodec<RegistryFriendlyByteBuf, @Unmodifiable Object2IntMap<Holder<EffectConfiguration<?>>>>  streamCodec,
                         DeferredHolder<AttachmentType<?>, AttachmentType<NanobotSwarm>>     attachment
-    ) implements DataComponentType<@Unmodifiable Object2IntMap<EffectConfiguration<?>>>, Supplier<AttachmentType<NanobotSwarm>> {
+    ) implements DataComponentType<@Unmodifiable Object2IntMap<Holder<EffectConfiguration<?>>>>, Supplier<AttachmentType<NanobotSwarm>> {
         @Override
         public AttachmentType<NanobotSwarm> get() {return attachment.get();}
 

@@ -23,6 +23,7 @@ import mezz.jei.api.registration.IRecipeRegistration;
 import mezz.jei.api.registration.IVanillaCategoryExtensionRegistration;
 import mezz.jei.api.runtime.IIngredientManager;
 import net.minecraft.ChatFormatting;
+import net.minecraft.core.Holder;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.locale.Language;
 import net.minecraft.resources.ResourceLocation;
@@ -42,6 +43,8 @@ import java.util.Optional;
 
 import static chiefarug.mods.hmrwnv.HyperMicroRobotWorkersFromTheNanoverse.MODID;
 import static chiefarug.mods.hmrwnv.HyperMicroRobotWorkersFromTheNanoverse.MODRL;
+import static chiefarug.mods.hmrwnv.core.EffectConfiguration.description;
+import static chiefarug.mods.hmrwnv.core.EffectConfiguration.name;
 
 @JeiPlugin
 public class HmrnvJeiPlugin implements IModPlugin {
@@ -81,9 +84,9 @@ public class HmrnvJeiPlugin implements IModPlugin {
     public void registerRecipes(IRecipeRegistration registration) {
         IIngredientManager ingredients = registration.getIngredientManager();
         RegistryAccess access = HfmrnvClient.getAuthoritiveRegistryAccess();
-        Map<EffectConfiguration<?>, List<ITypedIngredient<ItemStack>>> effectsToIngredients = new HashMap<>();
+        Map<Holder<EffectConfiguration<?>>, List<ITypedIngredient<ItemStack>>> effectsToIngredients = new HashMap<>();
         for (ItemStack itemStack : registration.getJeiHelpers().getIngredientManager().getAllIngredients(VanillaTypes.ITEM_STACK)) {
-            EffectConfiguration<?> effect = NanobotAddEffectRecipe.getEffect(itemStack.getItem());
+            Holder<EffectConfiguration<?>> effect = NanobotAddEffectRecipe.getEffect(itemStack.getItem());
             if (effect != null) {
                 //noinspection OptionalGetWithoutIsPresent // This is safe as we get it from a list of all ingredients
                 effectsToIngredients.computeIfAbsent(effect, k -> new ArrayList<>())
@@ -93,10 +96,10 @@ public class HmrnvJeiPlugin implements IModPlugin {
 
 
         List<NanobotEffectInfo.InfoRecipe> list = new ArrayList<>(effectsToIngredients.size());
-        for (Map.Entry<EffectConfiguration<?>, List<ITypedIngredient<ItemStack>>> entry : effectsToIngredients.entrySet()) {
+        for (Map.Entry<Holder<EffectConfiguration<?>>, List<ITypedIngredient<ItemStack>>> entry : effectsToIngredients.entrySet()) {
             list.add(new NanobotEffectInfo.InfoRecipe(entry.getValue(), List.of(
-                    entry.getKey().name(access).withStyle(ChatFormatting.BOLD, ChatFormatting.UNDERLINE),
-                    entry.getKey().description(access)
+                    name(entry.getKey()).withStyle(ChatFormatting.BOLD, ChatFormatting.UNDERLINE),
+                    description(entry.getKey())
             )));
         };
         registration.addRecipes(NanobotEffectInfo.TYPE, list);
@@ -106,7 +109,7 @@ public class HmrnvJeiPlugin implements IModPlugin {
     public void registerVanillaCategoryExtensions(IVanillaCategoryExtensionRegistration registration) {
         List<ItemStack> allEffects = new ArrayList<>();
         for (ItemStack ingredient : registration.getJeiHelpers().getIngredientManager().getAllIngredients(VanillaTypes.ITEM_STACK)) {
-            EffectConfiguration<?> effect = NanobotAddEffectRecipe.getEffect(ingredient.getItem());
+            Holder<EffectConfiguration<?>> effect = NanobotAddEffectRecipe.getEffect(ingredient.getItem());
             if (effect != null) allEffects.add(ingredient);
         }
         registration.getCraftingCategory().addExtension(NanobotAddEffectRecipe.class, new ICraftingCategoryExtension<>() {

@@ -5,6 +5,7 @@ import chiefarug.mods.hmrwnv.core.EffectConfiguration;
 import com.mojang.serialization.MapCodec;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Holder;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.ItemInteractionResult;
@@ -44,7 +45,7 @@ public class NanobotDiffuserBlock extends Block implements EntityBlock {
     @Override
     protected ItemInteractionResult useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hitResult) {
         if (stack.getItem() != HmrnvRegistries.NANOBOTS.asItem())  {
-            Object2IntMap<EffectConfiguration<?>> effects = stack.get(SWARM);
+            Object2IntMap<Holder<EffectConfiguration<?>>> effects = stack.get(SWARM);
             if (effects != null && level.getBlockEntity(pos) instanceof NanobotDiffuserBlockEntity blockEntity) {
                 blockEntity.setEffects(effects);
                 stack.shrink(1);

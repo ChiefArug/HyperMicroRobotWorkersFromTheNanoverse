@@ -7,6 +7,7 @@ import it.unimi.dsi.fastutil.objects.Object2IntArrayMap;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntMaps;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Holder;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
@@ -20,9 +21,9 @@ public class NanobotDiffuserBlockEntity extends BlockEntity {
     }
 
     private int ticksRemaining = MAX_TICKS;
-    private Object2IntMap<EffectConfiguration<?>> effects = Object2IntMaps.emptyMap();
+    private Object2IntMap<Holder<EffectConfiguration<?>>> effects = Object2IntMaps.emptyMap();
 
-    void setEffects(Object2IntMap<EffectConfiguration<?>> e) {
+    void setEffects(Object2IntMap<Holder<EffectConfiguration<?>>> e) {
         effects = new Object2IntArrayMap<>(e);
         ticksRemaining = MAX_TICKS;
     }

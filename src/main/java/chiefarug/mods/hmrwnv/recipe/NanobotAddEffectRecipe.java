@@ -5,6 +5,7 @@ import chiefarug.mods.hmrwnv.core.EffectConfiguration;
 import com.mojang.serialization.MapCodec;
 import it.unimi.dsi.fastutil.objects.Object2IntArrayMap;
 import it.unimi.dsi.fastutil.objects.Object2IntMaps;
+import net.minecraft.core.Holder;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
@@ -33,16 +34,17 @@ public class NanobotAddEffectRecipe extends CustomRecipe implements RecipeSerial
     public static final MapCodec<NanobotAddEffectRecipe> CODEC = MapCodec.unit(INSTANCE);
     public static final StreamCodec<RegistryFriendlyByteBuf, NanobotAddEffectRecipe> STREAM_CODEC = StreamCodec.unit(INSTANCE);
 
-    private static final DataMapType<Item, EffectConfiguration<?>> ITEM_EFFECTS = DataMapType.builder(
+    private static final DataMapType<Item, Holder<EffectConfiguration<?>>> ITEM_EFFECTS = DataMapType.builder(
             MODRL.withPath("effects"),
             Registries.ITEM,
             EffectConfiguration.BY_ID_CODEC
-    ).synced(EffectConfiguration.CLIENT_CODEC, true).build();
+            // we sync with the same codec as it's just a resource location
+    ).synced(EffectConfiguration.BY_ID_CODEC, true).build();
 
 
 
     @Nullable
-    public static EffectConfiguration<?> getEffect(ItemLike item) {
+    public static Holder<EffectConfiguration<?>> getEffect(ItemLike item) {
         return BuiltInRegistries.ITEM.wrapAsHolder(item.asItem()).getData(ITEM_EFFECTS);
     }
 
@@ -87,7 +89,7 @@ public class NanobotAddEffectRecipe extends CustomRecipe implements RecipeSerial
     public static ItemStack assemble(int size, IntFunction<ItemStack> items) {
         // use an array map because it's going to be tiny and fast iteration will be useful when it gets turned into a swarm
         // capacity of size - 1 as we know the bot won't have an effect
-        Object2IntArrayMap<EffectConfiguration<?>> effects = new Object2IntArrayMap<>(size - 1);
+        Object2IntArrayMap<Holder<EffectConfiguration<?>>> effects = new Object2IntArrayMap<>(size - 1);
         ItemStack bots = null;
         for (int i = 0; i < size; i++) {
             ItemStack item = items.apply(i);
@@ -95,7 +97,7 @@ public class NanobotAddEffectRecipe extends CustomRecipe implements RecipeSerial
                 bots = item;
                 continue;
             }
-            EffectConfiguration<?> effect = getEffect(item.getItem());
+            Holder<EffectConfiguration<?>> effect = getEffect(item.getItem());
             if (effect != null)
                 effects.mergeInt(effect, 1, Integer::sum);
         }

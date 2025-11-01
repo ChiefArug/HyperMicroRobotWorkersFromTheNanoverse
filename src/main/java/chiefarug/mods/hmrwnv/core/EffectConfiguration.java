@@ -6,6 +6,7 @@ import chiefarug.mods.hmrwnv.core.effect.NanobotEffect;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.minecraft.core.Holder;
 import net.minecraft.core.Registry;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.network.RegistryFriendlyByteBuf;
@@ -17,6 +18,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
 import net.neoforged.neoforge.attachment.IAttachmentHolder;
 
+import java.util.Objects;
 import java.util.Optional;
 
 import static chiefarug.mods.hmrwnv.HmrnvRegistries.EFFECTS_KEY;
@@ -38,10 +40,8 @@ public record EffectConfiguration<T extends NanobotEffect>(T effect, int energyP
                     Codec.INT.optionalFieldOf("max_level").xmap(o -> o.orElse(Integer.MAX_VALUE), i -> i == Integer.MAX_VALUE ? Optional.empty() : Optional.of(i)).forGetter(EffectConfiguration::maxLevel),
                     HEXADECIMAL_INT.fieldOf("color").forGetter(EffectConfiguration::color)
             ).apply(inst, EffectConfiguration::new));
-    public static final Codec<EffectConfiguration<?>> BY_ID_CODEC = RegistryInjectionXMapCodec.createRegistryValue(MODRL_CODEC, EFFECTS_KEY);
-    public static final StreamCodec<RegistryFriendlyByteBuf, EffectConfiguration<?>> STREAM_CODEC = StreamCodec.composite(
-                    ByteBufCodecs.INT, EffectConfiguration::color,
-            EffectConfiguration::new);
+    public static final Codec<Holder<EffectConfiguration<?>>> BY_ID_CODEC = RegistryInjectionXMapCodec.createRegistryValue(MODRL_CODEC, EFFECTS_KEY);
+    public static final StreamCodec<RegistryFriendlyByteBuf, Holder<EffectConfiguration<?>>> HOLDER_STREAM_CODEC = ByteBufCodecs.holderRegistry(EFFECTS_KEY);
     /// Deprecated for removal as soon as mojang makes datapack registries use stream codecs
     public static final Codec<EffectConfiguration<?>> CLIENT_CODEC;
     static {
@@ -84,25 +84,25 @@ public record EffectConfiguration<T extends NanobotEffect>(T effect, int energyP
         return energyPerLevel * level;
     }
 
-    public boolean is(RegistryAccess access, TagKey<EffectConfiguration<?>> tag) {
-        return reg(access).wrapAsHolder(this).is(tag);
+    public static boolean is(Holder<EffectConfiguration<?>> self, TagKey<EffectConfiguration<?>> tag) {
+        return self.is(tag);
     }
 
-    public ResourceLocation id(RegistryAccess access) {
-        return reg(access).getKey(this);
+    public static ResourceLocation id(Holder<EffectConfiguration<?>> self) {
+        return Objects.requireNonNull(self.getKey()).location();
     }
 
-    public MutableComponent name(RegistryAccess access) {
-        return Component.translatable(id(access).toLanguageKey(EFFECTS_KEY.location().getPath()).replace('/', '.'));
+    public static MutableComponent name(Holder<EffectConfiguration<?>> self) {
+        return Component.translatable(id(self).toLanguageKey(EFFECTS_KEY.location().getPath()).replace('/', '.'));
     }
 
-    public MutableComponent description(RegistryAccess access) {
-        return Component.translatable(id(access).toLanguageKey(EFFECTS_KEY.location().getPath()).replace('/', '.') + ".description");
+    public static MutableComponent description(Holder<EffectConfiguration<?>> self) {
+        return Component.translatable(id(self).toLanguageKey(EFFECTS_KEY.location().getPath()).replace('/', '.') + ".description");
     }
 
-    public MutableComponent nameWithLevel(RegistryAccess access, int level) {
+    public static MutableComponent nameWithLevel(Holder<EffectConfiguration<?>> self, int level) {
         return Component.translatable("hmrw_nanoverse.effect_level.formatting",
-                name(access), level(level));
+                name(self), level(level));
     }
 
     static MutableComponent level(int i) {
