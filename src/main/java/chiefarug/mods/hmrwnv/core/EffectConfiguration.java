@@ -38,7 +38,7 @@ public record EffectConfiguration<T extends NanobotEffect>(T effect, int energyP
                     HEXADECIMAL_INT.fieldOf("color").forGetter(EffectConfiguration::color)
             ).apply(inst, EffectConfiguration::new));
     public static final Codec<Holder<EffectConfiguration<?>>> BY_ID_CODEC = RegistryInjectionXMapCodec.createRegistryValue(MODRL_CODEC, EFFECTS_KEY);
-    public static final StreamCodec<RegistryFriendlyByteBuf, Holder<EffectConfiguration<?>>> HOLDER_STREAM_CODEC = ByteBufCodecs.holderRegistry(EFFECTS_KEY);
+    public static final StreamCodec<RegistryFriendlyByteBuf, Holder<EffectConfiguration<?>>> BY_ID_STREAM_CODEC = ByteBufCodecs.holderRegistry(EFFECTS_KEY);
     /// Deprecated for removal as soon as mojang makes datapack registries use stream codecs
     public static final Codec<EffectConfiguration<?>> CLIENT_CODEC;
     static {

@@ -2,6 +2,8 @@ package chiefarug.mods.hmrwnv;
 
 import chiefarug.mods.hmrwnv.core.EffectConfiguration;
 import chiefarug.mods.hmrwnv.core.NanobotSwarm;
+import chiefarug.mods.hmrwnv.core.collections.EffectArrayMap;
+import chiefarug.mods.hmrwnv.core.collections.EffectMap;
 import chiefarug.mods.hmrwnv.core.effect.HungerEffect;
 import chiefarug.mods.hmrwnv.recipe.NanobotAddEffectRecipe;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
@@ -11,7 +13,6 @@ import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import com.mojang.logging.LogUtils;
 import com.mojang.serialization.Codec;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
-import it.unimi.dsi.fastutil.objects.Object2IntArrayMap;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntMaps;
 import it.unimi.dsi.fastutil.objects.ObjectBidirectionalIterator;
@@ -142,7 +143,7 @@ public class HyperMicroRobotWorkersFromTheNanoverse {
                                             ResourceKey<EffectConfiguration<?>> effectKey = c.getArgument("effect", ResourceKey.class);
                                             Holder<EffectConfiguration<?>> effect = source.registryAccess().registryOrThrow(EFFECTS_KEY).getHolderOrThrow(effectKey);
                                             int level = c.getArgument("level", Integer.class);
-                                            NanobotSwarm.mergeSwarm(chunk, Object2IntMaps.singleton(effect, level));
+                                            NanobotSwarm.mergeSwarm(chunk, EffectMap.singleton(effect, level));
                                             source.sendSuccess(() -> Component.literal("swarmed " + chunk + " with " + effectKey.location()), true);
                                             return 1;
                                         })))));
@@ -206,7 +207,7 @@ public class HyperMicroRobotWorkersFromTheNanoverse {
                         NanobotSwarm swarm = chunk.getExistingDataOrNull(SWARM);
                         if (swarm != null) {
                             swarm.tick(chunk);
-                            Object2IntMap<Holder<EffectConfiguration<?>>> effects = new Object2IntArrayMap<>(swarm.getEffects());
+                            EffectMap effects = new EffectArrayMap(swarm.getEffects());
                             Iterator<Object2IntMap.Entry<Holder<EffectConfiguration<?>>>> effectIter = Object2IntMaps.fastIterator(effects);
 
                             // filter out effects that don't support ticking
@@ -236,24 +237,24 @@ public class HyperMicroRobotWorkersFromTheNanoverse {
         if (!(event.getEntity() instanceof LivingEntity)) return;
 
         SectionPos oldPos = event.getOldPos();
-        Optional<Object2IntMap<Holder<EffectConfiguration<?>>>> oldChunk = level.getChunk(oldPos.x(), oldPos.z())
+        Optional<EffectMap> oldChunk = level.getChunk(oldPos.x(), oldPos.z())
                 .getExistingData(SWARM)
                 .map(NanobotSwarm::getEffects);
 
         SectionPos newPos = event.getNewPos();
-        Optional<Object2IntMap<Holder<EffectConfiguration<?>>>> newChunk = level.getChunk(newPos.x(), newPos.z())
+        Optional<EffectMap> newChunk = level.getChunk(newPos.x(), newPos.z())
                 .getExistingData(SWARM)
                 .map(NanobotSwarm::getEffects);
 
-        Object2IntMap<Holder<EffectConfiguration<?>>> toAdd = Object2IntMaps.emptyMap();
-        Object2IntMap<Holder<EffectConfiguration<?>>> toRemove = Object2IntMaps.emptyMap();
+        EffectMap toAdd = EffectMap.empty();
+        EffectMap toRemove = EffectMap.empty();
         if (oldChunk.isPresent()) {
-            Object2IntMap<Holder<EffectConfiguration<?>>> oldSwarm = oldChunk.get();
+            EffectMap oldSwarm = oldChunk.get();
             if (newChunk.isPresent()) {
                 // both have data, find differences
-                Object2IntMap<Holder<EffectConfiguration<?>>> newSwarm = newChunk.get();
-                toAdd = new Object2IntArrayMap<>(0);
-                toRemove = new Object2IntArrayMap<>(0);
+                EffectMap newSwarm = newChunk.get();
+                toAdd = new EffectArrayMap(0);
+                toRemove = new EffectArrayMap(0);
 
                 for (Holder<EffectConfiguration<?>> effect : collectEffects(oldSwarm, newSwarm)) {
                     // negative level values are not possible, so use this rando negative value.
@@ -287,7 +288,7 @@ public class HyperMicroRobotWorkersFromTheNanoverse {
         forEachEffect(toAdd, entity, EffectConfiguration::onAdd);
     }
 
-    private static Set<Holder<EffectConfiguration<?>>> collectEffects(Object2IntMap<Holder<EffectConfiguration<?>>> oldSwarm, Object2IntMap<Holder<EffectConfiguration<?>>> newSwarm) {
+    private static Set<Holder<EffectConfiguration<?>>> collectEffects(EffectMap oldSwarm, EffectMap newSwarm) {
         Set<Holder<EffectConfiguration<?>>> effects = new HashSet<>(oldSwarm.size() + newSwarm.size());
         for (Holder<EffectConfiguration<?>> effectConfiguration : oldSwarm.keySet()) {
             if (effectConfiguration.value().affectsEntitiesInChunk())

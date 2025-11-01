@@ -2,9 +2,8 @@ package chiefarug.mods.hmrwnv.item;
 
 import chiefarug.mods.hmrwnv.core.EffectConfiguration;
 import chiefarug.mods.hmrwnv.core.NanobotSwarm;
-import it.unimi.dsi.fastutil.objects.Object2IntMap;
+import chiefarug.mods.hmrwnv.core.collections.EffectMap;
 import net.minecraft.ChatFormatting;
-import net.minecraft.core.Holder;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.Item;
@@ -32,7 +31,7 @@ public class NanobotItem extends Item {
 
     @Override
     public ItemStack finishUsingItem(ItemStack stack, Level level, LivingEntity entity) {
-        Object2IntMap<Holder<EffectConfiguration<?>>> swarm = getSwarm(stack);
+        EffectMap swarm = getSwarm(stack);
         if (swarm == null) return super.finishUsingItem(stack, level, entity);
 
         NanobotSwarm.attachSwarm(entity, swarm);
@@ -59,7 +58,7 @@ public class NanobotItem extends Item {
     public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltipComponents, TooltipFlag tooltipFlag) {
         super.appendHoverText(stack, context, tooltipComponents, tooltipFlag);
         Level level = context.level();
-        Object2IntMap<Holder<EffectConfiguration<?>>> effects = getSwarm(stack);
+        EffectMap effects = getSwarm(stack);
         if (effects == null) return;
         if (level != null) {
 
@@ -74,7 +73,7 @@ public class NanobotItem extends Item {
 
     @Nullable
     @Unmodifiable
-    public static Object2IntMap<Holder<EffectConfiguration<?>>> getSwarm(ItemStack stack) {
+    public static EffectMap getSwarm(ItemStack stack) {
         return stack.get(SWARM);
     }
 

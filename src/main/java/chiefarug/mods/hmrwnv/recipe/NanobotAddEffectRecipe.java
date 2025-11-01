@@ -2,9 +2,9 @@ package chiefarug.mods.hmrwnv.recipe;
 
 import chiefarug.mods.hmrwnv.HmrnvRegistries;
 import chiefarug.mods.hmrwnv.core.EffectConfiguration;
+import chiefarug.mods.hmrwnv.core.collections.EffectArrayMap;
+import chiefarug.mods.hmrwnv.core.collections.EffectMap;
 import com.mojang.serialization.MapCodec;
-import it.unimi.dsi.fastutil.objects.Object2IntArrayMap;
-import it.unimi.dsi.fastutil.objects.Object2IntMaps;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -89,7 +89,7 @@ public class NanobotAddEffectRecipe extends CustomRecipe implements RecipeSerial
     public static ItemStack assemble(int size, IntFunction<ItemStack> items) {
         // use an array map because it's going to be tiny and fast iteration will be useful when it gets turned into a swarm
         // capacity of size - 1 as we know the bot won't have an effect
-        Object2IntArrayMap<Holder<EffectConfiguration<?>>> effects = new Object2IntArrayMap<>(size - 1);
+        EffectMap effects = new EffectArrayMap(size - 1);
         ItemStack bots = null;
         for (int i = 0; i < size; i++) {
             ItemStack item = items.apply(i);
@@ -105,7 +105,7 @@ public class NanobotAddEffectRecipe extends CustomRecipe implements RecipeSerial
         if (bots == null) return ItemStack.EMPTY; // this should be impossible but in testing I found it was not...
 
         ItemStack stack = bots.copyWithCount(1);
-        stack.set(SWARM, Object2IntMaps.unmodifiable(effects));
+        stack.set(SWARM, EffectMap.unmodifiable(effects));
         return stack;
     }
 

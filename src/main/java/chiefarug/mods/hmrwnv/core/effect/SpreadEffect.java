@@ -3,11 +3,11 @@ package chiefarug.mods.hmrwnv.core.effect;
 import chiefarug.mods.hmrwnv.HmrnvRegistries;
 import chiefarug.mods.hmrwnv.core.EffectConfiguration;
 import chiefarug.mods.hmrwnv.core.NanobotSwarm;
+import chiefarug.mods.hmrwnv.core.collections.EffectMap;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
-import it.unimi.dsi.fastutil.objects.Object2IntMaps;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
 import net.minecraft.resources.ResourceLocation;
@@ -101,7 +101,7 @@ public record SpreadEffect(TypeConfiguration entityConfig, TypeConfiguration chu
         Object2IntMap<ResourceLocation> infections = target.getData(INFECTION);
         int exposures = infections.mergeInt(key, 1, Integer::sum);
         if (exposures >= maxExposures) {
-            NanobotSwarm.mergeSwarm(target, Object2IntMaps.singleton(effect, 1));
+            NanobotSwarm.mergeSwarm(target, EffectMap.singleton(effect, 1));
             infections.removeInt(effect);
             target.setData(INFECTION, infections);
         }

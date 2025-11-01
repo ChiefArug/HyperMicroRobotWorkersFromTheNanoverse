@@ -4,6 +4,7 @@ import chiefarug.mods.hmrwnv.block.NanobotDiffuserBlock;
 import chiefarug.mods.hmrwnv.block.NanobotDiffuserBlockEntity;
 import chiefarug.mods.hmrwnv.core.EffectConfiguration;
 import chiefarug.mods.hmrwnv.core.NanobotSwarm;
+import chiefarug.mods.hmrwnv.core.collections.EffectMap;
 import chiefarug.mods.hmrwnv.core.effect.AttributeEffect;
 import chiefarug.mods.hmrwnv.core.effect.HungerEffect;
 import chiefarug.mods.hmrwnv.core.effect.NanobotEffect;
@@ -17,7 +18,6 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
-import net.minecraft.core.Holder;
 import net.minecraft.core.Registry;
 import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -48,6 +48,7 @@ import net.neoforged.neoforge.registries.NeoForgeRegistries;
 import net.neoforged.neoforge.registries.NewRegistryEvent;
 import net.neoforged.neoforge.registries.RegistryBuilder;
 import org.jetbrains.annotations.Unmodifiable;
+import org.jetbrains.annotations.UnmodifiableView;
 
 import java.util.Collection;
 import java.util.function.Function;
@@ -55,8 +56,7 @@ import java.util.function.Supplier;
 
 import static chiefarug.mods.hmrwnv.HyperMicroRobotWorkersFromTheNanoverse.MODID;
 import static chiefarug.mods.hmrwnv.HyperMicroRobotWorkersFromTheNanoverse.MODRL;
-import static chiefarug.mods.hmrwnv.core.NanobotSwarm.EFFECTS_CODEC;
-import static chiefarug.mods.hmrwnv.core.NanobotSwarm.EFFECTS_STREAM_CODEC;
+import static chiefarug.mods.hmrwnv.core.collections.EffectMap.EFFECTS_STREAM_CODEC;
 
 public class HmrnvRegistries {
     //<editor-fold desc="Registries">
@@ -128,7 +128,7 @@ public class HmrnvRegistries {
                     .sync(ByteBufCodecs.map(Object2IntOpenHashMap::new, ResourceLocation.STREAM_CODEC, ByteBufCodecs.INT))
                     ::build);
 
-    public static final Swarm SWARM = new Swarm(EFFECTS_CODEC, EFFECTS_STREAM_CODEC, DATA_ATTACHMENTS.register("swarm", AttachmentType
+    public static final Swarm SWARM = new Swarm(EffectMap.CODEC, EFFECTS_STREAM_CODEC, DATA_ATTACHMENTS.register("swarm", AttachmentType
             .<NanobotSwarm>builder(_t -> { throw new IllegalStateException("No default value. Use hasData to check presence before getting, or use one of the getExistingData methods!"); })
             .serialize(NanobotSwarm.CODEC)
             .sync(NanobotSwarm.STREAM_CODEC)
@@ -137,15 +137,16 @@ public class HmrnvRegistries {
     //</editor-fold>
 
     /// Returns an unmodifiable updating collection of all items from the mod.
+    @UnmodifiableView
     public static Collection<DeferredHolder<Item, ? extends Item>> getAllItems() {
         return ITEMS.getEntries();
     }
 
     // This is my new favourite class. It is usable in both DataComponent and DataAttachment get/set methods.
-    public record Swarm(Codec<@Unmodifiable Object2IntMap<Holder<EffectConfiguration<?>>>>                                 codec,
-                        StreamCodec<RegistryFriendlyByteBuf, @Unmodifiable Object2IntMap<Holder<EffectConfiguration<?>>>>  streamCodec,
+    public record Swarm(Codec<@Unmodifiable EffectMap>                                 codec,
+                        StreamCodec<RegistryFriendlyByteBuf, @Unmodifiable EffectMap>  streamCodec,
                         DeferredHolder<AttachmentType<?>, AttachmentType<NanobotSwarm>>     attachment
-    ) implements DataComponentType<@Unmodifiable Object2IntMap<Holder<EffectConfiguration<?>>>>, Supplier<AttachmentType<NanobotSwarm>> {
+    ) implements DataComponentType<@Unmodifiable EffectMap>, Supplier<AttachmentType<NanobotSwarm>> {
         @Override
         public AttachmentType<NanobotSwarm> get() {return attachment.get();}
 

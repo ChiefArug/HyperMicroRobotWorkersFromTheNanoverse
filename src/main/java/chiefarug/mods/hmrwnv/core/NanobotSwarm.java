@@ -1,20 +1,13 @@
 package chiefarug.mods.hmrwnv.core;
 
-import chiefarug.mods.hmrwnv.client.ClientEffect;
+import chiefarug.mods.hmrwnv.core.collections.EffectArrayMap;
+import chiefarug.mods.hmrwnv.core.collections.EffectMap;
 import chiefarug.mods.hmrwnv.core.effect.NanobotEffect;
-import com.google.common.collect.ImmutableList;
 import com.mojang.serialization.Codec;
-import com.mojang.serialization.codecs.RecordCodecBuilder;
-import it.unimi.dsi.fastutil.objects.AbstractObject2IntMap.BasicEntry;
-import it.unimi.dsi.fastutil.objects.Object2IntArrayMap;
-import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntMap.Entry;
 import it.unimi.dsi.fastutil.objects.Object2IntMaps;
-import it.unimi.dsi.fastutil.objects.Object2IntOpenCustomHashMap;
-import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import net.minecraft.core.Holder;
 import net.minecraft.network.RegistryFriendlyByteBuf;
-import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.tags.TagKey;
 import net.minecraft.util.RandomSource;
@@ -22,12 +15,10 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.chunk.ChunkAccess;
 import net.neoforged.neoforge.attachment.IAttachmentHolder;
-import net.neoforged.neoforge.common.util.strategy.IdentityStrategy;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.UnmodifiableView;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
@@ -40,29 +31,12 @@ import static net.minecraft.SharedConstants.IS_RUNNING_IN_IDE;
 
 /// Represents a swarm of nanobots that is hosted on some object
 public final class NanobotSwarm {
-    public static final Codec<Entry<Holder<EffectConfiguration<?>>>> ENTRY_CODEC = RecordCodecBuilder.create(inst1 -> inst1.group(
-            //{
-            // "effect" ResourceLocation[EffectConfiguration]
-            EffectConfiguration.BY_ID_CODEC.fieldOf("effect").forGetter(Entry::getKey),
-            // "level" int
-            Codec.INT.fieldOf("level").forGetter(Entry::getIntValue)
-            //}
-    ).apply(inst1, BasicEntry::new));
-    public static final Codec<Object2IntMap<Holder<EffectConfiguration<?>>>> EFFECTS_CODEC = Codec.list(ENTRY_CODEC)
-            .xmap(c -> {
-                    Object2IntOpenHashMap<Holder<EffectConfiguration<?>>> map = new Object2IntOpenHashMap<>();
-                    if (IS_RUNNING_IN_IDE) c.forEach(e -> {if (e.getKey().value().effect() instanceof ClientEffect) throw new IllegalStateException("shouldn't be handling decoding these on client");});
-                    for (Entry<Holder<EffectConfiguration<?>>> entry : c) map.put(entry.getKey(), entry.getIntValue());
-                    return map;
-                }, map -> ImmutableList.copyOf(map.object2IntEntrySet()));
-    public static final Codec<NanobotSwarm> CODEC = EFFECTS_CODEC.xmap(NanobotSwarm::new, ns -> ns.effects).fieldOf("effects").codec();
-    public static final StreamCodec<RegistryFriendlyByteBuf, Object2IntMap<Holder<EffectConfiguration<?>>>> EFFECTS_STREAM_CODEC = ByteBufCodecs.map(NanobotSwarm::newMap, EffectConfiguration.HOLDER_STREAM_CODEC, ByteBufCodecs.INT);
-    public static final StreamCodec<RegistryFriendlyByteBuf, NanobotSwarm> STREAM_CODEC = EFFECTS_STREAM_CODEC.map(NanobotSwarm::new, NanobotSwarm::getEffects);
-    //TODO: migrate this to a custom class so the type is much shorter
-    private final Object2IntMap<Holder<EffectConfiguration<?>>> effects;
+    public static final Codec<NanobotSwarm> CODEC = EffectMap.CODEC.xmap(NanobotSwarm::new, ns -> ns.effects).fieldOf("effects").codec();
+    public static final StreamCodec<RegistryFriendlyByteBuf, NanobotSwarm> STREAM_CODEC = EffectMap.EFFECTS_STREAM_CODEC.map(NanobotSwarm::new, NanobotSwarm::getEffects);
+    private final EffectMap effects;
 
     private NanobotSwarm(Map<Holder<EffectConfiguration<?>>, Integer> effects) {
-        this.effects = new Object2IntOpenCustomHashMap<>(effects, IdentityStrategy.IDENTITY);
+        this.effects = new EffectArrayMap(effects);
     }
 
     /// Attach a new swarm to this host. Replaces an existing swarm on that host, if present.
@@ -87,7 +61,7 @@ public final class NanobotSwarm {
     }
 
     /// Merge these effects into the host, swarming them if they are not already swarmed otherwise adding any effects that are a higher level
-    public static void mergeSwarm(IAttachmentHolder host, Object2IntMap<Holder<EffectConfiguration<?>>> inEffects) {
+    public static void mergeSwarm(IAttachmentHolder host, EffectMap inEffects) {
         Optional<NanobotSwarm> existing = host.getExistingData(SWARM);
         if (existing.isPresent()) {
             NanobotSwarm existingSwarm = existing.get();
@@ -113,7 +87,7 @@ public final class NanobotSwarm {
                 }
             }
 
-            Object2IntArrayMap<Holder<EffectConfiguration<?>>> newEffects = new Object2IntArrayMap<>(newKeys, newValues, i);
+            EffectMap newEffects = new EffectArrayMap(newKeys, newValues, i);
             existingSwarm.effects.putAll(newEffects);
 
             forEachEffect(newEffects, host, EffectConfiguration::onAdd);
@@ -134,8 +108,8 @@ public final class NanobotSwarm {
     }
 
     @UnmodifiableView
-    public Object2IntMap<Holder<EffectConfiguration<?>>> getEffects() {
-        return Object2IntMaps.unmodifiable(effects);
+    public EffectMap getEffects() {
+        return EffectMap.unmodifiable(effects);
     }
 
     /// Add or updates a single effect to this swarm with the specified level.
@@ -147,7 +121,7 @@ public final class NanobotSwarm {
 
     /// Add multiple effects to this swarm at once. This is preferred over repeatedly calling {@link NanobotSwarm#addEffect} as it only syncs once.
     /// As a bonus it also batches operations, so all additions can see all the other additions in {@link NanobotEffect#onAdd}
-    public void addEffects(IAttachmentHolder host, Object2IntMap<Holder<EffectConfiguration<?>>> newEffects) {
+    public void addEffects(IAttachmentHolder host, EffectMap newEffects) {
         effects.putAll(newEffects);
         forEachEffect(newEffects, host, EffectConfiguration::onAdd);
         markDirty(host);
@@ -219,7 +193,7 @@ public final class NanobotSwarm {
     public Holder<EffectConfiguration<?>> randomEffectExcept(RandomSource random, NanobotSwarm exclusion) {
         if (this.effects.isEmpty()) throw new IllegalStateException("NanobotSwarm should always have effects!");
 
-        Object2IntOpenHashMap<Holder<EffectConfiguration<?>>> effects = new Object2IntOpenHashMap<>(this.effects);
+        EffectMap effects = new EffectArrayMap(this.effects);
         // reduce entries by those in exclusion
         for (Entry<Holder<EffectConfiguration<?>>> entry : Object2IntMaps.fastIterable(exclusion.effects)) {
             effects.computeIntIfPresent(entry.getKey(), (e, i) -> {
@@ -234,13 +208,13 @@ public final class NanobotSwarm {
 
     /// Returns null only if effects is empty
     @Nullable
-    private static Holder<EffectConfiguration<?>> randomEffect(RandomSource random, Object2IntMap<Holder<EffectConfiguration<?>>> effects) {
+    private static Holder<EffectConfiguration<?>> randomEffect(RandomSource random, EffectMap effects) {
         if (effects.isEmpty()) return null;
         if (effects.size() == 1) return effects.keySet().iterator().next();
 
         int weightedIndex = random.nextInt(effects.values().intStream().sum());
 
-        Iterator<Entry<Holder<EffectConfiguration<?>>>> entries = new ArrayList<>(effects.object2IntEntrySet()).iterator();
+        Iterator<Entry<Holder<EffectConfiguration<?>>>> entries = effects.asUnmodifiableList().iterator();
         Entry<Holder<EffectConfiguration<?>>> t;
         do weightedIndex -= (t = entries.next()).getIntValue();
         while (weightedIndex >= 0 && entries.hasNext());
@@ -264,7 +238,7 @@ public final class NanobotSwarm {
         forEachEffect(effects, host, consumer);
     }
 
-    public static void forEachEffect(Object2IntMap<Holder<EffectConfiguration<?>>> effects, IAttachmentHolder host, EffectConsumer consumer) {
+    public static void forEachEffect(EffectMap effects, IAttachmentHolder host, EffectConsumer consumer) {
         for (Entry<Holder<EffectConfiguration<?>>> entry : Object2IntMaps.fastIterable(effects)) {
             consumer.accept(entry.getKey().value(), host, entry.getIntValue());
         }
@@ -275,8 +249,8 @@ public final class NanobotSwarm {
         host.setData(SWARM, this);
     }
 
-    private static @NotNull Object2IntOpenCustomHashMap<Holder<EffectConfiguration<?>>> newMap(int i) {
-        return new Object2IntOpenCustomHashMap<>(i, IdentityStrategy.IDENTITY);
+    private static EffectMap newMap(int i) {
+        return new EffectArrayMap(i);
     }
 
     private NanobotSwarm(List<Entry<Holder<EffectConfiguration<?>>>> effects) {
