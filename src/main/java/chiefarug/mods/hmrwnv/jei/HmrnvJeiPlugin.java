@@ -98,7 +98,7 @@ public class HmrnvJeiPlugin implements IModPlugin {
                     name(entry.getKey()).withStyle(ChatFormatting.BOLD, ChatFormatting.UNDERLINE),
                     description(entry.getKey())
             )));
-        };
+        }
         registration.addRecipes(NanobotEffectInfo.TYPE, list);
     }
 

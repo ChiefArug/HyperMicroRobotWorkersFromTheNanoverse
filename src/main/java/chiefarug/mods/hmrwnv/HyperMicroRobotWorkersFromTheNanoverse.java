@@ -245,7 +245,7 @@ public class HyperMicroRobotWorkersFromTheNanoverse {
                 .getExistingData(SWARM)
                 .map(NanobotSwarm::getEffects);
 
-        Object2IntMap<Holder<EffectConfiguration<?>>> toAdd = Object2IntMaps.emptyMap();;
+        Object2IntMap<Holder<EffectConfiguration<?>>> toAdd = Object2IntMaps.emptyMap();
         Object2IntMap<Holder<EffectConfiguration<?>>> toRemove = Object2IntMaps.emptyMap();
         if (oldChunk.isPresent()) {
             Object2IntMap<Holder<EffectConfiguration<?>>> oldSwarm = oldChunk.get();

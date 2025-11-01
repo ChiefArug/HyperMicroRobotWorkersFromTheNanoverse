@@ -28,7 +28,7 @@ import static chiefarug.mods.hmrwnv.HmrnvRegistries.SWARM;
 
 public class NanobotDiffuserBlock extends Block implements EntityBlock {
     public static final MapCodec<NanobotDiffuserBlock> CODEC = simpleCodec(NanobotDiffuserBlock::new);
-    public static final int MAX_DAMAGE = 15;
+    public static final int MAX_DAMAGE = 15; //TODO: add another property that says if there is an item in here so we arent ticking empty diffusers
     public static final IntegerProperty DAMAGE = IntegerProperty.create("damage", 0, MAX_DAMAGE);
 
     public NanobotDiffuserBlock(BlockBehaviour.Properties props) {
@@ -44,7 +44,7 @@ public class NanobotDiffuserBlock extends Block implements EntityBlock {
 
     @Override
     protected ItemInteractionResult useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hitResult) {
-        if (stack.getItem() != HmrnvRegistries.NANOBOTS.asItem())  {
+        if (stack.getItem() == HmrnvRegistries.NANOBOTS.asItem())  {
             Object2IntMap<Holder<EffectConfiguration<?>>> effects = stack.get(SWARM);
             if (effects != null && level.getBlockEntity(pos) instanceof NanobotDiffuserBlockEntity blockEntity) {
                 blockEntity.setEffects(effects);

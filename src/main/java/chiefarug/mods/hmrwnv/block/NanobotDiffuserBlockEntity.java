@@ -8,6 +8,9 @@ import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntMaps;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtOps;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
@@ -26,6 +29,21 @@ public class NanobotDiffuserBlockEntity extends BlockEntity {
     void setEffects(Object2IntMap<Holder<EffectConfiguration<?>>> e) {
         effects = new Object2IntArrayMap<>(e);
         ticksRemaining = MAX_TICKS;
+        setChanged();
+    }
+
+    @Override
+    protected void loadAdditional(CompoundTag tag, HolderLookup.Provider registries) {
+        super.loadAdditional(tag,registries);
+        ticksRemaining = tag.getInt("ticksRemaining");
+        effects = NanobotSwarm.EFFECTS_CODEC.decode(registries.createSerializationContext(NbtOps.INSTANCE), tag.get("effects")).getOrThrow().getFirst();
+    }
+
+    @Override
+    protected void saveAdditional(CompoundTag tag, HolderLookup.Provider registries) {
+        super.saveAdditional(tag, registries);
+        tag.putInt("ticksRemaining", ticksRemaining);
+        tag.put("effects", NanobotSwarm.EFFECTS_CODEC.encodeStart(registries.createSerializationContext(NbtOps.INSTANCE), effects).getOrThrow());
     }
 
     void tick(ServerLevel level, BlockPos pos, BlockState state) {
@@ -34,5 +52,6 @@ public class NanobotDiffuserBlockEntity extends BlockEntity {
             NanobotSwarm.mergeSwarm(level.getChunk(pos), effects);
             effects = Object2IntMaps.emptyMap();
         }
+        setChanged();
     }
 }

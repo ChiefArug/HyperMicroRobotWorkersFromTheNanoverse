@@ -32,7 +32,7 @@ public record RegistryInjectionXMapCodec<B, A>(
     }
 
     public static <B, A> RegistryInjectionXMapCodec<B, A> create(ResourceKey<? extends Registry<A>> reg, Codec<B> base, BiFunction<HolderGetter<A>, B, Holder<A>> apply, BiFunction<HolderGetter<A>, Holder<A>, B> unapply) {
-        return new RegistryInjectionXMapCodec<B, A>(reg, base, apply, unapply);
+        return new RegistryInjectionXMapCodec<>(reg, base, apply, unapply);
     }
 
 

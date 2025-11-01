@@ -58,7 +58,7 @@ public final class NanobotSwarm {
     public static final Codec<NanobotSwarm> CODEC = EFFECTS_CODEC.xmap(NanobotSwarm::new, ns -> ns.effects).fieldOf("effects").codec();
     public static final StreamCodec<RegistryFriendlyByteBuf, Object2IntMap<Holder<EffectConfiguration<?>>>> EFFECTS_STREAM_CODEC = ByteBufCodecs.map(NanobotSwarm::newMap, EffectConfiguration.HOLDER_STREAM_CODEC, ByteBufCodecs.INT);
     public static final StreamCodec<RegistryFriendlyByteBuf, NanobotSwarm> STREAM_CODEC = EFFECTS_STREAM_CODEC.map(NanobotSwarm::new, NanobotSwarm::getEffects);
-
+    //TODO: migrate this to a custom class so the type is much shorter
     private final Object2IntMap<Holder<EffectConfiguration<?>>> effects;
 
     private NanobotSwarm(Map<Holder<EffectConfiguration<?>>, Integer> effects) {
@@ -128,7 +128,7 @@ public final class NanobotSwarm {
         Optional<NanobotSwarm> mayExist = host.getExistingData(SWARM);
         if (mayExist.isEmpty()) return;
 
-        forEachEffect(mayExist.get().effects, host, EffectConfiguration::onRemove);
+        mayExist.get().beforeRemove(host);
 
         host.removeData(SWARM);
     }
