@@ -99,6 +99,7 @@ public class HmrnvRegistries {
     public static final DeferredBlock<Block> RICH_SLAG = BLOCKS.registerSimpleBlock("rich_slag", BlockBehaviour.Properties.ofFullCopy(Blocks.IRON_BLOCK));
            static {ITEMS.registerSimpleBlockItem(RICH_SLAG);}
     public static final DeferredBlock<NanobotDiffuserBlock> NANOBOT_DIFFUSER = BLOCKS.registerBlock("nanobot_diffuser", NanobotDiffuserBlock::new);
+    @SuppressWarnings("DataFlowIssue") // its datafixers which mods cannot use.
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<NanobotDiffuserBlockEntity>> NANOBOT_DIFFUSER_BE = BLOCK_ENTITY_TYPES.register("nanobot_diffuser", () -> BlockEntityType.Builder.of(NanobotDiffuserBlockEntity::new, NANOBOT_DIFFUSER.get()).build(null));
            static {ITEMS.registerSimpleBlockItem(NANOBOT_DIFFUSER);}
     //</editor-fold>
@@ -121,13 +122,11 @@ public class HmrnvRegistries {
                    .displayItems(HmrnvRegistries.getAllItems())
                    ::build);
            }
-
     public static final DeferredHolder<AttachmentType<?>, AttachmentType<Object2IntMap<ResourceLocation>>> INFECTION = DATA_ATTACHMENTS.register("infection",
             AttachmentType.<Object2IntMap<ResourceLocation>>builder(() -> new Object2IntOpenHashMap<>())
                     .serialize(Codec.unboundedMap(ResourceLocation.CODEC, Codec.INT).xmap(Object2IntOpenHashMap::new, Function.identity()))
                     .sync(ByteBufCodecs.map(Object2IntOpenHashMap::new, ResourceLocation.STREAM_CODEC, ByteBufCodecs.INT))
                     ::build);
-
     public static final Swarm SWARM = new Swarm(EffectMap.CODEC, EFFECTS_STREAM_CODEC, DATA_ATTACHMENTS.register("swarm", AttachmentType
             .<NanobotSwarm>builder(_t -> { throw new IllegalStateException("No default value. Use hasData to check presence before getting, or use one of the getExistingData methods!"); })
             .serialize(NanobotSwarm.CODEC)
