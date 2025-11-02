@@ -40,12 +40,12 @@ public final class EffectArrayMap extends Object2IntArrayMap<Holder<EffectConfig
         super(m);
     }
 
-    public EffectArrayMap(Collection<Object2IntMap.Entry<Holder<EffectConfiguration<?>>>> es) {
+    public EffectArrayMap(Collection<Entry<Holder<EffectConfiguration<?>>>> es) {
         this(es.size());
         int i = 0;
-        Iterator<Object2IntMap.Entry<Holder<EffectConfiguration<?>>>> iterator = es instanceof Object2IntMap.FastEntrySet<Holder<EffectConfiguration<?>>> f ? f.fastIterator() : es.iterator();
+        Iterator<Entry<Holder<EffectConfiguration<?>>>> iterator = es instanceof Object2IntMap.FastEntrySet<Holder<EffectConfiguration<?>>> f ? f.fastIterator() : es.iterator();
         while (iterator.hasNext()) {
-            Object2IntMap.Entry<Holder<EffectConfiguration<?>>> e = iterator.next();
+            Entry<Holder<EffectConfiguration<?>>> e = iterator.next();
             key[i] = e.getKey();
             value[i] = e.getIntValue();
             i++;
@@ -101,10 +101,21 @@ public final class EffectArrayMap extends Object2IntArrayMap<Holder<EffectConfig
         };
     }
 
+    @Override
+    public int totalPower() {
+        int sum = 0;
+        int size = this.size;
+        for (int i = 0; i < size; i++) {
+            //noinspection unchecked // safe because we garuntee all inserts into the map
+            sum += ((Holder<EffectConfiguration<?>>) key[i]).value().getRequiredPower(value[i]);
+        }
+        return sum;
+    }
+
 
     @Override
     public String toString() {
-        // 30 assumes an average length of id of 26, and given our modid is 14 long that gives 12 for the path
+        // 31 assumes an average length of id of 28, and given our modid is 14 long that gives 12 for the path
         // as of writing our average path length is 12.08.
         StringBuilder builder = new StringBuilder(2 + this.size() * 31);
         builder.append('{');

@@ -15,7 +15,6 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.chunk.ChunkAccess;
 import net.neoforged.neoforge.attachment.IAttachmentHolder;
-import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.UnmodifiableView;
 
@@ -52,11 +51,11 @@ public final class NanobotSwarm {
 
         NanobotSwarm swarm = host.getExistingDataOrNull(SWARM);
         // If there was already a swarm on the host then call its remove hooks as it shall be replaced imminently
-        if (swarm != null) swarm.beforeRemove(host);
+        if (swarm != null) forEachEffect(swarm.effects, host, EffectConfiguration::onRemove);
 
         swarm = new NanobotSwarm(effects);
         host.setData(SWARM, swarm);
-        swarm.afterAdd(host);
+        forEachEffect(swarm.effects, host, EffectConfiguration::onAdd);
         return swarm;
     }
 
@@ -102,7 +101,7 @@ public final class NanobotSwarm {
         Optional<NanobotSwarm> mayExist = host.getExistingData(SWARM);
         if (mayExist.isEmpty()) return;
 
-        mayExist.get().beforeRemove(host);
+        forEachEffect(mayExist.get().effects, host, EffectConfiguration::onRemove);
 
         host.removeData(SWARM);
     }
@@ -149,16 +148,6 @@ public final class NanobotSwarm {
         markDirty(host);
     }
 
-    /// Called once server-side when this swarm is first added to a host.
-    public void afterAdd(IAttachmentHolder host) {
-        forEachEffect(effects, host, EffectConfiguration::onAdd);
-    }
-
-    /// Called once server-side just before this swarm is removed from a host
-    public void beforeRemove(IAttachmentHolder host) {
-        forEachEffect(effects, host, EffectConfiguration::onRemove);
-    }
-
     /// Called frequently server-side while this effect is part of a swarm is on something.
     /// The exact rate is configurable, but by default is every tick for players and entities, and twice a second for chunks.
     public void tick(IAttachmentHolder host) {
@@ -174,13 +163,10 @@ public final class NanobotSwarm {
     }
 
     private int getPowerTotal() {
-        return effects.object2IntEntrySet().stream()
-                .mapToInt(e -> e.getKey().value().getRequiredPower(e.getIntValue()))
-                .sum();
+        return effects.totalPower();
     }
 
     /// Get a random effect weighted by effect levels
-    @NotNull
     public Holder<EffectConfiguration<?>> randomEffect(RandomSource random) {
         if (effects.isEmpty()) throw new IllegalStateException("NanobotSwarm should always have effects!");
 

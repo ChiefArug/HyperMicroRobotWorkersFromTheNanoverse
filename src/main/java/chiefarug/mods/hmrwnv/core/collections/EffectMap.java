@@ -53,10 +53,18 @@ public sealed interface EffectMap extends Object2IntMap<Holder<EffectConfigurati
     @UnmodifiableView
     List<Entry<Holder<EffectConfiguration<?>>>> asUnmodifiableList();
 
+    /// Returns the summed power of all effects in this map.
+    int totalPower();
+
     final class Empty extends Object2IntMaps.EmptyMap<Holder<EffectConfiguration<?>>> implements EffectMap {
         @Override
         public List<Entry<Holder<EffectConfiguration<?>>>> asUnmodifiableList() {
             return Collections.emptyList();
+        }
+
+        @Override
+        public int totalPower() {
+            return 0;
         }
     }
 
@@ -69,19 +77,29 @@ public sealed interface EffectMap extends Object2IntMap<Holder<EffectConfigurati
         }
 
         @Override
+        public int totalPower() {
+            return ((EffectMap) map).totalPower();
+        }
+
+        @Override
         public String toString() {
             return map.toString();
         }
     }
 
     final class Singleton extends Object2IntMaps.Singleton<Holder<EffectConfiguration<?>>> implements EffectMap {
-        Singleton(Holder<EffectConfiguration<?>> key, int value) {
-            super(key, value);
+        Singleton(Holder<EffectConfiguration<?>> effect, int level) {
+            super(effect, level);
         }
 
         @Override
         public List<Entry<Holder<EffectConfiguration<?>>>> asUnmodifiableList() {
             return List.of(new AbstractObject2IntMap.BasicEntry<>(key, value));
+        }
+
+        @Override
+        public int totalPower() {
+            return key.value().getRequiredPower(value);
         }
 
         @Override
