@@ -2,7 +2,6 @@ package chiefarug.mods.hmrwnv.core;
 
 import chiefarug.mods.hmrwnv.core.collections.EffectArrayMap;
 import chiefarug.mods.hmrwnv.core.collections.EffectMap;
-import chiefarug.mods.hmrwnv.core.effect.NanobotEffect;
 import com.mojang.serialization.Codec;
 import it.unimi.dsi.fastutil.objects.Object2IntMap.Entry;
 import it.unimi.dsi.fastutil.objects.Object2IntMaps;
@@ -18,9 +17,7 @@ import net.neoforged.neoforge.attachment.IAttachmentHolder;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.UnmodifiableView;
 
-import java.util.Collection;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.OptionalInt;
@@ -51,11 +48,11 @@ public final class NanobotSwarm {
 
         NanobotSwarm swarm = host.getExistingDataOrNull(SWARM);
         // If there was already a swarm on the host then call its remove hooks as it shall be replaced imminently
-        if (swarm != null) forEachEffect(swarm.effects, host, EffectConfiguration::onRemove);
+        if (swarm != null) swarm.forEachEffect(host, EffectConfiguration::onRemove);
 
         swarm = new NanobotSwarm(effects);
         host.setData(SWARM, swarm);
-        forEachEffect(swarm.effects, host, EffectConfiguration::onAdd);
+        swarm.forEachEffect(host, EffectConfiguration::onAdd);
         return swarm;
     }
 
@@ -74,7 +71,7 @@ public final class NanobotSwarm {
             for (Entry<Holder<EffectConfiguration<?>>> entry : Object2IntMaps.fastIterable(inEffects)) {
                 Holder<EffectConfiguration<?>> effect = entry.getKey();
                 int level = entry.getIntValue();
-                int existingLevel = existingSwarm.getEffectLevel(effect.value()).orElse(0);
+                int existingLevel = existingSwarm.getEffectLevel(effect).orElse(0);
 
                 // if the existing level is less the new level, add it to the arrays to merge in
                 // and if its not 0, run its remove trigger
@@ -96,69 +93,23 @@ public final class NanobotSwarm {
         }
     }
 
-    /// Clears any swarm on the host
-    public static void clearSwarm(IAttachmentHolder host) {
-        Optional<NanobotSwarm> mayExist = host.getExistingData(SWARM);
-        if (mayExist.isEmpty()) return;
-
-        forEachEffect(mayExist.get().effects, host, EffectConfiguration::onRemove);
-
-        host.removeData(SWARM);
-    }
-
     @UnmodifiableView
     public EffectMap getEffects() {
         return EffectMap.unmodifiable(effects);
     }
 
-    /// Add or updates a single effect to this swarm with the specified level.
-    public void addEffect(IAttachmentHolder host, Holder<EffectConfiguration<?>> effect, int level) {
-        effects.put(effect, level);
-        effect.value().onAdd(host, level);
-        markDirty(host);
-    }
-
-    /// Add multiple effects to this swarm at once. This is preferred over repeatedly calling {@link NanobotSwarm#addEffect} as it only syncs once.
-    /// As a bonus it also batches operations, so all additions can see all the other additions in {@link NanobotEffect#onAdd}
-    public void addEffects(IAttachmentHolder host, EffectMap newEffects) {
-        effects.putAll(newEffects);
-        forEachEffect(newEffects, host, EffectConfiguration::onAdd);
-        markDirty(host);
-    }
-
-    /// Removes a single effect from this swarm. Does nothing if the effect is not part of this swarm.
-    public void removeEffect(IAttachmentHolder host, Holder<EffectConfiguration<?>> effect) {
-        if (!effects.containsKey(effect))
-            return;
-        effect.value().onRemove(host, effects.getInt(effect));
-        effects.removeInt(effect);
-        markDirty(host);
-    }
-
-    /// Removes multiple effects from this swarm at once. This is preferred over repeatedly calling {@link NanobotSwarm#removeEffect} as it only syncs once.
-    /// As a bonus it also batches operations, so all removals can see all the other removals in {@link NanobotEffect#onRemove}.
-    public void removeEffects(IAttachmentHolder host, Collection<Holder<EffectConfiguration<?>>> oldEffects) {
-        for (Holder<EffectConfiguration<?>> effect : oldEffects) {
-            if (!effects.containsKey(effect)) continue;
-            effect.value().onRemove(host, effects.getInt(effect));
-        }
-        for (Holder<EffectConfiguration<?>> oldEffect : oldEffects) {
-            effects.removeInt(oldEffect);
-        }
-        markDirty(host);
-    }
 
     /// Called frequently server-side while this effect is part of a swarm is on something.
     /// The exact rate is configurable, but by default is every tick for players and entities, and twice a second for chunks.
     public void tick(IAttachmentHolder host) {
-        forEachEffect(effects, host, EffectConfiguration::onTick);
+        this.forEachEffect(host, EffectConfiguration::onTick);
     }
 
-    public OptionalInt getEffectLevel(EffectConfiguration<?> effect) {
+    public OptionalInt getEffectLevel(Holder<EffectConfiguration<?>> effect) {
         return effects.containsKey(effect) ? OptionalInt.of(effects.getInt(effect)) : OptionalInt.empty();
     }
 
-    public boolean isActive() {
+    public boolean hasEnoughPower() {
         return getPowerTotal() >= 0;
     }
 
@@ -200,6 +151,7 @@ public final class NanobotSwarm {
 
         int weightedIndex = random.nextInt(effects.values().intStream().sum());
 
+        // TODO: this probably shouldn't be weighted as it disadvantages single level effects like night vision
         Iterator<Entry<Holder<EffectConfiguration<?>>>> entries = effects.asUnmodifiableList().iterator();
         Entry<Holder<EffectConfiguration<?>>> t;
         do weightedIndex -= (t = entries.next()).getIntValue();
@@ -225,6 +177,7 @@ public final class NanobotSwarm {
     }
 
     public static void forEachEffect(EffectMap effects, IAttachmentHolder host, EffectConsumer consumer) {
+        //TODO: replace this with a version that doesn't use allocation
         for (Entry<Holder<EffectConfiguration<?>>> entry : Object2IntMaps.fastIterable(effects)) {
             consumer.accept(entry.getKey().value(), host, entry.getIntValue());
         }
@@ -233,15 +186,6 @@ public final class NanobotSwarm {
     ///  Mark this as dirty when modified so it can be saved and resynced to clients
     void markDirty(IAttachmentHolder host) {
         host.setData(SWARM, this);
-    }
-
-    private static EffectMap newMap(int i) {
-        return new EffectArrayMap(i);
-    }
-
-    private NanobotSwarm(List<Entry<Holder<EffectConfiguration<?>>>> effects) {
-        this(newMap(effects.size()));
-        for (var effect : effects) this.effects.put(effect.getKey(), effect.getIntValue());
     }
 
     @Override
