@@ -57,17 +57,12 @@ public class NanobotItem extends Item {
     @Override
     public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltipComponents, TooltipFlag tooltipFlag) {
         super.appendHoverText(stack, context, tooltipComponents, tooltipFlag);
-        Level level = context.level();
         EffectMap effects = getSwarm(stack);
         if (effects == null) return;
-        if (level != null) {
-
-            tooltipComponents.addAll(effects.object2IntEntrySet().stream()
-                    .map(e -> EffectConfiguration.nameWithLevel(e.getKey(), e.getIntValue()).withStyle(ChatFormatting.GRAY))
-                    .toList());
-        } else if (!effects.isEmpty()){
-            tooltipComponents.add(Component.translatable("hmrw_nanoverse.tooltip.cannot_display_effects"));
-        }
+        // TODO: add note if this is an unstable swarm that will immediately start dismantling
+        tooltipComponents.addAll(effects.object2IntEntrySet().stream()
+                .map(e -> EffectConfiguration.nameWithLevel(e.getKey(), e.getIntValue()).withStyle(ChatFormatting.GRAY))
+                .toList());
 
     }
 

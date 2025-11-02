@@ -59,8 +59,5 @@
   "hmrw_nanoverse.effect_level.17": "XVII",
   "hmrw_nanoverse.effect_level.18": "XVIII",
   "hmrw_nanoverse.effect_level.19": "XIX",
-  "hmrw_nanoverse.effect_level.20": "XX",
-
-  // Informational
-  "hmrw_nanoverse.tooltip.cannot_display_effects": "Could not display effects due to lack of level/world context"
+  "hmrw_nanoverse.effect_level.20": "XX"
 }
