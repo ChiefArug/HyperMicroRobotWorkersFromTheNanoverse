@@ -28,6 +28,7 @@ import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.sounds.SoundEvent;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.Item;
@@ -73,6 +74,7 @@ public class HmrnvRegistries {
     private static final DeferredRegister.DataComponents DATA_COMPONENTS = DeferredRegister.createDataComponents(Registries.DATA_COMPONENT_TYPE, MODID);
     private static final DeferredRegister<MapCodec<? extends NanobotEffect>> EFFECT_CODECS = DeferredRegister.create(EFFECT_CODEC_REG, MODID);
     private static final DeferredRegister<RecipeSerializer<?>> RECIPE_SERIALIZERS = DeferredRegister.create(Registries.RECIPE_SERIALIZER, MODID);
+    private static final DeferredRegister<SoundEvent> SOUND_EVENTS = DeferredRegister.create(BuiltInRegistries.SOUND_EVENT, MODID);
     //</editor-fold>
 
     //<editor-fold desc="NanobotEffect Codecs">
@@ -89,6 +91,7 @@ public class HmrnvRegistries {
     public static final TagKey<EffectConfiguration<?>> BOT_VISION_EFFECT = TagKey.create(EFFECTS_KEY, MODRL.withPath("nanobot_vision"));
     public static final ItemAbility BOT_VISION = ItemAbility.get("hmrw_nanoverse:bot_vision");
     public static final TagKey<Block> RAVENOUS_BLACKLIST = BLOCKS.createTagKey("ravenous_blacklist");
+    public static final TagKey<Block> SAFE_RAVENOUS_WHITELIST = BLOCKS.createTagKey("safe_ravenous_whitelist");
     public static final TagKey<EffectConfiguration<?>> PREVENTS_RANDOM_TICKS = TagKey.create(EFFECTS_KEY, MODRL.withPath("prevents_random_ticks"));
     public static final TagKey<EffectConfiguration<?>> PROTECTS_AGAINST_SPREAD = TagKey.create(EFFECTS_KEY, MODRL.withPath("protects_against_spread"));
     //</editor-fold>
@@ -133,6 +136,7 @@ public class HmrnvRegistries {
             .sync(NanobotSwarm.STREAM_CODEC)
             ::build));
            static {DATA_COMPONENTS.register("swarm", () -> SWARM);}
+    public static final DeferredHolder<SoundEvent, SoundEvent> NANOBOT_DISMANTLE = SOUND_EVENTS.register("nanobpt_dismantle", () -> SoundEvent.createFixedRangeEvent(MODRL.withPath("swarm.hmrw_nanoverse.dismantle"), 32));
     //</editor-fold>
 
     /// Returns an unmodifiable updating collection of all items from the mod.
@@ -166,6 +170,7 @@ public class HmrnvRegistries {
         RECIPE_SERIALIZERS.register(modBus);
         DATA_COMPONENTS.register(modBus);
         BLOCK_ENTITY_TYPES.register(modBus);
+        SOUND_EVENTS.register(modBus);
 
         modBus.addListener((NewRegistryEvent event) -> event.register(EFFECT_CODEC_REG));
         modBus.addListener((DataPackRegistryEvent.NewRegistry event) ->

@@ -42,7 +42,7 @@ public class NanobotDiffuserBlock extends Block implements EntityBlock {
 
     @Override
     protected ItemInteractionResult useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hitResult) {
-        if (stack.getItem() == HmrnvRegistries.NANOBOTS.asItem())  {
+        if (stack.getItem() == HmrnvRegistries.NANOBOTS.asItem()) {
             EffectMap effects = stack.get(SWARM);
             if (effects != null && level.getBlockEntity(pos) instanceof NanobotDiffuserBlockEntity blockEntity) {
                 blockEntity.setEffects(effects);

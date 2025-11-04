@@ -1,18 +1,29 @@
 package chiefarug.mods.hmrwnv.core;
 
+import chiefarug.mods.hmrwnv.HfmrnvConfig;
+import chiefarug.mods.hmrwnv.HmrnvRegistries;
 import chiefarug.mods.hmrwnv.core.collections.EffectArrayMap;
 import chiefarug.mods.hmrwnv.core.collections.EffectMap;
+import chiefarug.mods.hmrwnv.core.effect.NanobotEffect;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import it.unimi.dsi.fastutil.objects.Object2IntMap.Entry;
 import it.unimi.dsi.fastutil.objects.Object2IntMaps;
 import net.minecraft.core.Holder;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.TagKey;
 import net.minecraft.util.RandomSource;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.chunk.ChunkAccess;
+import net.minecraft.world.level.chunk.LevelChunk;
+import net.minecraft.world.level.levelgen.Heightmap;
+import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.attachment.IAttachmentHolder;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.UnmodifiableView;
@@ -27,12 +38,22 @@ import static net.minecraft.SharedConstants.IS_RUNNING_IN_IDE;
 
 /// Represents a swarm of nanobots that is hosted on some object
 public final class NanobotSwarm {
-    public static final Codec<NanobotSwarm> CODEC = EffectMap.CODEC.xmap(NanobotSwarm::new, ns -> ns.effects).fieldOf("effects").codec();
+    private static final int NOT_DISMANTLING = -1;
+    public static final Codec<NanobotSwarm> CODEC = RecordCodecBuilder.create(inst -> inst.group(
+            EffectMap.CODEC.fieldOf("effects").forGetter(n -> n.effects),
+            Codec.INT.optionalFieldOf("dismantling").xmap(o -> o.orElse(NOT_DISMANTLING), i -> i == NOT_DISMANTLING ? Optional.empty() : Optional.of(i)).forGetter(n -> n.dismantlingTime)
+    ).apply(inst, NanobotSwarm::new));
     public static final StreamCodec<RegistryFriendlyByteBuf, NanobotSwarm> STREAM_CODEC = EffectMap.EFFECTS_STREAM_CODEC.map(NanobotSwarm::new, NanobotSwarm::getEffects);
     private final EffectMap effects;
+    private int dismantlingTime;
+
+    private NanobotSwarm(Map<Holder<EffectConfiguration<?>>, Integer> effects, int dismantlingTime) {
+        this.effects = new EffectArrayMap(effects);
+        this.dismantlingTime = dismantlingTime;
+    }
 
     private NanobotSwarm(Map<Holder<EffectConfiguration<?>>, Integer> effects) {
-        this.effects = new EffectArrayMap(effects);
+        this(effects, NOT_DISMANTLING);
     }
 
     /// Attach a new swarm to this host. Replaces an existing swarm on that host, if present.
@@ -53,6 +74,8 @@ public final class NanobotSwarm {
         swarm = new NanobotSwarm(effects);
         host.setData(SWARM, swarm);
         swarm.forEachEffect(host, EffectConfiguration::onAdd);
+        // the swarm may instantly start dismantling if it is unstable
+        swarm.maybeStartDismantling(host);
         return swarm;
     }
 
@@ -74,7 +97,7 @@ public final class NanobotSwarm {
                 int existingLevel = existingSwarm.getEffectLevel(effect).orElse(0);
 
                 // if the existing level is less the new level, add it to the arrays to merge in
-                // and if its not 0, run its remove trigger
+                // and if it's not 0, run its remove trigger
                 if (existingLevel < level) {
                     if (existingLevel != 0)
                         effect.value().onRemove(host, level);
@@ -87,6 +110,8 @@ public final class NanobotSwarm {
             existingSwarm.effects.putAll(newEffects);
 
             forEachEffect(newEffects, host, EffectConfiguration::onAdd);
+            // if the swarm is now unstable it will start dismantling itself
+            existingSwarm.maybeStartDismantling(host);
             existingSwarm.markDirty(host);
         } else {
             attachSwarm(host, inEffects);
@@ -102,6 +127,9 @@ public final class NanobotSwarm {
     /// Called frequently server-side while this effect is part of a swarm is on something.
     /// The exact rate is configurable, but by default is every tick for players and entities, and twice a second for chunks.
     public void tick(IAttachmentHolder host) {
+        // if we are dismantling then we tick that, and if it finishes dismantling then return from here
+        if (isDismantling() && tickDismantling(host)) return;
+
         this.forEachEffect(host, EffectConfiguration::onTick);
     }
 
@@ -109,12 +137,49 @@ public final class NanobotSwarm {
         return effects.containsKey(effect) ? OptionalInt.of(effects.getInt(effect)) : OptionalInt.empty();
     }
 
-    public boolean hasEnoughPower() {
-        return getPowerTotal() >= 0;
+    private void maybeStartDismantling(IAttachmentHolder host) {
+        if (!isDismantling() && !hasEnoughPower()) {
+            // start dismantling
+            dismantlingTime = HfmrnvConfig.TICKS_TO_DISMANTLE.getAsInt();
+            markDirty(host);
+        }
     }
 
-    private int getPowerTotal() {
-        return effects.totalPower();
+    /// This assumes isDismantling() returns true
+    /// @return true if this swarm finished dismantling
+    private boolean tickDismantling(IAttachmentHolder host) {
+        if (hasEnoughPower()) {
+            // cancel dismantling
+            dismantlingTime = NOT_DISMANTLING;
+            markDirty(host);
+            return false;
+        }
+
+        dismantlingTime -= NanobotEffect.getTickRate(host);
+        if (dismantlingTime <= 0) {
+            // we have finished dismantling
+            this.forEachEffect(host, EffectConfiguration::onRemove);
+            effects.clear();
+            host.removeData(SWARM);
+            ServerLevel level = level(host);
+            if (level != null) {
+                Vec3 pos = position(host);
+                level.playSound(null, pos.x, pos.y, pos.z, HmrnvRegistries.NANOBOT_DISMANTLE.get(), SoundSource.AMBIENT);
+            }
+            return true;
+        } else {
+            // we must mark dirty otherwise the dismantlingTime won't save
+            markDirty(host);
+            return false;
+        }
+    }
+
+    public boolean isDismantling() {
+        return dismantlingTime >= 0;
+    }
+
+    public boolean hasEnoughPower() {
+        return effects.totalPower() <= 0;
     }
 
     /// Get a random effect weighted by effect levels
@@ -126,6 +191,7 @@ public final class NanobotSwarm {
         return randomEffect(random, effects);
     }
 
+    /// Get a random effect that is not already a part of the provided swarm
     @Nullable
     public Holder<EffectConfiguration<?>> randomEffectExcept(RandomSource random, NanobotSwarm exclusion) {
         if (this.effects.isEmpty()) throw new IllegalStateException("NanobotSwarm should always have effects!");
@@ -160,6 +226,7 @@ public final class NanobotSwarm {
         return t.getKey();
     }
 
+    /// Returns true if at least one of the effects on this swarm has the provided tag
     public boolean hasEffect(TagKey<EffectConfiguration<?>> tag) {
         for (Holder<EffectConfiguration<?>> value : effects.keySet()) {
             if (value.is(tag))
@@ -190,7 +257,7 @@ public final class NanobotSwarm {
 
     @Override
     public String toString() {
-        return effects.toString();
+        return effects.toString() + ", dismantling=" + dismantlingTime;
     }
 
     @Override
@@ -203,5 +270,28 @@ public final class NanobotSwarm {
     @Override
     public int hashCode() {
         return effects.hashCode();
+    }
+
+    @Nullable
+    private static ServerLevel level(IAttachmentHolder host) {
+        return switch (host) {
+            case Entity e -> e.level();
+            case LevelChunk c -> c.getLevel();
+            default -> null;
+        } instanceof ServerLevel sl ? sl : null;
+    }
+
+    private static Vec3 position(IAttachmentHolder host) {
+        return switch (host) {
+            case Entity e -> e.position();
+            case LevelChunk c -> {
+                Level level = c.getLevel();
+                int midX = c.getPos().getMiddleBlockX();
+                int midZ = c.getPos().getMiddleBlockZ();
+                int y = level.getHeight(Heightmap.Types.OCEAN_FLOOR, midX, midZ);
+                yield new Vec3(midX + 0.5, y, midZ + 0.5);
+            }
+            default -> throw new IllegalArgumentException("Unknown host class: " + host.getClass());
+        };
     }
 }

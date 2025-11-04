@@ -1,0 +1,8 @@
+{
+  "swarm.hmrw_nanoverse.dismantle": {
+    "subtitle": "subtitle.swarm.hmrw_nanoverse.dismantle",
+    "sounds": [
+      "hmrw_nanoverse:nanobot_dismantle"
+    ]
+  }
+}

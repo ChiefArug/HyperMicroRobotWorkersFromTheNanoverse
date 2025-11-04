@@ -206,7 +206,6 @@ public class HyperMicroRobotWorkersFromTheNanoverse {
                     if (chunk != null) {
                         NanobotSwarm swarm = chunk.getExistingDataOrNull(SWARM);
                         if (swarm != null) {
-                            swarm.tick(chunk);
                             EffectMap effects = new EffectArrayMap(swarm.getEffects());
                             Iterator<Object2IntMap.Entry<Holder<EffectConfiguration<?>>>> effectIter = Object2IntMaps.fastIterator(effects);
 
@@ -220,6 +219,8 @@ public class HyperMicroRobotWorkersFromTheNanoverse {
                                     // use storage.find as that caches the results of the search for next time.
                                     .flatMap(entityEntitySection -> entityEntitySection.storage.find(LivingEntity.class).stream())
                                     .forEach(entity -> forEachEffect(effects, entity, EffectConfiguration::onTick));
+                            // tick the chunk afterwards, in case it dismantles itself.
+                            swarm.tick(chunk);
                         }
                     }
                 }

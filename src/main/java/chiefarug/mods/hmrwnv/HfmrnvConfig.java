@@ -4,6 +4,9 @@ import net.neoforged.neoforge.common.ModConfigSpec;
 import net.neoforged.neoforge.common.ModConfigSpec.Builder;
 import net.neoforged.neoforge.common.ModConfigSpec.IntValue;
 
+import static net.minecraft.SharedConstants.TICKS_PER_MINUTE;
+import static net.minecraft.SharedConstants.TICKS_PER_SECOND;
+
 
 // TODO Translations
 public class HfmrnvConfig {
@@ -31,6 +34,9 @@ public class HfmrnvConfig {
             "Swarms on players will tick once every this ticks",
             "No you can not make it faster than once per tick"
     ).defineInRange("player_slow_down", 1, 1, 72000);
+    public static final IntValue TICKS_TO_DISMANTLE = BUILDER.comment(
+            "The number of ticks it takes for a swarm to dismantle after losing power"
+    ).defineInRange("ticks_to_dismantle", 20 * TICKS_PER_SECOND, 1, 60 * TICKS_PER_MINUTE); // max value of an hour
     static final ModConfigSpec SPEC = BUILDER.build();
 
 }

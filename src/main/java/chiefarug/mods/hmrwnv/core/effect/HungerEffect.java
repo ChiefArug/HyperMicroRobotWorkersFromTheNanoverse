@@ -132,11 +132,12 @@ public class HungerEffect implements NanobotEffect.Ticking {
             case Player player -> player.causeFoodExhaustion(getExhaustion(effectLevel));
             case LevelChunk chunk -> {
                 LevelChunkSection[] chunkSections = chunk.getSections();
+                ServerLevel level = (ServerLevel) chunk.getLevel();
 
                 for (int i = 0; i < chunkSections.length; i++) {
                     LevelChunkSection section = chunkSections[i];
                     if (section.hasOnlyAir()) continue;
-                    ServerLevel level = (ServerLevel) chunk.getLevel();
+
                     int minY = SectionPos.sectionToBlockCoord(chunk.getSectionYFromSectionIndex(i));
                     int minX = chunk.getPos().getMinBlockX();
                     int minZ = chunk.getPos().getMinBlockZ();
@@ -144,19 +145,24 @@ public class HungerEffect implements NanobotEffect.Ticking {
                     int blocks = decayRate * effectLevel;
                     for (int j = 0; j < blocks; j++) {
                         BlockPos pos = level.getBlockRandomPos(minX, minY, minZ, 15);
-                        BlockState state = section.getBlockState(pos.getX() - minX, pos.getY() - minY, pos.getZ() - minZ);
-                        if (canTransform(state, pos, level)) {
-                            BlockState newState = transform(state);
-                            if (state != newState) {
-                                // manually set it and queue a resync to the client to avoid block updates
-                                //TODO: this doesnt seem to do saved lighting updates?, so we should probably queue a lighting update for this section if any block changes succeeded.
-                                // https://discord.com/channels/176780432371744769/1432866625341751366/1433784410301534208
-                                // also invalidate block entities here
-                                //  chunk.removeBlockEntity(pos);
-                                section.setBlockState(pos.getX() - minX, pos.getY() - minY, pos.getZ() - minZ, newState);
+                        BlockState oldState = section.getBlockState(pos.getX() - minX, pos.getY() - minY, pos.getZ() - minZ);
+                        if (canTransform(oldState, pos, level)) {
+                            BlockState newState = transform(oldState);
+                            if (oldState != newState) {
+                                // set the block via the chunk.
+                                // this is done instead of the section so that everything
+                                // ie lighting, saving, block entities is updated properly,
+                                // except for block updates, which is going through the level causes
+                                // and what we want to avoid.
+                                chunk.setBlockState(pos, newState, false);
+
+                                // this is not done by LevelChunk#setBlockState, and ensures the changes get synced to the client
                                 ChunkHolder chunkHolder = level.getChunkSource().chunkMap.getVisibleChunkIfPresent(chunk.getPos().toLong());
                                 if (chunkHolder != null)
                                     chunkHolder.blockChanged(pos);
+
+                                // finally notify the level that a state changed so that it can fix up POIs
+                                level.onBlockStateChange(pos, oldState, newState);
                             }
                         }
                     }

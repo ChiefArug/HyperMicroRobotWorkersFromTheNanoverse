@@ -11,6 +11,8 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.NotNull;
 
+import static chiefarug.mods.hmrwnv.HmrnvRegistries.SAFE_RAVENOUS_WHITELIST;
+
 public class RavenousEffect extends HungerEffect {
     public static final MapCodec<RavenousEffect> CODEC = RecordCodecBuilder.mapCodec(g -> g.group(
             Codec.INT.fieldOf("decay_rate").forGetter(HungerEffect::decayRate),
@@ -35,7 +37,7 @@ public class RavenousEffect extends HungerEffect {
         if (
                 !super.canTransform(state, inPos, level) ||
                 state.is(HmrnvRegistries.RAVENOUS_BLACKLIST) ||
-                (keepBlockEntities && level.getBlockEntity(inPos) != null)
+                keepBlockEntities && level.getBlockEntity(inPos) != null && !state.is(SAFE_RAVENOUS_WHITELIST)
         ) return false;
 
         int airCount = 0;
