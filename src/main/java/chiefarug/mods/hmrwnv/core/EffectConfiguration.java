@@ -98,7 +98,11 @@ public record EffectConfiguration<T extends NanobotEffect>(T effect, int energyP
         return Component.translatable("hmrw_nanoverse.effect_level." + i);
     }
 
-    int colorWithTransparency() {
-        return 0xFF000000 | color;
+    public int colorWithTransparency(int transparency) {
+        return transparency << 24 | color;
+    }
+
+    public int colorWithTransparency() {
+        return colorWithTransparency(0xFF);
     }
 }

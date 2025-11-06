@@ -111,11 +111,11 @@ repositories {
 dependencies {
     // compact crafting's api is a mess and not usable for custom recipe types
     // idk what the point of IMiniaturizationRecipe is if places always use the concrete impl
-//    // Compact Crafting
-//    implementation extractJarJar("curse.maven:compact-crafting-updated-1355698:7077089")
-//    // Can download sources from https://github.com/Leclowndu93150/CompactCrafting/archive/31176768767a28b677f3aa45e79690db3619582c.zip and attach to IntelliJ
+    // Compact Crafting
+    implementation extractJarJar("curse.maven:compact-crafting-updated-1355698:7077089")
+    // Can download sources from https://github.com/Leclowndu93150/CompactCrafting/archive/31176768767a28b677f3aa45e79690db3619582c.zip and attach to IntelliJ
 
-//    compileOnly fileTree(tasks.extractCompactApiJar.destinationDir) { include '*.jar'}
+    compileOnly fileTree(tasks.extractCompactApiJar.destinationDir) { include '*.jar'}
 
     // compile against the JEI API but do not include it at runtime
     compileOnly "mezz.jei:jei-${minecraft_version}-neoforge-api:${jei_version}"

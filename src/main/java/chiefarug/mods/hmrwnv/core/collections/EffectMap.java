@@ -19,6 +19,7 @@ import java.util.List;
 
 /// Essentially a type alias for {@link Object2IntMap Object2IntMap<Holder<EffectConfiguration<?>>>} because who can be bothered typing that.
 /// Also provides helpers for some more efficient methods relating to collections of entries.
+/// And is sealed in case that helps JIT a bit.
 /// @apiNote If you want more impls of this come yell at me.
 public sealed interface EffectMap extends Object2IntMap<Holder<EffectConfiguration<?>>>
         permits EffectArrayMap, EffectMap.Empty, EffectMap.Singleton, EffectMap.Unmodifiable {
@@ -32,7 +33,7 @@ public sealed interface EffectMap extends Object2IntMap<Holder<EffectConfigurati
 
     @org.jetbrains.annotations.Unmodifiable
     static EffectMap unmodifiable(EffectMap map) {
-        if (map instanceof Unmodifiable || map instanceof Singleton) return map;
+        if (map == EMPTY || map instanceof Unmodifiable || map instanceof Singleton) return map;
         return new Unmodifiable(map);
     }
 
@@ -46,6 +47,14 @@ public sealed interface EffectMap extends Object2IntMap<Holder<EffectConfigurati
     @org.jetbrains.annotations.Unmodifiable
     static EffectMap empty() {
         return EMPTY;
+    }
+
+    @org.jetbrains.annotations.Unmodifiable
+    static EffectMap unmodifiableCopy(EffectMap m) {
+        // already unmodifiable and has nothing backing it
+        if (m == EMPTY || m instanceof Singleton) return m;
+
+        return new Unmodifiable(new EffectArrayMap(m));
     }
 
     /// Helper method to get a list view of this map.

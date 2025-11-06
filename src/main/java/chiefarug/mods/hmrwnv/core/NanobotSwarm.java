@@ -186,19 +186,19 @@ public final class NanobotSwarm {
     public Holder<EffectConfiguration<?>> randomEffect(RandomSource random) {
         if (effects.isEmpty()) throw new IllegalStateException("NanobotSwarm should always have effects!");
 
-        // not null cause we assert its not empty, and it only returns null on empty maps.
+        // not null cause we assert it's not empty, and it only returns null on empty maps.
         //noinspection DataFlowIssue
         return randomEffect(random, effects);
     }
 
     /// Get a random effect that is not already a part of the provided swarm
     @Nullable
-    public Holder<EffectConfiguration<?>> randomEffectExcept(RandomSource random, NanobotSwarm exclusion) {
+    public Holder<EffectConfiguration<?>> randomEffectExcept(RandomSource random, EffectMap exclusion) {
         if (this.effects.isEmpty()) throw new IllegalStateException("NanobotSwarm should always have effects!");
 
         EffectMap effects = new EffectArrayMap(this.effects);
         // reduce entries by those in exclusion
-        for (Entry<Holder<EffectConfiguration<?>>> entry : Object2IntMaps.fastIterable(exclusion.effects)) {
+        for (Entry<Holder<EffectConfiguration<?>>> entry : Object2IntMaps.fastIterable(exclusion)) {
             effects.computeIntIfPresent(entry.getKey(), (e, i) -> {
                 int newValue = i - entry.getIntValue();
                 if (newValue > 0) return newValue;
@@ -211,7 +211,7 @@ public final class NanobotSwarm {
 
     /// Returns null only if effects is empty
     @Nullable
-    private static Holder<EffectConfiguration<?>> randomEffect(RandomSource random, EffectMap effects) {
+    public static Holder<EffectConfiguration<?>> randomEffect(RandomSource random, EffectMap effects) {
         if (effects.isEmpty()) return null;
         if (effects.size() == 1) return effects.keySet().iterator().next();
 

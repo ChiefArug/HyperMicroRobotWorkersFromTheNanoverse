@@ -1,6 +1,7 @@
 package chiefarug.mods.hmrwnv.core.effect;
 
 import chiefarug.mods.hmrwnv.HmrnvRegistries;
+import chiefarug.mods.hmrwnv.block.NanobotDiffuserBlock;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
@@ -35,8 +36,6 @@ import java.util.function.UnaryOperator;
 
 import static chiefarug.mods.hmrwnv.HyperMicroRobotWorkersFromTheNanoverse.LGGR;
 import static chiefarug.mods.hmrwnv.HyperMicroRobotWorkersFromTheNanoverse.MODRL;
-import static chiefarug.mods.hmrwnv.block.NanobotDiffuserBlock.DAMAGE;
-import static chiefarug.mods.hmrwnv.block.NanobotDiffuserBlock.MAX_DAMAGE;
 import static java.lang.StackWalker.Option.RETAIN_CLASS_REFERENCE;
 import static net.minecraft.world.level.block.ComposterBlock.LEVEL;
 import static net.minecraft.world.level.block.state.properties.BlockStateProperties.WATERLOGGED;
@@ -113,12 +112,7 @@ public class HungerEffect implements NanobotEffect.Ticking {
                 return state.setValue(LEVEL, COMPOSTER_MAX_LEVEL - 2);
             return state.setValue(LEVEL, Math.max(state.getValue(LEVEL) - 1, 0));
         });
-        registerTransformation(HmrnvRegistries.NANOBOT_DIFFUSER.get(), state -> {
-            int newValue = state.getValue(DAMAGE) + 1;
-            // this gets destroyed even by the regular hunger effect
-            if (newValue > MAX_DAMAGE) return Blocks.AIR.defaultBlockState();
-            return state.setValue(DAMAGE, newValue);
-        });
+        registerTransformation(HmrnvRegistries.NANOBOT_DIFFUSER.get(), state -> NanobotDiffuserBlock.damage(state, 1));
     }
 
     @Override

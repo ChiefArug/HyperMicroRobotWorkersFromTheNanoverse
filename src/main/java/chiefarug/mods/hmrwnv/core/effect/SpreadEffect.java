@@ -91,7 +91,7 @@ public record SpreadEffect(TypeConfiguration entityConfig, TypeConfiguration chu
 
         final Holder<EffectConfiguration<?>> effect;
         if (targetSwarm.isPresent())
-            effect = host.getData(HmrnvRegistries.SWARM).randomEffectExcept(level.getRandom(), targetSwarm.get());
+            effect = host.getData(HmrnvRegistries.SWARM).randomEffectExcept(level.getRandom(), targetSwarm.get().getEffects());
         else
             effect = host.getData(SWARM).randomEffect(level.getRandom());
 
